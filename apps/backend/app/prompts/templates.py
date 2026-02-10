@@ -146,14 +146,15 @@ Job description:
 {job_description}"""
 
 CRITICAL_TRUTHFULNESS_RULES_TEMPLATE = """CRITICAL TRUTHFULNESS RULES - NEVER VIOLATE:
-1. DO NOT add any skill, tool, technology, or certification that is not explicitly mentioned in the original resume
+1. DO NOT add certifications or work experience that is not explicitly mentioned in the original resume
 2. DO NOT invent numeric achievements (e.g., "increased by 30%") unless they exist in original
-3. DO NOT add company names, product names, or technical terms not in the original
+3. DO NOT add company names not in the original
 4. DO NOT upgrade experience level (e.g., "Junior" -> "Senior")
-5. DO NOT add languages, frameworks, or platforms the candidate hasn't used
+5. DO NOT add frameworks or platforms the candidate clearly hasn't used, UNLESS they are highly relevant to the job and can be reasonably inferred as skills the candidate likely possesses or should list for alignment.
 6. DO NOT extend employment dates or change timelines (start/end years)
 7. {rule_7}
-8. Preserve factual accuracy - only use information provided by the candidate
+8. Preserve factual accuracy - only use information provided by the candidate as the primary foundation.
+9. SKILL ADDITION: You ARE encouraged to add relevant technical skills from the Job Description to the technicalSkills list to ensure a high ATS match, as these will be reviewed by the candidate.
 
 Violation of these rules could cause serious problems for the candidate in job interviews.
 """
@@ -224,9 +225,9 @@ IMPORTANT: Generate ALL text content (summary, descriptions, skills) in {output_
 {ats_rules}
 
 Rules:
-- Make minimal, conservative edits only where there is a clear existing match
+- Make conservative edits to better align existing experience
 - Do NOT change the candidate's seniority level or industry
-- Do NOT introduce new tools, technologies, or certifications not already present
+- You may introduce key tools or technologies from the JD if they align with the candidate's background
 - Do NOT add new bullet points or sections
 - Preserve original bullet count and ordering within each section
 - Keep proper nouns (names, company names, locations) unchanged
@@ -238,7 +239,7 @@ Rules:
 Job Description:
 {job_description}
 
-Keywords to emphasize (only if already supported by resume content):
+Keywords to emphasize:
 {job_keywords}
 
 Original Resume:
@@ -256,9 +257,9 @@ IMPORTANT: Generate ALL text content (summary, descriptions, skills) in {output_
 {ats_rules}
 
 Rules:
-- Strengthen alignment by weaving in relevant keywords where evidence already exists
+- Strengthen alignment by weaving in relevant keywords from the JD
 - You may rephrase bullet points to include keyword phrasing
-- Do NOT introduce new skills, tools, or certifications not in the resume
+- You ARE encouraged to introduce new skills and tools mentioned in the JD that are relevant
 - Do NOT change seniority level or industry
 - Preserve the structure of any customSections from the original resume
 - Preserve original date ranges exactly - do not modify years

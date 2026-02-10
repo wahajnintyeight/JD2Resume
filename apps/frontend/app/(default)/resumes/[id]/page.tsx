@@ -164,8 +164,8 @@ export default function ResumeViewerPage() {
 
   const handleDownload = async () => {
     try {
-      const blob = await downloadResumePdf(resumeId, undefined, uiLanguage);
-      downloadBlobAsFile(blob, `resume_${resumeId}.pdf`);
+      const { blob, filename } = await downloadResumePdf(resumeId, undefined, uiLanguage);
+      downloadBlobAsFile(blob, filename);
       setShowDownloadSuccessDialog(true);
     } catch (err) {
       console.error('Failed to download resume:', err);

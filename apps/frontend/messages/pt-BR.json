@@ -567,6 +567,7 @@
     },
     "errors": {
       "jobDescriptionTooShort": "Descrição da vaga muito curta. Por favor, forneça mais detalhes.",
+      "jobDescriptionTooLong": "A descrição da vaga é muito longa. Apenas os primeiros 2000 caracteres serão usados para personalização.",
       "apiKeyError": "Erro na chave de API. Verifique sua configuração de LLM em Configurações.",
       "rateLimit": "Limite de requisições atingido. Por favor, aguarde um momento e tente novamente.",
       "failedToGenerate": "Falha ao gerar currículo. Verifique suas configurações e tente novamente.",

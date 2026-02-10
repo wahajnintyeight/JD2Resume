@@ -273,7 +273,7 @@ def validate_master_alignment(
                 field_path="additional.technicalSkills",
                 violation_type="fabricated_skill",
                 value=skill,
-                severity="critical",
+                severity="warning",  # Changed from critical to allow AI suggestions
             )
         )
 

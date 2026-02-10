@@ -567,6 +567,7 @@
     },
     "errors": {
       "jobDescriptionTooShort": "职位描述过短，请提供更多细节。",
+      "jobDescriptionTooLong": "职位描述太长。只有前2000个字符将用于定制。",
       "apiKeyError": "API 密钥错误。请在设置中检查您的 LLM 配置。",
       "rateLimit": "触发速率限制，请稍后再试。",
       "failedToGenerate": "生成简历失败。请检查设置后重试。",

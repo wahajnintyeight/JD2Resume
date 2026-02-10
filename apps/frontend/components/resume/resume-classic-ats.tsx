@@ -37,8 +37,21 @@ export const ResumeClassicAts: React.FC<ResumeClassicAtsProps> = ({
 }) => {
   const { personalInfo, summary, workExperience, education, personalProjects, additional } = data;
 
-  // Get sorted visible sections
-  const sortedSections = getSortedSections(data);
+  // Get sorted visible sections and enforce specific order for Classic ATS
+  const preferredOrder: Record<string, number> = {
+    summary: 1,
+    workExperience: 2,
+    additional: 3,
+    personalProjects: 4,
+    education: 5,
+  };
+
+  const sortedSections = getSortedSections(data).sort((a, b) => {
+    const orderA = preferredOrder[a.key] || 99;
+    const orderB = preferredOrder[b.key] || 99;
+    if (orderA !== orderB) return orderA - orderB;
+    return a.order - b.order;
+  });
 
   // Helper to render contact line
   const renderContactLine = () => {
@@ -113,7 +126,6 @@ export const ResumeClassicAts: React.FC<ResumeClassicAtsProps> = ({
                       <span className={styles.degree}>{edu.degree}</span>
                     </div>
                     <div className={styles.educationRight}>
-                      {edu.location && <span className={styles.location}>{edu.location}</span>}
                       {edu.years && <span className={styles.dateRange}>{formatDateRange(edu.years)}</span>}
                     </div>
                   </div>
@@ -158,51 +170,54 @@ export const ResumeClassicAts: React.FC<ResumeClassicAtsProps> = ({
           </div>
         );
 
-      case 'skills':
-        if (!additional?.technicalSkills || additional.technicalSkills.length === 0) return null;
+      case 'additional':
+        if (!additional) return null;
+        const hasSkills = additional.technicalSkills && additional.technicalSkills.length > 0;
+        const hasLanguages = additional.languages && additional.languages.length > 0;
+        const hasCerts = additional.certificationsTraining && additional.certificationsTraining.length > 0;
+        const hasAwards = additional.awards && additional.awards.length > 0;
+
+        if (!hasSkills && !hasLanguages && !hasCerts && !hasAwards) return null;
+
         return (
           <div key={section.id} className={styles.section}>
             <h3 className={styles.sectionTitle}>{section.displayName.toUpperCase()}</h3>
             <div className={styles.skillsList}>
-              <div className={styles.skillCategory}>
-                <span className={styles.skillLabel}>
-                  {additionalSectionLabels?.technicalSkills || 'Technical Skills'}:{' '}
-                </span>
-                <span className={styles.skillValues}>{additional.technicalSkills.join(', ')}</span>
-              </div>
-              {additional.languages && additional.languages.length > 0 && (
+              {hasSkills && (
                 <div className={styles.skillCategory}>
-                  <span className={styles.skillLabel}>Languages: </span>
-                  <span className={styles.skillValues}>{additional.languages.join(', ')}</span>
+                  <span className={styles.skillLabel}>
+                    {(additionalSectionLabels?.technicalSkills || 'Technical Skills').replace(/:$/, '')}:
+                  </span>
+                  <span className={styles.skillValues}> {additional.technicalSkills?.join(', ')}</span>
+                </div>
+              )}
+              {hasLanguages && (
+                <div className={styles.skillCategory}>
+                  <span className={styles.skillLabel}>Languages:</span>
+                  <span className={styles.skillValues}> {additional.languages?.join(', ')}</span>
+                </div>
+              )}
+              {hasCerts && (
+                <div className="mt-2">
+                  <span className={styles.skillLabel}>Certifications:</span>
+                  <ul className={styles.certList}>
+                    {additional.certificationsTraining?.map((cert, index) => (
+                      <li key={index} className={styles.certItem}>{cert}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {hasAwards && (
+                <div className="mt-2">
+                  <span className={styles.skillLabel}>Awards:</span>
+                  <ul className={styles.awardList}>
+                    {additional.awards?.map((award, index) => (
+                      <li key={index} className={styles.awardItem}>{award}</li>
+                    ))}
+                  </ul>
                 </div>
               )}
             </div>
-          </div>
-        );
-
-      case 'certifications':
-        if (!additional?.certificationsTraining || additional.certificationsTraining.length === 0) return null;
-        return (
-          <div key={section.id} className={styles.section}>
-            <h3 className={styles.sectionTitle}>{section.displayName.toUpperCase()}</h3>
-            <ul className={styles.certList}>
-              {additional.certificationsTraining.map((cert, index) => (
-                <li key={index} className={styles.certItem}>{cert}</li>
-              ))}
-            </ul>
-          </div>
-        );
-
-      case 'awards':
-        if (!additional?.awards || additional.awards.length === 0) return null;
-        return (
-          <div key={section.id} className={styles.section}>
-            <h3 className={styles.sectionTitle}>{section.displayName.toUpperCase()}</h3>
-            <ul className={styles.awardList}>
-              {additional.awards.map((award, index) => (
-                <li key={index} className={styles.awardItem}>{award}</li>
-              ))}
-            </ul>
           </div>
         );
 

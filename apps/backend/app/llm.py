@@ -71,16 +71,12 @@ def _normalize_api_base(provider: str, api_base: str | None) -> str | None:
     `/v1/v1/...` and cause 404s.
     """
     # Provider-specific default API bases when not provided
-    default_bases = {
-        "openrouter": "https://openrouter.ai/api/v1",
-    }
-
     if not api_base:
-        return default_bases.get(provider)
+        return None
 
     base = api_base.strip()
     if not base:
-        return default_bases.get(provider)
+        return None
 
     base = base.rstrip("/")
 
@@ -94,7 +90,7 @@ def _normalize_api_base(provider: str, api_base: str | None) -> str | None:
     if provider == "gemini" and base.endswith("/v1"):
         base = base[: -len("/v1")].rstrip("/")
 
-    return base or default_bases.get(provider)
+    return base or None
 
 
 def _extract_text_parts(value: Any, depth: int = 0, max_depth: int = 10) -> list[str]:
@@ -318,8 +314,17 @@ async def check_llm_health(
     if config is None:
         config = get_llm_config()
 
+    # DEBUG PRINTS
+    print(f"[LLM-HEALTH] Provider: {config.provider}")
+    print(f"[LLM-HEALTH] Model: {config.model}")
+    print(f"[LLM-HEALTH] Has API Key: {bool(config.api_key)}")
+    print(f"[LLM-HEALTH] API Base: {config.api_base}")
+    print(f"[LLM-HEALTH] Include Details: {include_details}")
+    print(f"[LLM-HEALTH] Test Prompt: {test_prompt}")
+
     # Check if API key is configured (except for Ollama)
     if config.provider != "ollama" and not config.api_key:
+        print("[LLM-HEALTH] ERROR: API key missing")
         return {
             "healthy": False,
             "provider": config.provider,
@@ -328,8 +333,10 @@ async def check_llm_health(
         }
 
     model_name = get_model_name(config)
+    print(f"[LLM-HEALTH] Normalized Model Name: {model_name}")
 
     prompt = test_prompt or "Hi"
+    print(f"[LLM-HEALTH] Using Prompt: '{prompt}'")
 
     try:
         # Make a minimal test call with timeout
@@ -337,7 +344,7 @@ async def check_llm_health(
         kwargs: dict[str, Any] = {
             "model": model_name,
             "messages": [{"role": "user", "content": prompt}],
-            "max_tokens": 16,
+            "max_tokens": 128,  # Increased from 16 to accommodate reasoning models
             "api_key": config.api_key,
             "api_base": _normalize_api_base(config.provider, config.api_base),
             "timeout": LLM_TIMEOUT_HEALTH_CHECK,
@@ -346,20 +353,42 @@ async def check_llm_health(
         if reasoning_effort:
             kwargs["reasoning_effort"] = reasoning_effort
 
+        print(f"[LLM-HEALTH] Calling litellm.acompletion...")
+        print(f"  - model: {kwargs.get('model')}")
+        print(f"  - messages: {kwargs.get('messages')}")
+        print(f"  - max_tokens: {kwargs.get('max_tokens')}")
+        print(f"  - timeout: {kwargs.get('timeout')}")
+        print(f"  - reasoning_effort: {kwargs.get('reasoning_effort')}")
+        print(f"  - api_base: {kwargs.get('api_base')}")
+
         response = await litellm.acompletion(**kwargs)
+
+        print(f"[LLM-HEALTH] Response received:")
+        print(f"  - type: {type(response)}")
+        print(f"  - has choices: {hasattr(response, 'choices')}")
+        print(f"  - choices count: {len(response.choices) if hasattr(response, 'choices') else 'N/A'}")
+        if hasattr(response, 'choices') and response.choices:
+            print(f"  - first choice type: {type(response.choices[0])}")
+        if hasattr(response, 'model'):
+            print(f"  - response.model: {response.model}")
+
         content = _extract_choice_text(response.choices[0])
+        print(f"[LLM-HEALTH] Extracted content: '{content}'")
+        print(f"[LLM-HEALTH] Content is empty: {not content}")
+
         if not content:
-            # LLM-003: Empty response should mark health check as unhealthy
+            print(f"[LLM-HEALTH] WARNING: Empty content detected!")
+            print(f"[LLM-HEALTH] Full response object: {response}")
             logging.warning(
                 "LLM health check returned empty content",
                 extra={"provider": config.provider, "model": config.model},
             )
             result: dict[str, Any] = {
-                "healthy": False,  # Fixed: empty content means unhealthy
+                "healthy": False,
                 "provider": config.provider,
                 "model": config.model,
                 "response_model": response.model if response else None,
-                "error_code": "empty_content",  # Changed from warning_code
+                "error_code": "empty_content",
                 "message": "LLM returned empty response",
             }
             if include_details:
@@ -376,15 +405,17 @@ async def check_llm_health(
         if include_details:
             result["test_prompt"] = _to_code_block(prompt)
             result["model_output"] = _to_code_block(content)
+        print(f"[LLM-HEALTH] SUCCESS: Health check passed!")
         return result
     except Exception as e:
-        # Log full exception details server-side, but do not expose them to clients
+        print(f"[LLM-HEALTH] EXCEPTION: {type(e).__name__}: {e}")
+        import traceback
+        traceback.print_exc()
         logging.exception(
             "LLM health check failed",
             extra={"provider": config.provider, "model": config.model},
         )
 
-        # Provide a minimal, actionable client-facing hint without leaking secrets.
         error_code = "health_check_failed"
         message = str(e)
         if "404" in message and "/v1/v1/" in message:
@@ -668,20 +699,31 @@ async def complete_json(
             if use_json_mode:
                 kwargs["response_format"] = {"type": "json_object"}
 
+            print(f"[LLM-JSON] Attempt {attempt + 1}/{retries + 1} for {model_name}")
+            print(f"  - max_tokens: {max_tokens}, timeout: {kwargs['timeout']}, reasoning_effort: {reasoning_effort}")
+            
             response = await litellm.acompletion(**kwargs)
+            
+            if hasattr(response, 'usage'):
+                print(f"  - Usage: prompt={response.usage.prompt_tokens}, completion={response.usage.completion_tokens}")
+                if hasattr(response.usage, 'completion_tokens_details'):
+                    print(f"  - Reasoning tokens: {getattr(response.usage.completion_tokens_details, 'reasoning_tokens', 'N/A')}")
+
             content = _extract_choice_text(response.choices[0])
 
             if not content:
+                print(f"[LLM-JSON] Attempt {attempt + 1} returned EMPTY content!")
                 raise ValueError("Empty response from LLM")
 
-            logging.debug(f"LLM response (attempt {attempt + 1}): {content[:300]}")
-
+            print(f"[LLM-JSON] Received content (len={len(content)}): {content[:200]}...")
+            
             # Extract and parse JSON
             json_str = _extract_json(content)
             result = json.loads(json_str)
 
             # LLM-001: Check if parsed result appears truncated
             if isinstance(result, dict) and _appears_truncated(result):
+                print(f"[LLM-JSON] WARNING: Result appears truncated! Keys found: {list(result.keys())}")
                 logging.warning(
                     "Parsed JSON appears truncated, but proceeding with result"
                 )

@@ -567,6 +567,7 @@
     },
     "errors": {
       "jobDescriptionTooShort": "La descripción del trabajo es demasiado corta. Por favor, proporciona más detalles.",
+      "jobDescriptionTooLong": "La descripción del trabajo es demasiado larga. Solo se usarán los primeros 2000 caracteres para la personalización.",
       "apiKeyError": "Error de clave API. Revisa tu configuración de LLM en Configuración.",
       "rateLimit": "Se alcanzó el límite de tasa. Espera un momento e inténtalo de nuevo.",
       "failedToGenerate": "No se pudo generar el currículum. Revisa tu configuración e inténtalo de nuevo.",
