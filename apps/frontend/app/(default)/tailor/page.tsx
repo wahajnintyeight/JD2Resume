@@ -21,6 +21,10 @@ import { useTranslations } from '@/lib/i18n';
 import { DiffPreviewModal } from '@/components/tailor/diff-preview-modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
+// LLM-012: Job description length limits (must match backend)
+const MAX_JD_LENGTH = 2000;
+const JD_LENGTH_WARNING_THRESHOLD = 1500;
+
 export default function TailorPage() {
   const { t } = useTranslations();
   const [jobDescription, setJobDescription] = useState('');
@@ -30,6 +34,7 @@ export default function TailorPage() {
   const [promptOptions, setPromptOptions] = useState<PromptOption[]>([]);
   const [selectedPromptId, setSelectedPromptId] = useState('keywords');
   const [promptLoading, setPromptLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const hasUserSelectedPrompt = useRef(false);
   const missingDiffConfirmInFlight = useRef(false);
 
@@ -92,6 +97,10 @@ export default function TailorPage() {
     };
   }, []);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const handleTextareaKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter') e.stopPropagation();
   };
@@ -142,6 +151,9 @@ export default function TailorPage() {
     if (!trimmedDescription) return null;
     if (trimmedDescription.length < 50) {
       return t('tailor.errors.jobDescriptionTooShort');
+    }
+    if (trimmedDescription.length > MAX_JD_LENGTH) {
+      return t('tailor.errors.jobDescriptionTooLong');
     }
     return null;
   };
@@ -393,8 +405,18 @@ export default function TailorPage() {
               onKeyDown={handleTextareaKeyDown}
               disabled={isLoading}
             />
-            <div className="absolute bottom-2 right-2 text-xs font-mono text-gray-400 pointer-events-none">
+            <div
+              className={`absolute bottom-2 right-2 text-xs font-mono pointer-events-none ${
+                mounted && jobDescription.length > MAX_JD_LENGTH
+                  ? 'text-red-600 font-bold'
+                  : mounted && jobDescription.length > JD_LENGTH_WARNING_THRESHOLD
+                    ? 'text-amber-600'
+                    : 'text-gray-400'
+              }`}
+              suppressHydrationWarning
+            >
               {t('tailor.charactersCount', { count: jobDescription.length })}
+              {mounted && jobDescription.length > MAX_JD_LENGTH && ` / ${MAX_JD_LENGTH} max`}
             </div>
           </div>
 

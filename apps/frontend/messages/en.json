@@ -369,6 +369,10 @@
         "modernTwoColumn": {
           "name": "Modern Two Column",
           "description": "Two-column layout with modern colorful accents and themes"
+        },
+        "classicAts": {
+          "name": "Classic ATS",
+          "description": "Ultra-clean single-column optimized for Applicant Tracking Systems"
         }
       },
       "accentColor": "Accent Color",
@@ -534,12 +538,14 @@
       "summary": "Change Summary",
       "skillsAdded": "Skills Added",
       "skillsRemoved": "Skills Removed",
-      "descriptionsModified": "Descriptions Modified",
+"descriptionsModified": "Descriptions Modified",
+      "titleChanged": "Title Changed",
       "certificationsAdded": "Certifications Added",
       "highRiskChanges": "High Risk Changes",
       "warningTitle": "Detected {count} high-risk addition(s)",
       "warningMessage": "Please confirm these additions exist in your original resume or are reflected in your descriptions",
       "summaryChanges": "Summary Changes",
+      "titleChanges": "Job Title Changes",
       "skillChanges": "Skill Changes",
       "descriptionChanges": "Experience Description Changes",
       "experienceChanges": "Experience Entry Changes",
@@ -561,6 +567,7 @@
     },
     "errors": {
       "jobDescriptionTooShort": "Job description is too short. Please provide more details.",
+      "jobDescriptionTooLong": "Job description is too long. Only the first 2000 characters will be used for tailoring.",
       "apiKeyError": "API key error. Please check your LLM configuration in Settings.",
       "rateLimit": "Rate limit reached. Please wait a moment and try again.",
       "failedToGenerate": "Failed to generate resume. Please check your settings and try again.",

@@ -369,6 +369,10 @@
         "modernTwoColumn": {
           "name": "现代双栏",
           "description": "现代双栏布局，带彩色点缀与主题色"
+        },
+        "classicAts": {
+          "name": "经典ATS",
+          "description": "为申请人追踪系统优化的超干净单栏布局"
         }
       },
       "accentColor": "强调色",
@@ -534,12 +538,14 @@
       "summary": "变更摘要",
       "skillsAdded": "新增技能",
       "skillsRemoved": "删除技能",
-      "descriptionsModified": "修改描述",
+"descriptionsModified": "修改描述",
+      "titleChanged": "职位已变更",
       "certificationsAdded": "新增认证",
       "highRiskChanges": "高风险变更",
       "warningTitle": "检测到 {count} 项高风险新增内容",
       "warningMessage": "请确认这些新增内容确实存在于您的原始简历中，或在描述中有所体现",
       "summaryChanges": "摘要变更",
+      "titleChanges": "职位变更",
       "skillChanges": "技能变更",
       "descriptionChanges": "经历描述变更",
       "experienceChanges": "经历条目变更",

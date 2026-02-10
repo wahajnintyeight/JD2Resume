@@ -15,8 +15,8 @@ WORKDIR /app/frontend
 # Copy package files first for better caching
 COPY apps/frontend/package*.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies (production only to reduce image size)
+RUN npm ci --omit=dev
 
 # Copy frontend source
 COPY apps/frontend/ ./
@@ -112,13 +112,8 @@ RUN sed -i 's/\r$//' /app/start.sh && chmod +x /app/start.sh
 # ============================================
 RUN mkdir -p /app/backend/data
 
-# Create a non-root user for security
-RUN useradd -m -u 1000 appuser \
-    && chown -R appuser:appuser /app
-
-USER appuser
-
-# Install Playwright Chromium as appuser (so browsers are in correct location)
+# Note: Running as root for simplicity
+# Install Playwright Chromium (browsers go to system location)
 RUN python -m playwright install chromium
 
 # Expose ports

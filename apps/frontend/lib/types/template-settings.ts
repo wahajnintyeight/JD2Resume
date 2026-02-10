@@ -5,7 +5,7 @@
  * These settings affect both the live preview and PDF generation.
  */
 
-export type TemplateType = 'swiss-single' | 'swiss-two-column' | 'modern' | 'modern-two-column';
+export type TemplateType = 'swiss-single' | 'swiss-two-column' | 'modern' | 'modern-two-column' | 'classic-ats';
 
 export type PageSize = 'A4' | 'LETTER';
 
@@ -224,5 +224,10 @@ export const TEMPLATE_OPTIONS: TemplateInfo[] = [
     id: 'modern-two-column',
     name: 'Modern Two Column',
     description: 'Two-column layout with modern colorful accents and themes',
+  },
+  {
+    id: 'classic-ats',
+    name: 'Classic ATS',
+    description: 'Ultra-clean single-column optimized for Applicant Tracking Systems',
   },
 ];

@@ -70,12 +70,17 @@ def _normalize_api_base(provider: str, api_base: str | None) -> str | None:
     append those segments internally, which can lead to duplicated paths like
     `/v1/v1/...` and cause 404s.
     """
+    # Provider-specific default API bases when not provided
+    default_bases = {
+        "openrouter": "https://openrouter.ai/api/v1",
+    }
+
     if not api_base:
-        return None
+        return default_bases.get(provider)
 
     base = api_base.strip()
     if not base:
-        return None
+        return default_bases.get(provider)
 
     base = base.rstrip("/")
 
@@ -89,7 +94,7 @@ def _normalize_api_base(provider: str, api_base: str | None) -> str | None:
     if provider == "gemini" and base.endswith("/v1"):
         base = base[: -len("/v1")].rstrip("/")
 
-    return base or None
+    return base or default_bases.get(provider)
 
 
 def _extract_text_parts(value: Any, depth: int = 0, max_depth: int = 10) -> list[str]:

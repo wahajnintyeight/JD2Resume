@@ -134,7 +134,8 @@ function parseTemplate(value: string | undefined): TemplateType {
     value === 'swiss-single' ||
     value === 'swiss-two-column' ||
     value === 'modern' ||
-    value === 'modern-two-column'
+    value === 'modern-two-column' ||
+    value === 'classic-ats'
   ) {
     return value;
   }

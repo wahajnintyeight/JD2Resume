@@ -135,6 +135,10 @@ export const FormattingControls: React.FC<FormattingControlsProps> = ({ settings
         name: t('builder.formatting.templates.modernTwoColumn.name'),
         description: t('builder.formatting.templates.modernTwoColumn.description'),
       },
+      'classic-ats': {
+        name: t('builder.formatting.templates.classicAts.name'),
+        description: t('builder.formatting.templates.classicAts.description'),
+      },
     }),
     [t]
   );

@@ -17,6 +17,7 @@ from fastapi.responses import Response
 from app.database import db
 from app.pdf import render_resume_pdf, PDFRenderError
 from app.config import settings
+from app.services.docx_generator import generate_resume_docx
 
 logger = logging.getLogger(__name__)
 from app.schemas import (
@@ -158,9 +159,11 @@ def _preserve_personal_info(
     original_data: dict[str, Any] | None,
     improved_data: dict[str, Any],
 ) -> tuple[dict[str, Any], list[str]]:
-    """Preserve personal info from original, return warnings if unable.
+    """Preserve personal info from original, but allow title to be updated by AI.
 
     Uses deep copy to prevent mutation of original data.
+    Preserves: name, email, phone, location, website, linkedin, github
+    Allows AI to update: title (for job matching)
     """
     warnings: list[str] = []
 
@@ -177,7 +180,15 @@ def _preserve_personal_info(
 
     # SVC-001: Use deep copy to prevent any mutation of original data
     result = copy.deepcopy(improved_data)
-    result["personalInfo"] = copy.deepcopy(original_info)
+    improved_info = result.get("personalInfo", {})
+
+    # Preserve specific fields from original, but allow title to be updated
+    fields_to_preserve = ["name", "email", "phone", "location", "website", "linkedin", "github"]
+    for field in fields_to_preserve:
+        if field in original_info:
+            improved_info[field] = copy.deepcopy(original_info[field])
+
+    result["personalInfo"] = improved_info
     return result, warnings
 
 
@@ -227,10 +238,12 @@ def _validate_confirm_payload(
         raise ValueError(
             f"Improved personalInfo is not a dict: {type(improved_info).__name__}"
         )
-    fields = set(original_info.keys()) | set(improved_info.keys())
+    # Allow title to be changed by AI for job matching, validate other fields
+    fields_to_validate = ["name", "email", "phone", "location", "website", "linkedin", "github"]
     mismatches = [
         field
-        for field in sorted(fields)
+        for field in fields_to_validate
+        if field in original_info or field in improved_info
         if _normalize_personal_info_value(original_info.get(field))
         != _normalize_personal_info_value(improved_info.get(field))
     ]
@@ -1042,7 +1055,7 @@ async def download_resume_pdf(
     """Generate a PDF for a resume using headless Chromium.
 
     Accepts template settings for customization:
-    - template: swiss-single, swiss-two-column, modern, or modern-two-column
+    - template: swiss-single, swiss-two-column, modern, modern-two-column, or classic-ats
     - pageSize: A4 or LETTER
     - marginTop/Bottom/Left/Right: page margins in mm (5-25)
     - sectionSpacing: gap between sections (1-5)
@@ -1099,6 +1112,49 @@ async def download_resume_pdf(
 
     headers = {"Content-Disposition": f'attachment; filename="resume_{resume_id}.pdf"'}
     return Response(content=pdf_bytes, media_type="application/pdf", headers=headers)
+
+
+@router.get("/{resume_id}/docx")
+async def download_resume_docx(
+    resume_id: str,
+) -> Response:
+    """Generate a DOCX file for a resume.
+    
+    Returns an editable Microsoft Word document (.docx) containing
+    the resume data. Users can download and edit this file directly.
+    """
+    resume = db.get_resume(resume_id)
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+    
+    # Get the processed resume data
+    resume_data = resume.get("processed_data", {})
+    if not resume_data:
+        # Try to parse from content if no processed data
+        raw_content = resume.get("raw_resume", {}).get("content", "")
+        if raw_content:
+            try:
+                resume_data = json.loads(raw_content)
+            except json.JSONDecodeError:
+                raise HTTPException(
+                    status_code=400, 
+                    detail="Resume data is not in a format that can be converted to DOCX"
+                )
+        else:
+            raise HTTPException(status_code=404, detail="Resume data not available")
+    
+    try:
+        docx_bytes = generate_resume_docx(resume_data)
+    except Exception as e:
+        logger.error(f"Failed to generate DOCX for resume {resume_id}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate Word document")
+    
+    headers = {"Content-Disposition": f'attachment; filename="resume_{resume_id}.docx"'}
+    return Response(
+        content=docx_bytes, 
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers=headers
+    )
 
 
 @router.delete("/{resume_id}")

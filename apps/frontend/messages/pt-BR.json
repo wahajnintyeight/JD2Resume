@@ -367,6 +367,10 @@
         "modernTwoColumn": {
           "name": "Moderno Duas Colunas",
           "description": "Layout de duas colunas com acentos coloridos modernos e temas"
+        },
+        "classicAts": {
+          "name": "ATS Clássico",
+          "description": "Layout de uma coluna ultra limpo otimizado para Sistemas de Rastreamento de Candidatos"
         }
       },
       "accentColors": {
@@ -534,12 +538,14 @@
       "summary": "Resumo das alterações",
       "skillsAdded": "Habilidades adicionadas",
       "skillsRemoved": "Habilidades removidas",
-      "descriptionsModified": "Descrições modificadas",
+"descriptionsModified": "Descrições modificadas",
+      "titleChanged": "Título alterado",
       "certificationsAdded": "Certificações adicionadas",
       "highRiskChanges": "Alterações de alto risco",
       "warningTitle": "Detectadas {count} adições de alto risco",
       "warningMessage": "Confirme que estas adições existem no seu currículo original ou estão refletidas nas descrições",
       "summaryChanges": "Alterações do resumo",
+      "titleChanges": "Alterações de título do trabalho",
       "skillChanges": "Alterações de habilidades",
       "descriptionChanges": "Alterações nas descrições de experiência",
       "experienceChanges": "Alterações de experiência",

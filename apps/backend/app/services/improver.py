@@ -9,6 +9,7 @@ from typing import Any, Callable
 
 from app.llm import complete_json
 from app.prompts import (
+    ATS_CORE_RULES,
     CRITICAL_TRUTHFULNESS_RULES,
     DEFAULT_IMPROVE_PROMPT_ID,
     EXTRACT_KEYWORDS_PROMPT,
@@ -134,6 +135,7 @@ async def improve_resume(
         schema=RESUME_SCHEMA,
         output_language=output_language,
         critical_truthfulness_rules=truthfulness_rules,
+        ats_rules=ATS_CORE_RULES,
     )
 
     result = await complete_json(
@@ -418,7 +420,28 @@ def calculate_resume_diff(
             )
         )
 
-    # 2. Compare skills (order changes are intentionally ignored)
+    # 2. Compare job title (personalInfo.title)
+    original_title = (original.get("personalInfo", {}).get("title") or "").strip()
+    improved_title = (improved.get("personalInfo", {}).get("title") or "").strip()
+    if original_title != improved_title:
+        if original_title and not improved_title:
+            change_type = "removed"
+        elif improved_title and not original_title:
+            change_type = "added"
+        else:
+            change_type = "modified"
+        changes.append(
+            ResumeFieldDiff(
+                field_path="personalInfo.title",
+                field_type="title",
+                change_type=change_type,
+                original_value=original_title or None,
+                new_value=improved_title or None,
+                confidence="low",  # Title changes are expected for job matching
+            )
+        )
+
+    # 3. Compare skills (order changes are intentionally ignored)
     orig_skills = _build_string_index(
         original.get("additional", {}).get("technicalSkills", []),
         "additional.technicalSkills",
@@ -447,7 +470,7 @@ def calculate_resume_diff(
             confidence="medium"
         ))
 
-    # 3. Compare work experience descriptions
+    # 4. Compare work experience descriptions
     original_experiences = original.get("workExperience", [])
     improved_experiences = improved.get("workExperience", [])
     max_experience_len = max(len(original_experiences), len(improved_experiences))
@@ -470,7 +493,7 @@ def calculate_resume_diff(
             confidences=confidences,
         )
 
-    # 4. Compare certifications (order changes are intentionally ignored)
+    # 5. Compare certifications (order changes are intentionally ignored)
     orig_certs = _build_string_index(
         original.get("additional", {}).get("certificationsTraining", []),
         "additional.certificationsTraining",
@@ -499,7 +522,7 @@ def calculate_resume_diff(
             confidence="medium"
         ))
 
-    # 5. Compare added/removed/modified entries
+    # 6. Compare added/removed/modified entries
     # Descriptions are diffed separately; ignore them when detecting entry-level changes.
     _append_entry_changes(
         changes,
@@ -527,7 +550,7 @@ def calculate_resume_diff(
         _format_project_entry,
     )
 
-    # 6. Build summary
+    # 7. Build summary
     summary = ResumeDiffSummary(
         total_changes=len(changes),
         skills_added=len([c for c in changes if c.field_type == "skill" and c.change_type == "added"]),
@@ -540,6 +563,7 @@ def calculate_resume_diff(
             ]
         ),
         certifications_added=len([c for c in changes if c.field_type == "certification" and c.change_type == "added"]),
+        title_changed=any(c.field_type == "title" for c in changes),
         high_risk_changes=len([c for c in changes if c.confidence == "high"])
     )
 

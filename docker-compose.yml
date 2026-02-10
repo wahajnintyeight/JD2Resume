@@ -8,21 +8,25 @@ services:
       # If you change BACKEND_PORT, you must rebuild with matching NEXT_PUBLIC_API_URL:
       #   BACKEND_PORT=9000 docker-compose build --build-arg NEXT_PUBLIC_API_URL=http://localhost:9000
       args:
-        - NEXT_PUBLIC_API_URL=http://localhost:${BACKEND_PORT:-8000}
+        - NEXT_PUBLIC_API_URL=http://localhost:8888
     image: resume-matcher
     container_name: resume-matcher
     # Port mapping: HOST_PORT:CONTAINER_PORT
     # Customize host ports via environment variables (container ports are fixed)
     ports:
-      - "${FRONTEND_PORT:-3000}:3000"   # Frontend (Next.js)
-      - "${BACKEND_PORT:-8000}:8000"    # Backend API (FastAPI)
+      - "3333:3333"   # Frontend (Next.js)
+      - "8888:8888"    # Backend API (FastAPI)
     volumes:
       - resume-data:/app/backend/data
     environment:
       - NODE_ENV=production
       # Pass port configuration to container for internal use
-      - FRONTEND_PORT=${FRONTEND_PORT:-3000}
-      - BACKEND_PORT=${BACKEND_PORT:-8000}
+      - FRONTEND_PORT=3333
+      - BACKEND_PORT=8888
+      # Frontend URL for PDF generation
+      - FRONTEND_BASE_URL=http://localhost:3333
+      # CORS Configuration - Allow frontend to access backend
+      - CORS_ORIGINS=["http://localhost:3333","http://127.0.0.1:3333"]
       # LLM Configuration - configure via Settings UI or set env vars for explicit overrides
       # Supported providers: openai, anthropic, openrouter, gemini, deepseek, ollama
       # Defaults are defined in apps/backend/app/config.py

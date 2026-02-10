@@ -37,6 +37,32 @@ async def parse_document(content: bytes, filename: str) -> str:
         tmp_path.unlink(missing_ok=True)
 
 
+def _fix_custom_section_types(data: dict[str, Any]) -> dict[str, Any]:
+    """Auto-correct misclassified custom sections."""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    custom_sections = data.get("customSections")
+    if not isinstance(custom_sections, dict):
+        return data
+    
+    for section_key, section_data in custom_sections.items():
+        if not isinstance(section_data, dict):
+            continue
+        
+        items = section_data.get("items")
+        
+        if isinstance(items, list) and items and all(isinstance(item, str) for item in items):
+            logger.info(
+                "Auto-fixing section '%s': converting string items to stringList",
+                section_key,
+            )
+            section_data["sectionType"] = "stringList"
+            section_data["strings"] = items
+            del section_data["items"]
+    
+    return data
+
 async def parse_resume_to_json(markdown_text: str) -> dict[str, Any]:
     """Parse resume markdown to structured JSON using LLM.
 
@@ -46,6 +72,9 @@ async def parse_resume_to_json(markdown_text: str) -> dict[str, Any]:
     Returns:
         Structured resume data matching ResumeData schema
     """
+    import logging
+    logger = logging.getLogger(__name__)
+    
     prompt = PARSE_RESUME_PROMPT.format(
         schema=RESUME_SCHEMA_EXAMPLE,
         resume_text=markdown_text,
@@ -55,6 +84,11 @@ async def parse_resume_to_json(markdown_text: str) -> dict[str, Any]:
         prompt=prompt,
         system_prompt="You are a JSON extraction engine. Output only valid JSON, no explanations.",
     )
+
+    logger.info("=== BEFORE FIX: Checking custom sections ===")
+    # Auto-fix misclassified custom sections before validation
+    result = _fix_custom_section_types(result)
+    logger.info("=== AFTER FIX: Custom sections processed ===")
 
     # Validate against schema
     validated = ResumeData.model_validate(result)

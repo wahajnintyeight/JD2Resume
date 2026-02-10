@@ -31,7 +31,7 @@ export function DiffPreviewModal({
 }: DiffPreviewModalProps) {
   const { t } = useTranslations();
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
-    new Set(['summary', 'skills', 'descriptions', 'experience'])
+    new Set(['title', 'summary', 'skills', 'descriptions', 'experience'])
   );
 
   if (!diffSummary || !detailedChanges) {
@@ -83,6 +83,7 @@ export function DiffPreviewModal({
   };
 
   // Group changes by type
+  const titleChanges = detailedChanges.filter((c) => c.field_type === 'title');
   const summaryChanges = detailedChanges.filter((c) => c.field_type === 'summary');
   const skillChanges = detailedChanges.filter((c) => c.field_type === 'skill');
   const descChanges = detailedChanges.filter((c) => c.field_type === 'description');
@@ -120,7 +121,7 @@ export function DiffPreviewModal({
             </h3>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <StatCard
               label={t('tailor.diffModal.skillsAdded')}
               value={diffSummary.skills_added}
@@ -140,6 +141,11 @@ export function DiffPreviewModal({
               label={t('tailor.diffModal.descriptionsModified')}
               value={diffSummary.descriptions_modified}
               variant="info"
+            />
+            <StatCard
+              label={t('tailor.diffModal.titleChanged')}
+              value={diffSummary.title_changed ? 1 : 0}
+              variant={diffSummary.title_changed ? 'info' : 'success'}
             />
             <StatCard
               label={t('tailor.diffModal.highRiskChanges')}
@@ -173,6 +179,20 @@ export function DiffPreviewModal({
 
         {/* Detailed changes list */}
         <div className="flex-1 min-h-0 overflow-y-auto mt-4 space-y-4">
+          {/* Title changes */}
+          {titleChanges.length > 0 && (
+            <ChangeSection
+              title={t('tailor.diffModal.titleChanges')}
+              count={titleChanges.length}
+              isExpanded={expandedSections.has('title')}
+              onToggle={() => toggleSection('title')}
+            >
+              {titleChanges.map((change, idx) => (
+                <ChangeItem key={idx} change={change} />
+              ))}
+            </ChangeSection>
+          )}
+
           {/* Summary changes */}
           {summaryChanges.length > 0 && (
             <ChangeSection

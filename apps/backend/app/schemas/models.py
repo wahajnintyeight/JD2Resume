@@ -448,6 +448,7 @@ class ResumeFieldDiff(BaseModel):
         "experience",
         "education",
         "project",
+        "title",
     ]
     change_type: Literal["added", "removed", "modified"]
     original_value: str | None = None
@@ -463,6 +464,7 @@ class ResumeDiffSummary(BaseModel):
     skills_removed: int
     descriptions_modified: int
     certifications_added: int
+    title_changed: bool = False  # Whether the job title was updated
     high_risk_changes: int  # High-risk additions
 
 

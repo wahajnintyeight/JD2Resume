@@ -18,6 +18,7 @@ const diffSummary: ResumeDiffSummary = {
   skills_removed: 0,
   descriptions_modified: 1,
   certifications_added: 0,
+  title_changed: false,
   high_risk_changes: 1,
 };
 

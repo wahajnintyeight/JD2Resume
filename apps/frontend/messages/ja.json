@@ -369,6 +369,10 @@
         "modernTwoColumn": {
           "name": "モダン2カラム",
           "description": "モダンな2カラムとカラフルなアクセント"
+        },
+        "classicAts": {
+          "name": "クラシックATS",
+          "description": "採用管理システム向けに最適化された超クリーンなシングルカラム"
         }
       },
       "accentColor": "アクセントカラー",
@@ -534,12 +538,14 @@
       "summary": "変更の概要",
       "skillsAdded": "追加されたスキル",
       "skillsRemoved": "削除されたスキル",
-      "descriptionsModified": "変更された説明",
+"descriptionsModified": "変更された説明",
+      "titleChanged": "タイトル変更",
       "certificationsAdded": "追加された資格",
       "highRiskChanges": "高リスクの変更",
       "warningTitle": "高リスクな追加が {count} 件検出されました",
       "warningMessage": "これらのスキルが元の履歴書に実際に存在する、または説明内に反映されていることを確認してください",
       "summaryChanges": "概要の変更",
+      "titleChanges": "職種の変更",
       "skillChanges": "スキルの変更",
       "descriptionChanges": "職歴説明の変更",
       "experienceChanges": "職歴の変更",

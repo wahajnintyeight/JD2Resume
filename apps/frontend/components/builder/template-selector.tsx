@@ -34,6 +34,10 @@ export const TemplateSelector: React.FC<TemplateSelectorProps> = ({ value, onCha
       name: t('builder.formatting.templates.modernTwoColumn.name'),
       description: t('builder.formatting.templates.modernTwoColumn.description'),
     },
+    'classic-ats': {
+      name: t('builder.formatting.templates.classicAts.name'),
+      description: t('builder.formatting.templates.classicAts.description'),
+    },
   };
 
   return (
@@ -158,6 +162,30 @@ export const TemplateThumbnail: React.FC<TemplateThumbnailProps> = ({ type, isAc
             <div className={`h-0.5 ${accentColor} w-full`}></div>
             <div className={`h-0.5 ${lineColor} w-3/5 opacity-50`}></div>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (type === 'classic-ats') {
+    // Classic ATS template thumbnail - clean single column with underlined headers
+    return (
+      <div className={`w-14 h-18 border ${borderColor} bg-white p-1.5 flex flex-col gap-1`}>
+        {/* Header - centered, prominent */}
+        <div className="flex flex-col items-center gap-0.5">
+          <div className={`h-1.5 ${lineColor} w-4/5`}></div>
+          <div className={`h-0.5 ${lineColor} w-2/3 opacity-70`}></div>
+          <div className={`h-0.5 ${lineColor} w-full opacity-50`}></div>
+        </div>
+        {/* Sections with underlined headers */}
+        <div className="flex-1 space-y-1 mt-1">
+          <div className={`h-0.5 ${lineColor} w-full`}></div>
+          <div className={`h-0.5 ${lineColor} w-5/6 opacity-50`}></div>
+          <div className={`h-0.5 ${lineColor} w-4/6 opacity-50`}></div>
+          <div className="h-0.5"></div>
+          <div className={`h-0.5 ${lineColor} w-full`}></div>
+          <div className={`h-0.5 ${lineColor} w-5/6 opacity-50`}></div>
+          <div className={`h-0.5 ${lineColor} w-3/6 opacity-50`}></div>
         </div>
       </div>
     );

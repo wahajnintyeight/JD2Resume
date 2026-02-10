@@ -51,6 +51,7 @@ export interface ResumeDiffSummary {
   skills_removed: number;
   descriptions_modified: number;
   certifications_added: number;
+  title_changed: boolean;
   high_risk_changes: number;
 }
 
@@ -63,7 +64,8 @@ export interface ResumeFieldDiff {
     | 'certification'
     | 'experience'
     | 'education'
-    | 'project';
+    | 'project'
+    | 'title';
   change_type: 'added' | 'removed' | 'modified';
   original_value?: string;
   new_value?: string;

@@ -97,14 +97,19 @@ Example output format:
 
 Custom section types:
 - "text": Single text block (e.g., objective, statement)
-- "itemList": List of items with title, subtitle, years, description (e.g., publications, research)
-- "stringList": Simple list of strings (e.g., hobbies, interests)
+- "itemList": List of items with title, subtitle, years, description (e.g., publications, research, volunteer experience)
+- "stringList": Simple list of strings (e.g., hobbies, interests, domain expertise, core competencies)
+
+CRITICAL: Choose the correct type:
+- Use "stringList" when the section contains ONLY simple text items without dates or descriptions (e.g., "Payment Integrations", "Distributed Systems")
+- Use "itemList" ONLY when items have structure like title + years + description (e.g., publications with dates and details)
+- When in doubt between stringList and itemList, prefer stringList for simplicity
 
 Rules:
 - Use "" for missing text fields, [] for missing arrays, null for optional fields
 - Number IDs starting from 1
 - Format years as "YYYY - YYYY" or "YYYY - Present"
-- Use snake_case for custom section keys (e.g., "volunteer_work", "publications")
+- Use snake_case for custom section keys (e.g., "volunteer_work", "publications", "domain_expertise")
 - Preserve the original section name as a descriptive key
 - Normalize dates: "Jan 2020" → "2020", "2020-2021" → "2020 - 2021", "Current"/"Ongoing" → "Present"
 - For ambiguous dates like "3 years experience", infer approximate years from context or use "~YYYY"
@@ -124,10 +129,17 @@ Example format:
   "key_responsibilities": ["Lead team"],
   "keywords": ["microservices", "agile"],
   "experience_years": 5,
-  "seniority_level": "senior"
+  "seniority_level": "senior",
+  "knockout_criteria": {{
+    "min_years": 5,
+    "required_education": "Bachelor's degree",
+    "must_have_skills": ["Python", "AWS"],
+    "location_requirement": "Remote"
+  }}
 }}
 
 Extract numeric years (e.g., "5+ years" → 5) and infer seniority level.
+Identify knockout criteria that would cause automatic rejection (years of experience filters, must-have certifications, location requirements).
 
 Job description:
 {job_description}"""
@@ -150,6 +162,46 @@ def _build_truthfulness_rules(rule_7: str) -> str:
     return CRITICAL_TRUTHFULNESS_RULES_TEMPLATE.format(rule_7=rule_7)
 
 
+# ATS-specific optimization rules that apply to all prompts
+ATS_CORE_RULES = """ATS OPTIMIZATION RULES (CRITICAL FOR PASSING AUTOMATED SCREENING):
+
+1. TITLE MATCH (HIGHEST PRIORITY):
+   - Extract the EXACT job title from the job description
+   - Use it verbatim in personalInfo.title field
+   - Include the exact job title in the summary (first or second sentence)
+
+2. SKILLS SECTION (WHERE ATS LOOKS FIRST):
+   - Include 15-30 hard skills extracted from the job description
+   - Use EXACT terminology from JD (e.g., "Python" not "programming languages")
+   - DO NOT include soft skills (communication, teamwork, leadership) in technicalSkills array
+   - Place the most critical/required skills first in the list
+   - Use flat comma-separated format - avoid nested categories for better ATS parsing
+
+3. EXACT LANGUAGE MATCHING (CRITICAL):
+   - Use the EXACT phrases from the job description, not synonyms
+   - "stakeholder communication" stays "stakeholder communication" (not "client relations")
+   - "cross-functional collaboration" stays exactly as written (not "working with teams")
+   - "data storytelling" stays "data storytelling" (not "data visualization")
+   - ATS systems do NOT understand synonyms - they match literal strings
+
+4. SUMMARY OPTIMIZATION:
+   - First sentence: Include exact job title
+   - Include 3-4 top required skills from the JD naturally woven in
+   - Mention years of experience if it matches JD requirements
+   - Keep to 2-3 sentences maximum
+
+5. ABBREVIATION HANDLING:
+   - Expand common abbreviations: "LA" → "Los Angeles, CA"
+   - Include both forms when space permits: "AWS (Amazon Web Services)"
+   - Spell out certifications fully: "PMP (Project Management Professional)"
+   - Location format: "San Francisco, CA" not "SF" or "San Francisco"
+
+6. EXPERIENCE SECTION:
+   - Weave JD keywords into bullet points where evidence exists
+   - Use exact phrases from job requirements in accomplishment descriptions
+   - Prioritize keywords that appear multiple times in the JD
+"""
+
 CRITICAL_TRUTHFULNESS_RULES = {
     "nudge": _build_truthfulness_rules(
         "DO NOT add new bullet points or content - only rephrase existing content"
@@ -168,9 +220,11 @@ IMPROVE_RESUME_PROMPT_NUDGE = """Lightly nudge this resume toward the job descri
 
 IMPORTANT: Generate ALL text content (summary, descriptions, skills) in {output_language}.
 
+{ats_rules}
+
 Rules:
 - Make minimal, conservative edits only where there is a clear existing match
-- Do NOT change the candidate's role, industry, or seniority level
+- Do NOT change the candidate's seniority level or industry
 - Do NOT introduce new tools, technologies, or certifications not already present
 - Do NOT add new bullet points or sections
 - Preserve original bullet count and ordering within each section
@@ -198,11 +252,13 @@ IMPROVE_RESUME_PROMPT_KEYWORDS = """Enhance this resume with relevant keywords f
 
 IMPORTANT: Generate ALL text content (summary, descriptions, skills) in {output_language}.
 
+{ats_rules}
+
 Rules:
 - Strengthen alignment by weaving in relevant keywords where evidence already exists
 - You may rephrase bullet points to include keyword phrasing
 - Do NOT introduce new skills, tools, or certifications not in the resume
-- Do NOT change role, industry, or seniority level
+- Do NOT change seniority level or industry
 - Preserve the structure of any customSections from the original resume
 - Preserve original date ranges exactly - do not modify years
 - If resume is non-technical, keep language non-technical while still aligning keywords
@@ -225,6 +281,8 @@ IMPROVE_RESUME_PROMPT_FULL = """Tailor this resume for the job. Output ONLY the 
 {critical_truthfulness_rules}
 
 IMPORTANT: Generate ALL text content (summary, descriptions, skills) in {output_language}.
+
+{ats_rules}
 
 Rules:
 - Rephrase content to highlight relevant experience

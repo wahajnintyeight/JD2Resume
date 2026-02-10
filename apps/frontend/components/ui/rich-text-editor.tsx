@@ -55,7 +55,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         horizontalRule: false,
         hardBreak: false,
       }),
-      Underline,
+      Underline.configure({}),  // Configure to prevent duplicate warnings
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
