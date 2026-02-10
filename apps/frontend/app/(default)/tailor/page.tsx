@@ -20,6 +20,7 @@ import { Loader2, ArrowLeft, AlertTriangle, Settings } from 'lucide-react';
 import { useTranslations } from '@/lib/i18n';
 import { DiffPreviewModal } from '@/components/tailor/diff-preview-modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
+import MasterResumeSelector from '@/components/dashboard/master-resume-selector';
 
 // LLM-012: Job description length limits (must match backend)
 const MAX_JD_LENGTH = 2000;
@@ -31,6 +32,7 @@ export default function TailorPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [masterResumeId, setMasterResumeId] = useState<string | null>(null);
+  const [masterCategory, setMasterCategory] = useState<string | null>(null);
   const [promptOptions, setPromptOptions] = useState<PromptOption[]>([]);
   const [selectedPromptId, setSelectedPromptId] = useState('keywords');
   const [promptLoading, setPromptLoading] = useState(false);
@@ -61,13 +63,12 @@ export default function TailorPage() {
   const isLlmConfigured = !statusLoading && systemStatus?.llm_configured;
 
   useEffect(() => {
-    const storedId = localStorage.getItem('master_resume_id');
-    if (!storedId) {
-      router.push('/dashboard');
-    } else {
+    // Try to load last used master from localStorage
+    const storedId = localStorage.getItem('last_used_master_resume_id');
+    if (storedId) {
       setMasterResumeId(storedId);
     }
-  }, [router]);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -360,6 +361,19 @@ export default function TailorPage() {
         )}
 
         <div className="space-y-6">
+          {/* Master Resume Selector */}
+          <MasterResumeSelector
+            selectedResumeId={masterResumeId}
+            onSelect={(resumeId, category) => {
+              setMasterResumeId(resumeId);
+              setMasterCategory(category);
+              // Save for next time
+              localStorage.setItem('last_used_master_resume_id', resumeId);
+            }}
+            label="Select Master Resume to Tailor"
+            required={true}
+          />
+
           <Dropdown
             options={
               promptOptions.length > 0

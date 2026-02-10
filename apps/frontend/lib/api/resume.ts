@@ -99,6 +99,7 @@ export interface ResumeListItem {
   resume_id: string;
   filename: string | null;
   is_master: boolean;
+  master_category?: string | null;
   parent_id: string | null;
   processing_status: 'pending' | 'processing' | 'ready' | 'failed';
   created_at: string;
@@ -422,4 +423,77 @@ export async function fetchJobDescription(
     throw new Error(`Failed to fetch job description (status ${res.status}): ${text}`);
   }
   return res.json();
+}
+
+
+// ============================================================================
+// Master Resume Management
+// ============================================================================
+
+export interface MasterResume {
+  resume_id: string;
+  master_category: string | null;
+  filename: string | null;
+  title: string | null;
+  created_at: string;
+  personal_info: {
+    name?: string;
+    title?: string;
+    email?: string;
+  };
+}
+
+export interface MasterResumesResponse {
+  masters: MasterResume[];
+  count: number;
+}
+
+/** List all master resumes with their categories */
+export async function listMasterResumes(): Promise<MasterResumesResponse> {
+  const res = await apiFetch('/resumes/masters');
+  if (!res.ok) {
+    throw new Error(`Failed to list master resumes (status ${res.status})`);
+  }
+  return res.json();
+}
+
+/** Get master resume for a specific category */
+export async function getMasterResume(category?: string): Promise<any> {
+  const url = category 
+    ? `/resumes/master?category=${encodeURIComponent(category)}`
+    : '/resumes/master';
+  const res = await apiFetch(url);
+  if (!res.ok) {
+    if (res.status === 404) {
+      return null;
+    }
+    throw new Error(`Failed to get master resume (status ${res.status})`);
+  }
+  return res.json();
+}
+
+/** Set a resume as master for a specific category */
+export async function setMasterResume(
+  resumeId: string, 
+  category?: string
+): Promise<void> {
+  const url = category
+    ? `/resumes/${encodeURIComponent(resumeId)}/master?category=${encodeURIComponent(category)}`
+    : `/resumes/${encodeURIComponent(resumeId)}/master`;
+  const res = await apiFetch(url, { method: 'PUT' });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`Failed to set master resume (status ${res.status}): ${text}`);
+  }
+}
+
+/** Remove master status from a resume */
+export async function unsetMasterResume(resumeId: string): Promise<void> {
+  const res = await apiFetch(`/resumes/${encodeURIComponent(resumeId)}/master`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`Failed to unset master resume (status ${res.status}): ${text}`);
+  }
 }

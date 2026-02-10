@@ -390,6 +390,7 @@ class ResumeSummary(BaseModel):
     resume_id: str
     filename: str | None = None
     is_master: bool = False
+    master_category: str | None = None
     parent_id: str | None = None
     processing_status: str = "pending"
     created_at: str

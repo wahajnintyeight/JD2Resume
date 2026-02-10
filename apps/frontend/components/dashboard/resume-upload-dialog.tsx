@@ -28,6 +28,8 @@ interface ResumeUploadDialogProps {
   onUploadComplete?: (resumeId: string) => void;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 const ACCEPTED_FILE_TYPES = [
@@ -42,6 +44,8 @@ export function ResumeUploadDialog({
   onUploadComplete,
   open: controlledOpen,
   onOpenChange,
+  isOpen: isOpenProp,
+  onClose,
 }: ResumeUploadDialogProps) {
   const { t } = useTranslations();
   const [internalOpen, setInternalOpen] = useState(false);
@@ -51,13 +55,20 @@ export function ResumeUploadDialog({
   } | null>(null);
   const [failedResumeId, setFailedResumeId] = useState<string | null>(null);
   const [isRetryingProcessing, setIsRetryingProcessing] = useState(false);
-  const isControlled = controlledOpen !== undefined;
-  const isOpen = isControlled ? controlledOpen : internalOpen;
+  
+  // Support both prop naming conventions
+  const effectiveOpen = isOpenProp !== undefined ? isOpenProp : controlledOpen;
+  const isControlled = effectiveOpen !== undefined;
+  const isOpen = isControlled ? effectiveOpen : internalOpen;
+  
   const setIsOpen = (nextOpen: boolean) => {
     if (!isControlled) {
       setInternalOpen(nextOpen);
     }
     onOpenChange?.(nextOpen);
+    if (!nextOpen) {
+      onClose?.();
+    }
   };
 
   const UPLOAD_URL = getUploadUrl();

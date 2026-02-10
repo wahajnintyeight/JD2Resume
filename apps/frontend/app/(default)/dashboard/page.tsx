@@ -2,6 +2,7 @@
 
 import { SwissGrid } from '@/components/home/swiss-grid';
 import { ResumeUploadDialog } from '@/components/dashboard/resume-upload-dialog';
+import ResumeManagerDialog from '@/components/dashboard/resume-manager-dialog';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -38,6 +39,7 @@ export default function DashboardPage() {
   const [tailoredResumes, setTailoredResumes] = useState<ResumeListItem[]>([]);
   const [isRetrying, setIsRetrying] = useState(false);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [showMasterManager, setShowMasterManager] = useState(false);
   const router = useRouter();
 
   // Status cache for optimistic counter updates and LLM status check
@@ -266,6 +268,9 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      {/* Header */}
+      
+
       {/* Configuration Warning Banner */}
       {masterResumeId && !isLlmConfigured && !statusLoading && (
         <div className="border-2 border-warning bg-amber-50 p-4 shadow-sw-default mb-6 flex items-center justify-between">
@@ -361,23 +366,33 @@ export default function DashboardPage() {
                   <span className="font-mono font-bold text-lg">M</span>
                 </div>
                 <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 hover:bg-gray-100 hover:text-gray-900 z-10 rounded-none relative"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowMasterManager(true);
+                    }}
+                    title="Manage Master Resumes"
+                  >
+                    <Settings className="w-4 h-4" />
+                  </Button>
                   {processingStatus === 'failed' && (
-                    <>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 hover:bg-blue-100 hover:text-blue-700 z-10 rounded-none relative"
-                        onClick={handleRetryProcessing}
-                        disabled={isRetrying}
-                        title={t('dashboard.retryProcessing')}
-                      >
-                        {isRetrying ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <RefreshCw className="w-4 h-4" />
-                        )}
-                      </Button>
-                    </>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 hover:bg-blue-100 hover:text-blue-700 z-10 rounded-none relative"
+                      onClick={handleRetryProcessing}
+                      disabled={isRetrying}
+                      title={t('dashboard.retryProcessing')}
+                    >
+                      {isRetrying ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <RefreshCw className="w-4 h-4" />
+                      )}
+                    </Button>
                   )}
                 </div>
               </div>
@@ -505,6 +520,16 @@ export default function DashboardPage() {
           variant="danger"
         />
       </SwissGrid>
+
+      {/* Resume Manager Dialog */}
+      <ResumeManagerDialog
+        isOpen={showMasterManager}
+        onClose={() => setShowMasterManager(false)}
+        onResumeChanged={() => {
+          // Refresh the resume list when changes are made
+          loadTailoredResumes();
+        }}
+      />
     </div>
   );
 }

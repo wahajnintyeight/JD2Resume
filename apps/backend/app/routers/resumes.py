@@ -457,6 +457,7 @@ async def list_resumes(include_master: bool = Query(False)) -> ResumeListRespons
             resume_id=resume["resume_id"],
             filename=resume.get("filename"),
             is_master=resume.get("is_master", False),
+            master_category=resume.get("master_category"),
             parent_id=resume.get("parent_id"),
             processing_status=resume.get("processing_status", "pending"),
             created_at=resume.get("created_at", ""),
@@ -1503,3 +1504,147 @@ async def download_cover_letter_pdf(
         "Content-Disposition": f'attachment; filename="cover_letter_{resume_id}.pdf"'
     }
     return Response(content=pdf_bytes, media_type="application/pdf", headers=headers)
+
+
+# ============================================================================
+# Master Resume Management Endpoints
+# ============================================================================
+
+@router.get("/masters")
+async def list_master_resumes() -> dict[str, Any]:
+    """List all master resumes with their categories.
+    
+    Returns:
+        Dictionary with list of master resumes, each containing:
+        - resume_id: Resume ID
+        - master_category: Category name (None for default master)
+        - filename: Original filename
+        - title: Resume title
+        - created_at: Creation timestamp
+        - processed_data: Resume data (personalInfo for display)
+    """
+    masters = db.list_master_resumes()
+    
+    # Format response with relevant fields
+    formatted_masters = []
+    for master in masters:
+        formatted_masters.append({
+            "resume_id": master.get("resume_id"),
+            "master_category": master.get("master_category"),
+            "filename": master.get("filename"),
+            "title": master.get("title"),
+            "created_at": master.get("created_at"),
+            "personal_info": master.get("processed_data", {}).get("personalInfo", {}),
+        })
+    
+    return {
+        "masters": formatted_masters,
+        "count": len(formatted_masters),
+    }
+
+
+@router.put("/{resume_id}/master")
+async def set_resume_as_master(
+    resume_id: str,
+    category: str | None = Query(None, description="Master category name (e.g., 'Software Engineer', 'Data Scientist'). Leave empty for default master."),
+) -> dict[str, Any]:
+    """Set a resume as master for a specific category.
+    
+    Args:
+        resume_id: Resume ID to set as master
+        category: Optional category name. If not provided, sets as default master.
+    
+    Returns:
+        Success message with category info
+    
+    Note:
+        This will unset any existing master for the same category.
+    """
+    # Validate resume exists
+    resume = db.get_resume(resume_id)
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+    
+    # Validate category name if provided
+    if category:
+        category = category.strip()
+        if len(category) > 50:
+            raise HTTPException(status_code=400, detail="Category name too long (max 50 characters)")
+        if not category:
+            category = None
+    
+    # Set as master
+    success = db.set_master_resume(resume_id, category)
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to set master resume")
+    
+    category_display = category if category else "Default"
+    return {
+        "message": f"Resume set as master for category: {category_display}",
+        "resume_id": resume_id,
+        "master_category": category,
+    }
+
+
+@router.delete("/{resume_id}/master")
+async def unset_resume_as_master(
+    resume_id: str,
+) -> dict[str, Any]:
+    """Remove master status from a resume.
+    
+    Args:
+        resume_id: Resume ID to unset as master
+    
+    Returns:
+        Success message
+    """
+    # Validate resume exists and is a master
+    resume = db.get_resume(resume_id)
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+    
+    if not resume.get("is_master"):
+        raise HTTPException(status_code=400, detail="Resume is not a master")
+    
+    # Unset master status
+    category = resume.get("master_category")
+    success = db.unset_master_resume(category)
+    
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to unset master resume")
+    
+    return {
+        "message": "Master status removed",
+        "resume_id": resume_id,
+    }
+
+
+@router.get("/master")
+async def get_master_resume(
+    category: str | None = Query(None, description="Master category name. Leave empty for default master."),
+) -> dict[str, Any]:
+    """Get the master resume for a specific category.
+    
+    Args:
+        category: Optional category name. If not provided, returns default master.
+    
+    Returns:
+        Master resume data or 404 if not found
+    """
+    master = db.get_master_resume(category)
+    
+    if not master:
+        category_display = category if category else "default"
+        raise HTTPException(
+            status_code=404,
+            detail=f"No master resume found for category: {category_display}"
+        )
+    
+    return {
+        "resume_id": master.get("resume_id"),
+        "master_category": master.get("master_category"),
+        "filename": master.get("filename"),
+        "title": master.get("title"),
+        "created_at": master.get("created_at"),
+        "processed_data": master.get("processed_data"),
+    }

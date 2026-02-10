@@ -60,6 +60,7 @@ class Database:
         content_type: str = "md",
         filename: str | None = None,
         is_master: bool = False,
+        master_category: str | None = None,
         parent_id: str | None = None,
         processed_data: dict[str, Any] | None = None,
         processing_status: str = "pending",
@@ -70,6 +71,8 @@ class Database:
         """Create a new resume entry.
 
         processing_status: "pending", "processing", "ready", "failed"
+        master_category: Optional category name for master resumes (e.g., "Software Engineer", "Data Scientist")
+                        If is_master=True and master_category=None, it's the default master
         """
         resume_id = str(uuid4())
         now = datetime.now(timezone.utc).isoformat()
@@ -80,6 +83,7 @@ class Database:
             "content_type": content_type,
             "filename": filename,
             "is_master": is_master,
+            "master_category": master_category,
             "parent_id": parent_id,
             "processed_data": processed_data,
             "processing_status": processing_status,
@@ -139,11 +143,37 @@ class Database:
         result = self.resumes.search(Resume.resume_id == resume_id)
         return result[0] if result else None
 
-    def get_master_resume(self) -> dict[str, Any] | None:
-        """Get the master resume if exists."""
+    def get_master_resume(self, category: str | None = None) -> dict[str, Any] | None:
+        """Get the master resume for a specific category.
+        
+        Args:
+            category: Master category name. If None, returns the default master.
+        
+        Returns:
+            Master resume dict or None if not found.
+        """
         Resume = Query()
-        result = self.resumes.search(Resume.is_master == True)
+        if category is None:
+            # Get default master (is_master=True and master_category is None or empty)
+            result = self.resumes.search(
+                (Resume.is_master == True) & 
+                ((Resume.master_category == None) | (Resume.master_category == ""))
+            )
+        else:
+            # Get master for specific category
+            result = self.resumes.search(
+                (Resume.is_master == True) & (Resume.master_category == category)
+            )
         return result[0] if result else None
+    
+    def list_master_resumes(self) -> list[dict[str, Any]]:
+        """Get all master resumes.
+        
+        Returns:
+            List of all resumes marked as master, including their categories.
+        """
+        Resume = Query()
+        return self.resumes.search(Resume.is_master == True)
 
     def update_resume(self, resume_id: str, updates: dict[str, Any]) -> dict[str, Any]:
         """Update resume by ID.
@@ -174,10 +204,18 @@ class Database:
         """List all resumes."""
         return list(self.resumes.all())
 
-    def set_master_resume(self, resume_id: str) -> bool:
-        """Set a resume as the master, unsetting any existing master.
-
-        Returns False if the resume doesn't exist.
+    def set_master_resume(self, resume_id: str, category: str | None = None) -> bool:
+        """Set a resume as master for a specific category.
+        
+        Args:
+            resume_id: Resume ID to set as master
+            category: Master category name. If None, sets as default master.
+        
+        Returns:
+            True if successful, False if resume doesn't exist.
+        
+        Note:
+            This will unset any existing master for the same category.
         """
         Resume = Query()
 
@@ -187,12 +225,53 @@ class Database:
             logger.warning("Cannot set master: resume %s not found", resume_id)
             return False
 
-        # Unset current master
-        self.resumes.update({"is_master": False}, Resume.is_master == True)
+        # Unset current master for this category
+        if category is None:
+            # Unset default master
+            self.resumes.update(
+                {"is_master": False, "master_category": None},
+                (Resume.is_master == True) & 
+                ((Resume.master_category == None) | (Resume.master_category == ""))
+            )
+        else:
+            # Unset master for specific category
+            self.resumes.update(
+                {"is_master": False, "master_category": None},
+                (Resume.is_master == True) & (Resume.master_category == category)
+            )
+        
         # Set new master
         updated = self.resumes.update(
-            {"is_master": True}, Resume.resume_id == resume_id
+            {"is_master": True, "master_category": category},
+            Resume.resume_id == resume_id
         )
+        return len(updated) > 0
+    
+    def unset_master_resume(self, category: str | None = None) -> bool:
+        """Remove master status from a resume.
+        
+        Args:
+            category: Master category name. If None, unsets the default master.
+        
+        Returns:
+            True if a master was unset, False otherwise.
+        """
+        Resume = Query()
+        
+        if category is None:
+            # Unset default master
+            updated = self.resumes.update(
+                {"is_master": False, "master_category": None},
+                (Resume.is_master == True) & 
+                ((Resume.master_category == None) | (Resume.master_category == ""))
+            )
+        else:
+            # Unset master for specific category
+            updated = self.resumes.update(
+                {"is_master": False, "master_category": None},
+                (Resume.is_master == True) & (Resume.master_category == category)
+            )
+        
         return len(updated) > 0
 
     # Job operations
@@ -264,11 +343,13 @@ class Database:
     # Stats
     def get_stats(self) -> dict[str, Any]:
         """Get database statistics."""
+        master_resumes = self.list_master_resumes()
         return {
             "total_resumes": len(self.resumes),
             "total_jobs": len(self.jobs),
             "total_improvements": len(self.improvements),
-            "has_master_resume": self.get_master_resume() is not None,
+            "has_master_resume": len(master_resumes) > 0,
+            "master_resume_count": len(master_resumes),
         }
 
     def reset_database(self) -> None:

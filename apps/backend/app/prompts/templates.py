@@ -53,12 +53,13 @@ RESUME_SCHEMA_EXAMPLE = """{
   "personalProjects": [
     {
       "id": 1,
-      "name": "Open Source Tool",
-      "role": "Creator & Maintainer",
+      "name": "Open Source CLI Tool",
+      "role": "Python, Click, AWS SDK",
       "years": "2021 - Present",
       "description": [
-        "Built CLI tool with 1000+ GitHub stars",
-        "Used by 50+ companies worldwide"
+        "Built command-line tool using Python, Click framework, and AWS SDK with 1000+ GitHub stars",
+        "Implemented CI/CD pipeline with GitHub Actions and automated testing with pytest",
+        "Used by 50+ companies worldwide for cloud infrastructure automation"
       ]
     }
   ],
