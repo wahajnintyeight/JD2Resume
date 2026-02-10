@@ -55,6 +55,7 @@ from app.services.cover_letter import (
     generate_resume_title,
 )
 from app.prompts import DEFAULT_IMPROVE_PROMPT_ID, IMPROVE_PROMPT_OPTIONS
+from app.utils.file_utils import generate_resume_filename
 
 
 def _load_config() -> dict:
@@ -1110,7 +1111,24 @@ async def download_resume_pdf(
     except PDFRenderError as e:
         raise HTTPException(status_code=503, detail=str(e))
 
-    headers = {"Content-Disposition": f'attachment; filename="resume_{resume_id}.pdf"'}
+    # Get the processed resume data for filename generation
+    resume_data = resume.get("processed_data", {})
+    if not resume_data:
+        # Try to parse from content if no processed data
+        raw_content = resume.get("content", "")
+        if raw_content:
+            try:
+                resume_data = json.loads(raw_content)
+            except json.JSONDecodeError:
+                resume_data = {}
+    
+    # Debug: log what we're getting
+    logger.debug(f"Resume data for filename: {resume_data.get('personalInfo', {})}")
+    
+    # Generate filename
+    filename = generate_resume_filename(resume_data, "pdf")
+    logger.info(f"Generated filename: {filename}")
+    headers = {"Content-Disposition": f'attachment; filename="{filename}"'}
     return Response(content=pdf_bytes, media_type="application/pdf", headers=headers)
 
 
@@ -1149,7 +1167,10 @@ async def download_resume_docx(
         logger.error(f"Failed to generate DOCX for resume {resume_id}: {e}")
         raise HTTPException(status_code=500, detail="Failed to generate Word document")
     
-    headers = {"Content-Disposition": f'attachment; filename="resume_{resume_id}.docx"'}
+    # Generate filename
+    filename = generate_resume_filename(resume_data, "docx")
+    headers = {"Content-Disposition": f'attachment; filename="{filename}"'}
+    
     return Response(
         content=docx_bytes, 
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",

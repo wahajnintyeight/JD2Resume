@@ -255,14 +255,63 @@ export async function downloadResumePdf(
   resumeId: string,
   settings?: TemplateSettings,
   locale?: Locale
-): Promise<Blob> {
+): Promise<{ blob: Blob; filename: string }> {
   const url = getResumePdfUrl(resumeId, settings, locale);
   const res = await apiFetch(url);
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     throw new Error(`Failed to download resume (status ${res.status}): ${text}`);
   }
-  return await res.blob();
+  
+  // Extract filename from Content-Disposition header
+  let filename = `resume_${resumeId}.pdf`;
+  const disposition = res.headers.get('Content-Disposition');
+  console.log('Content-Disposition header:', disposition);
+  if (disposition) {
+    const match = disposition.match(/filename="?([^"]+)"?/);
+    console.log('Filename match:', match);
+    if (match && match[1]) {
+      filename = match[1];
+      console.log('Using filename from header:', filename);
+    }
+  } else {
+    console.log('No Content-Disposition header found, using fallback');
+  }
+  
+  return { blob: await res.blob(), filename };
+}
+
+/** Gets the URL for downloading resume as DOCX */
+export function getResumeDocxUrl(resumeId: string): string {
+  const normalizedId = normalizeResumeId(resumeId);
+  return `${API_BASE}/resumes/${encodeURIComponent(normalizedId)}/docx`;
+}
+
+/** Downloads resume as DOCX */
+export async function downloadResumeDocx(resumeId: string): Promise<{ blob: Blob; filename: string }> {
+  const url = getResumeDocxUrl(resumeId);
+  const res = await apiFetch(url);
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`Failed to download resume as DOCX (status ${res.status}): ${text}`);
+  }
+  
+  // Extract filename from Content-Disposition header
+  let filename = `resume_${resumeId}.docx`;
+  const disposition = res.headers.get('Content-Disposition');
+  console.log('DOCX Content-Disposition header:', disposition);
+  if (disposition) {
+    const match = disposition.match(/filename="?([^"]+)"?/);
+    console.log('DOCX Filename match:', match);
+    if (match && match[1]) {
+      filename = match[1];
+      console.log('Using DOCX filename from header:', filename);
+    }
+  } else {
+    console.log('No Content-Disposition header found for DOCX, using fallback');
+  }
+  
+  return { blob: await res.blob(), filename };
 }
 
 /** Deletes a resume by ID */

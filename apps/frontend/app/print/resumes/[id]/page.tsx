@@ -77,7 +77,9 @@ function parseBoolean(value: string | undefined, defaultValue: boolean): boolean
 }
 
 async function fetchResumeData(id: string): Promise<ResumeData> {
-  const res = await fetch(`${API_BASE}/resumes?resume_id=${encodeURIComponent(id)}`, {
+  // Use 127.0.0.1 instead of localhost to avoid IPv6 issues on Windows
+  const apiBase = API_BASE.replace('localhost', '127.0.0.1');
+  const res = await fetch(`${apiBase}/resumes?resume_id=${encodeURIComponent(id)}`, {
     cache: 'no-store',
   });
   if (!res.ok) {

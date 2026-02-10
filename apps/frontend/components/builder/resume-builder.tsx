@@ -24,11 +24,13 @@ import {
   Check,
   Sparkles,
   Loader2,
+  FileText,
 } from 'lucide-react';
 import { useResumePreview } from '@/components/common/resume_previewer_context';
 import { PaginatedPreview } from '@/components/preview';
 import {
   downloadResumePdf,
+  downloadResumeDocx,
   downloadCoverLetterPdf,
   getResumePdfUrl,
   getCoverLetterPdfUrl,
@@ -111,6 +113,7 @@ const ResumeBuilderContent = () => {
   const [lastSavedData, setLastSavedData] = useState<ResumeData>(() => initialData);
   const [isSaving, setIsSaving] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isDownloadingDocx, setIsDownloadingDocx] = useState(false);
   const [, setLoadingState] = useState<'idle' | 'loading' | 'loaded' | 'error'>('idle');
   const [templateSettings, setTemplateSettings] =
     useState<TemplateSettings>(DEFAULT_TEMPLATE_SETTINGS);
@@ -430,8 +433,8 @@ const ResumeBuilderContent = () => {
     }
     try {
       setIsDownloading(true);
-      const blob = await downloadResumePdf(resumeId, templateSettings, uiLanguage);
-      downloadBlobAsFile(blob, `resume_${resumeId}.pdf`);
+      const { blob, filename } = await downloadResumePdf(resumeId, templateSettings, uiLanguage);
+      downloadBlobAsFile(blob, filename);
       showNotification(t('builder.alerts.downloadSuccess'), 'success');
     } catch (error) {
       console.error('Failed to download resume:', error);
@@ -450,6 +453,28 @@ const ResumeBuilderContent = () => {
       showNotification(errorMessage, 'danger');
     } finally {
       setIsDownloading(false);
+    }
+  };
+
+  const handleDownloadDocx = async () => {
+    if (!resumeId) {
+      showNotification(t('builder.alerts.downloadNotAvailable'), 'warning');
+      return;
+    }
+    try {
+      setIsDownloadingDocx(true);
+      const { blob, filename } = await downloadResumeDocx(resumeId);
+      downloadBlobAsFile(blob, filename);
+      showNotification('Word document downloaded successfully', 'success');
+    } catch (error) {
+      console.error('Failed to download resume as DOCX:', error);
+      let errorMessage = 'Failed to download Word document';
+      if (error instanceof Error && error.message) {
+        errorMessage = `Failed to download Word document: ${error.message}`;
+      }
+      showNotification(errorMessage, 'danger');
+    } finally {
+      setIsDownloadingDocx(false);
     }
   };
 
@@ -660,6 +685,15 @@ const ResumeBuilderContent = () => {
                   >
                     <Download className="w-4 h-4" />
                     {isDownloading ? t('common.generating') : t('common.download')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleDownloadDocx}
+                    disabled={!resumeId || isDownloadingDocx}
+                  >
+                    <FileText className="w-4 h-4" />
+                    {isDownloadingDocx ? t('common.generating') : 'DOCX'}
                   </Button>
                 </>
               )}
