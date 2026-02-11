@@ -136,6 +136,8 @@ async def _render_page_to_pdf(
     await page.goto(url, wait_until="networkidle", timeout=60000)  # 60 second timeout
     await page.wait_for_selector(selector, timeout=60000)  # 60 second timeout
     await page.evaluate("document.fonts.ready")
+    # Small delay to ensure dynamic content is fully rendered
+    await asyncio.sleep(0.5)
     return await page.pdf(
         format=pdf_format,
         print_background=True,

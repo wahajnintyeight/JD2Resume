@@ -497,3 +497,145 @@ export async function unsetMasterResume(resumeId: string): Promise<void> {
     throw new Error(`Failed to unset master resume (status ${res.status}): ${text}`);
   }
 }
+
+/** ATS Scan Response */
+export interface ATSScanResult {
+  overall_score: number;
+  overall_match_score?: number; // Backend alias
+  pass_probability: 'high' | 'medium' | 'low';
+  searchability_status?: string;
+  
+  // Title Analysis
+  title_analysis?: {
+    jd_title: string;
+    resume_title: string;
+    match_status: 'Exact' | 'Partial' | 'None';
+    recommendation?: string;
+  };
+  
+  // Hard Skills Analysis
+  hard_skills_analysis?: {
+    total_keywords_searched: number;
+    exact_matches_found: number;
+    match_rate: string;
+    missing_exact_keywords: string[];
+    synonym_traps?: Array<{
+      jd_term: string;
+      resume_term: string;
+      advice: string;
+    }>;
+  };
+  
+  // Placement Audit
+  placement_audit?: {
+    headline_score: number;
+    headline_feedback: string;
+    skills_section_score: number;
+    skills_section_feedback: string;
+    bullet_points_score: number;
+    bullet_points_feedback: string;
+  };
+  
+  // Knockout Filters
+  knockout_filters?: Record<string, {
+    required: string;
+    detected: string;
+    status: 'PASS' | 'FAIL';
+  }>;
+  
+  // Action Plan
+  action_plan?: Array<{
+    priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+    action: string;
+  }>;
+  
+  category_scores: {
+    keyword_match: {
+      score: number;
+      weight: number;
+      details: string;
+    };
+    experience_alignment: {
+      score: number;
+      weight: number;
+      details: string;
+    };
+    technical_skills: {
+      score: number;
+      weight: number;
+      details: string;
+    };
+    format_structure: {
+      score: number;
+      weight: number;
+      details: string;
+    };
+    education_certifications: {
+      score: number;
+      weight: number;
+      details: string;
+    };
+  };
+  strengths: string[];
+  weaknesses: string[];
+  missing_keywords: string[];
+  recommendations: string[];
+  knockout_risks: string[];
+  ats_compatibility: {
+    format_issues: string[];
+    parsing_risks: string[];
+    optimization_tips: string[];
+  };
+  job_description?: string; // Optional job description for reference
+}
+
+/** Performs deep ATS scan of resume against job description */
+export async function scanResumeATS(
+  resumeId: string,
+  jobDescription?: string
+): Promise<ATSScanResult> {
+  const payload: { resume_id: string; job_description?: string } = { resume_id: resumeId };
+  if (jobDescription) {
+    payload.job_description = jobDescription;
+  }
+  
+  const res = await apiPost('/ats/scan', payload);
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ detail: 'ATS scan failed' }));
+    throw new Error(error.detail || 'ATS scan failed');
+  }
+  return res.json();
+}
+
+/** Downloads ATS scan report as PDF */
+export function getATSScanPdfUrl(
+  resumeId: string,
+  pageSize: 'A4' | 'LETTER' = 'A4'
+): string {
+  const normalizedId = normalizeResumeId(resumeId);
+  const params = new URLSearchParams({ pageSize });
+  return `${API_BASE}/ats/scan/${encodeURIComponent(normalizedId)}/pdf?${params.toString()}`;
+}
+
+export async function downloadATSScanPdf(
+  resumeId: string,
+  pageSize: 'A4' | 'LETTER' = 'A4'
+): Promise<{ blob: Blob; filename: string }> {
+  const url = getATSScanPdfUrl(resumeId, pageSize);
+  const res = await apiFetch(url);
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`Failed to download ATS scan report (status ${res.status}): ${text}`);
+  }
+  
+  let filename = `ATS_Report_${resumeId}.pdf`;
+  const disposition = res.headers.get('Content-Disposition');
+  if (disposition) {
+    const match = disposition.match(/filename="?([^"]+)"?/);
+    if (match && match[1]) {
+      filename = match[1];
+    }
+  }
+  
+  return { blob: await res.blob(), filename };
+}

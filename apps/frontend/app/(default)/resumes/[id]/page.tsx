@@ -14,8 +14,9 @@ import {
   renameResume,
 } from '@/lib/api/resume';
 import { useStatusCache } from '@/lib/context/status-cache';
-import { ArrowLeft, Edit, Download, Loader2, AlertCircle, Sparkles, Pencil } from 'lucide-react';
+import { ArrowLeft, Edit, Download, Loader2, AlertCircle, Sparkles, Pencil, Target } from 'lucide-react';
 import { EnrichmentModal } from '@/components/enrichment/enrichment-modal';
+import ATSScanDialog from '@/components/resume/ats-scan-dialog';
 import { useTranslations } from '@/lib/i18n';
 import { withLocalizedDefaultSections } from '@/lib/utils/section-helpers';
 import { useLanguage } from '@/lib/context/language-context';
@@ -43,6 +44,7 @@ export default function ResumeViewerPage() {
   const [resumeTitle, setResumeTitle] = useState<string | null>(null);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editingTitleValue, setEditingTitleValue] = useState('');
+  const [showATSScanDialog, setShowATSScanDialog] = useState(false);
 
   const resumeId = params?.id as string;
 
@@ -294,6 +296,12 @@ export default function ResumeViewerPage() {
                 {t('resumeViewer.enhanceResume')}
               </Button>
             )}
+            {!isMasterResume && (
+              <Button onClick={() => setShowATSScanDialog(true)} variant="outline" className="gap-2">
+                <Target className="w-4 h-4" />
+                ATS Scan
+              </Button>
+            )}
             <Button variant="outline" onClick={handleEdit}>
               <Edit className="w-4 h-4" />
               {t('dashboard.editResume')}
@@ -436,6 +444,15 @@ export default function ResumeViewerPage() {
           isOpen={showEnrichmentModal}
           onClose={() => setShowEnrichmentModal(false)}
           onComplete={handleEnrichmentComplete}
+        />
+      )}
+
+      {/* ATS Scan Dialog - Only for tailored resumes */}
+      {!isMasterResume && (
+        <ATSScanDialog
+          resumeId={resumeId}
+          isOpen={showATSScanDialog}
+          onClose={() => setShowATSScanDialog(false)}
         />
       )}
     </div>

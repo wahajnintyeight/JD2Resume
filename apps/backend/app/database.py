@@ -47,6 +47,11 @@ class Database:
         """Improvement results table."""
         return self.db.table("improvements")
 
+    @property
+    def ats_scans(self) -> Table:
+        """ATS scan results table."""
+        return self.db.table("ats_scans")
+
     def close(self) -> None:
         """Close database connection."""
         if self._db is not None:
@@ -366,6 +371,43 @@ class Database:
 
             shutil.rmtree(uploads_dir)
             uploads_dir.mkdir(parents=True, exist_ok=True)
+
+
+    # ATS Scan operations
+    def save_ats_scan(self, resume_id: str, scan_results: dict[str, Any]) -> dict[str, Any]:
+        """Save ATS scan results for a resume."""
+        now = datetime.now(timezone.utc).isoformat()
+        
+        # Check if scan already exists
+        Query_ = Query()
+        existing = self.ats_scans.get(Query_.resume_id == resume_id)
+        
+        if existing:
+            # Update existing scan
+            self.ats_scans.update(
+                {
+                    "scan_results": scan_results,
+                    "updated_at": now,
+                },
+                Query_.resume_id == resume_id
+            )
+            return {**existing, "scan_results": scan_results, "updated_at": now}
+        else:
+            # Create new scan
+            doc = {
+                "resume_id": resume_id,
+                "scan_results": scan_results,
+                "created_at": now,
+                "updated_at": now,
+            }
+            self.ats_scans.insert(doc)
+            return doc
+    
+    def get_ats_scan(self, resume_id: str) -> dict[str, Any] | None:
+        """Get ATS scan results for a resume."""
+        Query_ = Query()
+        result = self.ats_scans.get(Query_.resume_id == resume_id)
+        return result.get("scan_results") if result else None
 
 
 # Global database instance
