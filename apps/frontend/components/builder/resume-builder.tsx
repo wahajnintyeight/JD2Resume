@@ -25,6 +25,7 @@ import {
   Sparkles,
   Loader2,
   FileText,
+  HardDrive,
 } from 'lucide-react';
 import { useResumePreview } from '@/components/common/resume_previewer_context';
 import { PaginatedPreview } from '@/components/preview';
@@ -32,6 +33,7 @@ import {
   downloadResumePdf,
   downloadResumeDocx,
   downloadCoverLetterPdf,
+  saveResumePdf,
   getResumePdfUrl,
   getCoverLetterPdfUrl,
   fetchResume,
@@ -114,6 +116,7 @@ const ResumeBuilderContent = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isDownloadingDocx, setIsDownloadingDocx] = useState(false);
+  const [isSavingPdf, setIsSavingPdf] = useState(false);
   const [, setLoadingState] = useState<'idle' | 'loading' | 'loaded' | 'error'>('idle');
   const [templateSettings, setTemplateSettings] =
     useState<TemplateSettings>(DEFAULT_TEMPLATE_SETTINGS);
@@ -478,6 +481,28 @@ const ResumeBuilderContent = () => {
     }
   };
 
+  const handleSavePdf = async () => {
+    if (!resumeId) {
+      showNotification(t('builder.alerts.downloadNotAvailable'), 'warning');
+      return;
+    }
+    try {
+      setIsSavingPdf(true);
+      const { filename, path } = await saveResumePdf(resumeId, templateSettings, uiLanguage);
+      showNotification(`PDF saved to: ${filename}`, 'success');
+      console.log('PDF saved to:', path);
+    } catch (error) {
+      console.error('Failed to save resume PDF:', error);
+      let errorMessage = 'Failed to save PDF to outputs directory';
+      if (error instanceof Error && error.message) {
+        errorMessage = `Failed to save PDF: ${error.message}`;
+      }
+      showNotification(errorMessage, 'danger');
+    } finally {
+      setIsSavingPdf(false);
+    }
+  };
+
   // Cover letter handlers
   const handleSaveCoverLetter = async () => {
     if (!resumeId) return;
@@ -685,6 +710,15 @@ const ResumeBuilderContent = () => {
                   >
                     <Download className="w-4 h-4" />
                     {isDownloading ? t('common.generating') : t('common.download')}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSavePdf}
+                    disabled={!resumeId || isSavingPdf}
+                  >
+                    <HardDrive className="w-4 h-4" />
+                    {isSavingPdf ? 'Saving...' : 'Save PDF'}
                   </Button>
                   <Button
                     variant="outline"

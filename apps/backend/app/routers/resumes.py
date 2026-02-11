@@ -1133,6 +1133,103 @@ async def download_resume_pdf(
     return Response(content=pdf_bytes, media_type="application/pdf", headers=headers)
 
 
+@router.post("/{resume_id}/pdf/save")
+async def save_resume_pdf(
+    resume_id: str,
+    template: str = Query("swiss-single"),
+    pageSize: str = Query("A4", pattern="^(A4|LETTER)$"),
+    marginTop: int = Query(10, ge=5, le=25),
+    marginBottom: int = Query(10, ge=5, le=25),
+    marginLeft: int = Query(10, ge=5, le=25),
+    marginRight: int = Query(10, ge=5, le=25),
+    sectionSpacing: int = Query(3, ge=1, le=5),
+    itemSpacing: int = Query(2, ge=1, le=5),
+    lineHeight: int = Query(3, ge=1, le=5),
+    fontSize: int = Query(3, ge=1, le=5),
+    headerScale: int = Query(3, ge=1, le=5),
+    headerFont: str = Query("serif", pattern="^(serif|sans-serif|mono)$"),
+    bodyFont: str = Query("sans-serif", pattern="^(serif|sans-serif|mono)$"),
+    compactMode: bool = Query(False),
+    showContactIcons: bool = Query(False),
+    accentColor: str = Query("blue", pattern="^(blue|green|orange|red)$"),
+    lang: str | None = Query(None, pattern="^[a-z]{2}(-[A-Z]{2})?$"),
+) -> dict[str, str]:
+    """Save a PDF for a resume to the outputs directory.
+
+    Accepts the same template settings as the download endpoint.
+    Saves the PDF to the backend's outputs directory and returns the file path.
+    """
+    resume = db.get_resume(resume_id)
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+
+    # Build print URL with all settings
+    params = (
+        f"template={template}"
+        f"&pageSize={pageSize}"
+        f"&marginTop={marginTop}"
+        f"&marginBottom={marginBottom}"
+        f"&marginLeft={marginLeft}"
+        f"&marginRight={marginRight}"
+        f"&sectionSpacing={sectionSpacing}"
+        f"&itemSpacing={itemSpacing}"
+        f"&lineHeight={lineHeight}"
+        f"&fontSize={fontSize}"
+        f"&headerScale={headerScale}"
+        f"&headerFont={headerFont}"
+        f"&bodyFont={bodyFont}"
+        f"&compactMode={str(compactMode).lower()}"
+        f"&showContactIcons={str(showContactIcons).lower()}"
+        f"&accentColor={accentColor}"
+    )
+    if lang:
+        params = f"{params}&lang={lang}"
+    url = f"{settings.frontend_base_url}/print/resumes/{resume_id}?{params}"
+
+    # Use the exact margins provided
+    pdf_margins = {
+        "top": marginTop,
+        "right": marginRight,
+        "bottom": marginBottom,
+        "left": marginLeft,
+    }
+
+    # Render PDF
+    try:
+        pdf_bytes = await render_resume_pdf(url, pageSize, margins=pdf_margins)
+    except PDFRenderError as e:
+        raise HTTPException(status_code=503, detail=str(e))
+
+    # Get the processed resume data for filename generation
+    resume_data = resume.get("processed_data", {})
+    if not resume_data:
+        raw_content = resume.get("content", "")
+        if raw_content:
+            try:
+                resume_data = json.loads(raw_content)
+            except json.JSONDecodeError:
+                resume_data = {}
+    
+    # Generate filename
+    filename = generate_resume_filename(resume_data, "pdf")
+    
+    # Create outputs directory if it doesn't exist
+    outputs_dir = Path("outputs")
+    outputs_dir.mkdir(exist_ok=True)
+    
+    # Save PDF to outputs directory
+    output_path = outputs_dir / filename
+    output_path.write_bytes(pdf_bytes)
+    
+    logger.info(f"Saved resume PDF to: {output_path.absolute()}")
+    
+    return {
+        "message": "Resume PDF saved successfully",
+        "filename": filename,
+        "path": str(output_path.absolute())
+    }
+
+
 @router.get("/{resume_id}/docx")
 async def download_resume_docx(
     resume_id: str,

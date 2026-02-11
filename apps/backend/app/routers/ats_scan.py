@@ -6,6 +6,7 @@ from fastapi.responses import Response
 from pydantic import BaseModel, Field
 from app.database import db
 from app.services.ats_scanner import scan_resume_ats
+from app.services.ats_applier import apply_ats_suggestions, calculate_ats_diff
 from app.pdf import render_resume_pdf
 from app.config import settings
 
@@ -32,6 +33,26 @@ class ATSScanResponse(BaseModel):
     knockout_risks: list[str] = []  # Make optional with default
     ats_compatibility: dict = {}  # Make optional with default
     job_description: str | None = None  # Include job description for reference
+
+
+class ATSApplyPreviewRequest(BaseModel):
+    """Request model for previewing ATS suggestions application."""
+    resume_id: str = Field(..., description="Resume ID to apply suggestions to")
+    ats_results: dict = Field(..., description="ATS scan results containing suggestions")
+
+
+class ATSApplyPreviewResponse(BaseModel):
+    """Response model for ATS apply preview."""
+    diff_summary: dict
+    detailed_changes: list[dict]
+    modified_resume: dict
+    original_resume: dict
+
+
+class ATSApplyConfirmRequest(BaseModel):
+    """Request model for confirming ATS suggestions application."""
+    resume_id: str = Field(..., description="Resume ID to apply suggestions to")
+    modified_resume: dict = Field(..., description="Modified resume data with ATS suggestions applied")
 
 
 @router.post("/scan", response_model=ATSScanResponse)
@@ -191,3 +212,77 @@ async def download_ats_scan_pdf(
     except Exception as e:
         logger.error(f"ATS scan PDF generation failed: {e}")
         raise HTTPException(status_code=500, detail=f"PDF generation failed: {str(e)}")
+
+
+@router.post("/apply/preview", response_model=ATSApplyPreviewResponse)
+async def preview_ats_apply(request: ATSApplyPreviewRequest):
+    """
+    Preview ATS suggestions application to a resume.
+    
+    Applies ATS scan suggestions to the resume and returns a diff showing
+    what changes would be made (title updates, skills additions, synonym fixes).
+    """
+    try:
+        # Get resume data
+        resume = db.get_resume(request.resume_id)
+        if not resume:
+            raise HTTPException(status_code=404, detail="Resume not found")
+        
+        parsed_data = resume.get("processed_data")
+        if not parsed_data:
+            raise HTTPException(
+                status_code=400,
+                detail="Resume has not been parsed yet"
+            )
+        
+        # Apply ATS suggestions
+        modified_resume = apply_ats_suggestions(
+            resume_data=parsed_data,
+            ats_results=request.ats_results
+        )
+        
+        # Calculate diff
+        diff_summary, detailed_changes = calculate_ats_diff(
+            original=parsed_data,
+            modified=modified_resume
+        )
+        
+        return ATSApplyPreviewResponse(
+            diff_summary=diff_summary,
+            detailed_changes=detailed_changes,
+            modified_resume=modified_resume,
+            original_resume=parsed_data
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"ATS apply preview failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Preview generation failed: {str(e)}")
+
+
+@router.post("/apply/confirm")
+async def confirm_ats_apply(request: ATSApplyConfirmRequest):
+    """
+    Confirm and apply ATS suggestions to a resume.
+    
+    Updates the resume with the ATS-suggested changes and saves it to the database.
+    """
+    try:
+        # Get original resume
+        resume = db.get_resume(request.resume_id)
+        if not resume:
+            raise HTTPException(status_code=404, detail="Resume not found")
+        
+        # Update the resume with modified data
+        db.update_resume(request.resume_id, {"processed_data": request.modified_resume})
+        
+        logger.info(f"Successfully applied ATS suggestions to resume {request.resume_id}")
+        
+        return {"message": "ATS suggestions applied successfully", "resume_id": request.resume_id}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"ATS apply confirmation failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to apply suggestions: {str(e)}")

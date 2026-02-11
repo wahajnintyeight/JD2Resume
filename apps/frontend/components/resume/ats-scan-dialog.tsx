@@ -1,9 +1,18 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { scanResumeATS, downloadATSScanPdf, type ATSScanResult } from '@/lib/api/resume';
+import { 
+  scanResumeATS, 
+  downloadATSScanPdf, 
+  previewATSApply, 
+  confirmATSApply,
+  type ATSScanResult,
+  type ATSApplyPreviewResponse 
+} from '@/lib/api/resume';
+import { ATSApplyPreviewModal } from './ats-apply-preview-modal';
 import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
 import X from 'lucide-react/dist/esm/icons/x';
 import Target from 'lucide-react/dist/esm/icons/target';
@@ -19,6 +28,7 @@ import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw';
 import Download from 'lucide-react/dist/esm/icons/download';
 import Edit from 'lucide-react/dist/esm/icons/edit';
 import Save from 'lucide-react/dist/esm/icons/save';
+import Wand2 from 'lucide-react/dist/esm/icons/wand-2';
 
 interface ATSScanDialogProps {
   resumeId: string;
@@ -27,6 +37,7 @@ interface ATSScanDialogProps {
 }
 
 export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDialogProps) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<ATSScanResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -34,6 +45,12 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [editingJobDescription, setEditingJobDescription] = useState(false);
   const [customJobDescription, setCustomJobDescription] = useState('');
+  
+  // Apply suggestions states
+  const [showApplyModal, setShowApplyModal] = useState(false);
+  const [applyPreview, setApplyPreview] = useState<ATSApplyPreviewResponse | null>(null);
+  const [applyLoading, setApplyLoading] = useState(false);
+  const [applyError, setApplyError] = useState<string | null>(null);
 
   const handleScan = async () => {
     setLoading(true);
@@ -61,6 +78,40 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
   const handleCancelEdit = () => {
     setEditingJobDescription(false);
     setCustomJobDescription('');
+  };
+
+  const handlePreviewApply = async () => {
+    if (!results) return;
+    
+    setApplyLoading(true);
+    setApplyError(null);
+    setShowApplyModal(true);
+    
+    try {
+      const preview = await previewATSApply(resumeId, results);
+      setApplyPreview(preview);
+    } catch (err) {
+      setApplyError(err instanceof Error ? err.message : 'Failed to preview changes');
+    } finally {
+      setApplyLoading(false);
+    }
+  };
+
+  const handleConfirmApply = async () => {
+    if (!applyPreview?.modified_resume) return;
+    
+    setApplyLoading(true);
+    try {
+      await confirmATSApply(resumeId, applyPreview.modified_resume);
+      setShowApplyModal(false);
+      onClose();
+      // Refresh the page to show updated resume
+      router.refresh();
+    } catch (err) {
+      setApplyError(err instanceof Error ? err.message : 'Failed to apply changes');
+    } finally {
+      setApplyLoading(false);
+    }
   };
 
   const handleDownloadPdf = async () => {
@@ -742,8 +793,8 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                   </div>
                 )}
 
-                {/* Rescan Button */}
-                <div className="flex justify-center gap-3 pt-4">
+                {/* Action Buttons */}
+                <div className="flex flex-wrap justify-center gap-3 pt-4">
                   <Button 
                     onClick={handleDownloadPdf} 
                     variant="default"
@@ -762,6 +813,27 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                       </>
                     )}
                   </Button>
+                  
+                  {/* Apply Suggestions Button */}
+                  <Button 
+                    onClick={handlePreviewApply}
+                    variant="outline"
+                    className="font-mono uppercase border-blue-700 text-blue-700 hover:bg-blue-50 shadow-[4px_4px_0px_0px_#000000] hover:shadow-[2px_2px_0px_0px_#000000] transition-all"
+                    disabled={loading || applyLoading}
+                  >
+                    {applyLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Applying...
+                      </>
+                    ) : (
+                      <>
+                        <Wand2 className="w-4 h-4 mr-2" />
+                        Apply Suggestions
+                      </>
+                    )}
+                  </Button>
+                  
                   <Button 
                     onClick={handleScan} 
                     variant="outline" 
@@ -786,6 +858,18 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
           </div>
         </div>
       </div>
+
+      {/* ATS Apply Preview Modal */}
+      <ATSApplyPreviewModal
+        isOpen={showApplyModal}
+        onClose={() => setShowApplyModal(false)}
+        onReject={() => setShowApplyModal(false)}
+        onConfirm={handleConfirmApply}
+        diffSummary={applyPreview?.diff_summary}
+        detailedChanges={applyPreview?.detailed_changes}
+        isLoading={applyLoading}
+        errorMessage={applyError || undefined}
+      />
 
       <style jsx global>{`
         @keyframes slide-up {

@@ -315,6 +315,50 @@ export async function downloadResumeDocx(resumeId: string): Promise<{ blob: Blob
   return { blob: await res.blob(), filename };
 }
 
+/** Saves resume PDF to backend outputs directory */
+export async function saveResumePdf(
+  resumeId: string,
+  settings?: TemplateSettings,
+  locale?: Locale
+): Promise<{ filename: string; path: string }> {
+  const normalizedId = normalizeResumeId(resumeId);
+  
+  // Build query params from settings
+  const params = new URLSearchParams();
+  if (settings) {
+    params.append('template', settings.template);
+    params.append('pageSize', settings.pageSize);
+    params.append('marginTop', settings.margins.top.toString());
+    params.append('marginBottom', settings.margins.bottom.toString());
+    params.append('marginLeft', settings.margins.left.toString());
+    params.append('marginRight', settings.margins.right.toString());
+    params.append('sectionSpacing', settings.spacing.section.toString());
+    params.append('itemSpacing', settings.spacing.item.toString());
+    params.append('lineHeight', settings.spacing.lineHeight.toString());
+    params.append('fontSize', settings.fontSize.base.toString());
+    params.append('headerScale', settings.fontSize.headerScale.toString());
+    params.append('headerFont', settings.fontSize.headerFont);
+    params.append('bodyFont', settings.fontSize.bodyFont);
+    params.append('compactMode', settings.compactMode.toString());
+    params.append('showContactIcons', settings.showContactIcons.toString());
+    params.append('accentColor', settings.accentColor);
+  }
+  if (locale) {
+    params.append('lang', locale);
+  }
+  
+  const url = `${API_BASE}/resumes/${encodeURIComponent(normalizedId)}/pdf/save?${params.toString()}`;
+  const res = await apiPost(url, {});
+  
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`Failed to save resume PDF (status ${res.status}): ${text}`);
+  }
+  
+  const data = await res.json();
+  return { filename: data.filename, path: data.path };
+}
+
 /** Deletes a resume by ID */
 export async function deleteResume(resumeId: string): Promise<void> {
   const res = await apiDelete(`/resumes/${encodeURIComponent(resumeId)}`);
@@ -638,4 +682,76 @@ export async function downloadATSScanPdf(
   }
   
   return { blob: await res.blob(), filename };
+}
+
+// ============================================================================
+// ATS Apply Suggestions API
+// ============================================================================
+
+export interface ATSFieldDiff {
+  field_path: string;
+  field_type: 'title' | 'skill' | 'description' | 'summary' | string;
+  change_type: 'added' | 'removed' | 'modified';
+  original_value?: string;
+  new_value?: string;
+  confidence: 'low' | 'medium' | 'high';
+  context?: string;
+}
+
+export interface ATSDiffSummary {
+  total_changes: number;
+  skills_added: number;
+  skills_replaced: number;
+  descriptions_modified: number;
+  title_changed: boolean;
+  summary_changed: boolean;
+  ats_specific_changes: boolean;
+}
+
+export interface ATSApplyPreviewResponse {
+  diff_summary: ATSDiffSummary;
+  detailed_changes: ATSFieldDiff[];
+  modified_resume: ResumeData;
+  original_resume: ResumeData;
+}
+
+export interface ATSApplyConfirmRequest {
+  resume_id: string;
+  modified_resume: ResumeData;
+}
+
+/** Preview ATS suggestions application to resume */
+export async function previewATSApply(
+  resumeId: string,
+  atsResults: ATSScanResult
+): Promise<ATSApplyPreviewResponse> {
+  const res = await apiPost('/ats/apply/preview', {
+    resume_id: resumeId,
+    ats_results: atsResults,
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ detail: 'Failed to preview ATS changes' }));
+    throw new Error(error.detail || 'Failed to preview ATS changes');
+  }
+
+  return res.json();
+}
+
+/** Confirm and apply ATS suggestions to resume */
+export async function confirmATSApply(
+  resumeId: string,
+  modifiedResume: ResumeData
+): Promise<{ message: string; resume_id: string }> {
+  const res = await apiPost('/ats/apply/confirm', {
+    resume_id: resumeId,
+    modified_resume: modifiedResume,
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ detail: 'Failed to apply ATS suggestions' }));
+    throw new Error(error.detail || 'Failed to apply ATS suggestions');
+  }
+
+  return res.json();
 }
