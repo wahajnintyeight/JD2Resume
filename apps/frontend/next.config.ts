@@ -7,6 +7,11 @@ const nextConfig: NextConfig = {
   experimental: {
     turbopackUseSystemTlsCerts: true,
   },
+  
+  // Exclude problematic packages from server bundle
+  // These cause ESM/CJS issues with Turbopack during static generation
+  serverExternalPackages: ['isomorphic-dompurify', 'jsdom'],
+  
   async rewrites() {
     return [
       {
@@ -15,6 +20,12 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  
+  // Disable powered by header
+  poweredByHeader: false,
+  
+  // Disable source maps in production
+  productionBrowserSourceMaps: false,
 };
 
 export default nextConfig;

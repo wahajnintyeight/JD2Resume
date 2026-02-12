@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { sanitizeHtml } from '@/lib/utils/html-sanitizer';
+import { sanitizeHtmlSync } from '@/lib/utils/html-sanitizer';
 import { cn } from '@/lib/utils';
 
 interface SafeHtmlProps {
@@ -27,8 +27,8 @@ export const SafeHtml: React.FC<SafeHtmlProps> = ({ html, className, as: Compone
     return null;
   }
 
-  // Sanitize the HTML before rendering
-  const cleanHtml = sanitizeHtml(html);
+  // Sanitize the HTML before rendering (uses browser's native DOM API)
+  const cleanHtml = sanitizeHtmlSync(html);
 
   return (
     <Component
