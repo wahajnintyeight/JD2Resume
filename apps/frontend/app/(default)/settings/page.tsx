@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -13,11 +13,14 @@ import {
   updatePromptConfig,
   clearAllApiKeys,
   resetDatabase,
+  fetchOpenRouterModels,
+  fetchApiKey,
   PROVIDER_INFO,
   type LLMConfig,
   type LLMProvider,
   type LLMHealthCheck,
   type PromptOption,
+  type OpenRouterModel,
 } from '@/lib/api/config';
 import { API_URL } from '@/lib/api/client';
 import { getVersionString } from '@/lib/config/version';
@@ -28,6 +31,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Dropdown } from '@/components/ui/dropdown';
+import { SearchableDropdown } from '@/components/ui/searchable-dropdown';
 import {
   Save,
   Key,
@@ -104,6 +108,12 @@ export default function SettingsPage() {
   const [apiKey, setApiKey] = useState('');
   const [apiBase, setApiBase] = useState('');
   const [hasStoredApiKey, setHasStoredApiKey] = useState(false);
+
+  // OpenRouter models state
+  const [openRouterModels, setOpenRouterModels] = useState<OpenRouterModel[]>([]);
+  const [openRouterModelsLoading, setOpenRouterModelsLoading] = useState(false);
+  const [openRouterModelsError, setOpenRouterModelsError] = useState<string | null>(null);
+  const [showFreeModelsOnly, setShowFreeModelsOnly] = useState(false);
 
   // Use cached system status (loaded on app start, refreshes every 30 min)
   const {
@@ -255,6 +265,24 @@ export default function SettingsPage() {
           setApiKey(isMaskedKey ? '' : llmConfig.api_key || '');
           setApiBase(llmConfig.api_base || '');
 
+          // If provider is openrouter and we have a stored key (masked), fetch the full key
+          if (safeProvider === 'openrouter' && isMaskedKey) {
+            setIsLoadingApiKey(true);
+            try {
+              const storedKey = await fetchApiKey('openrouter');
+              if (storedKey && !cancelled) {
+                setApiKey(storedKey);
+                setHasStoredApiKey(true);
+              }
+            } catch {
+              // Failed to fetch key, will leave empty for user to enter
+            } finally {
+              if (!cancelled) {
+                setIsLoadingApiKey(false);
+              }
+            }
+          }
+
           if (providerFromBackend !== safeProvider) {
             setError(t('settings.errors.unknownProvider', { provider: providerFromBackend }));
           }
@@ -287,7 +315,7 @@ export default function SettingsPage() {
   }, [t]);
 
   // Handle provider change
-  const handleProviderChange = (newProvider: LLMProvider) => {
+  const handleProviderChange = async (newProvider: LLMProvider) => {
     setProvider(newProvider);
     setModel(PROVIDER_INFO[newProvider].defaultModel);
 
@@ -295,10 +323,89 @@ export default function SettingsPage() {
       setApiBase('http://localhost:11434');
     }
 
-    // Clear API key input when switching providers to avoid accidental cross-provider usage.
-    setApiKey('');
-    setHasStoredApiKey(false);
+    // Clear OpenRouter models when switching away from openrouter
+    if (newProvider !== 'openrouter') {
+      setOpenRouterModels([]);
+      setOpenRouterModelsError(null);
+      setApiKey('');
+      setHasStoredApiKey(false);
+    } else {
+      // For OpenRouter, try to fetch the stored API key
+      setIsLoadingApiKey(true);
+      try {
+        const storedKey = await fetchApiKey('openrouter');
+        if (storedKey) {
+          setApiKey(storedKey);
+          setHasStoredApiKey(true);
+        } else {
+          setApiKey('');
+          setHasStoredApiKey(false);
+        }
+      } catch {
+        setApiKey('');
+        setHasStoredApiKey(false);
+      } finally {
+        setIsLoadingApiKey(false);
+      }
+    }
   };
+
+  // Debounced function to fetch OpenRouter models
+  const fetchModelsWithKey = useCallback(
+    async (key: string, useStoredKey: boolean, cancelledRef: { current: boolean }) => {
+      // Only fetch if we have a key value OR we're using stored key
+      if (!key.trim() && !useStoredKey) return;
+
+      setOpenRouterModelsLoading(true);
+      setOpenRouterModelsError(null);
+
+      try {
+        // If key is provided, use it. Otherwise call without key to use stored key
+        const response = await fetchOpenRouterModels(key.trim() || undefined);
+        if (!cancelledRef.current) {
+          setOpenRouterModels(response.models);
+        }
+      } catch (err) {
+        if (!cancelledRef.current) {
+          console.error('Failed to fetch OpenRouter models:', err);
+          setOpenRouterModelsError(
+            err instanceof Error ? err.message : 'Failed to load models'
+          );
+        }
+      } finally {
+        if (!cancelledRef.current) {
+          setOpenRouterModelsLoading(false);
+        }
+      }
+    },
+    []
+  );
+
+  // Track if we're currently fetching the API key
+  const [isLoadingApiKey, setIsLoadingApiKey] = useState(false);
+
+  // Fetch OpenRouter models when provider is openrouter or API key changes
+  useEffect(() => {
+    if (provider !== 'openrouter') return;
+    // Wait until API key loading is complete
+    if (isLoadingApiKey) return;
+
+    const cancelledRef = { current: false };
+    const timeoutId = setTimeout(() => {
+      // If we have an API key value, use it. Otherwise if we know there's a stored key,
+      // call without key to let backend use stored key
+      if (apiKey.trim()) {
+        fetchModelsWithKey(apiKey.trim(), false, cancelledRef);
+      } else if (hasStoredApiKey) {
+        fetchModelsWithKey('', true, cancelledRef);
+      }
+    }, 500); // Debounce for 500ms
+
+    return () => {
+      cancelledRef.current = true;
+      clearTimeout(timeoutId);
+    };
+  }, [provider, apiKey, hasStoredApiKey, isLoadingApiKey, fetchModelsWithKey]);
 
   // Save configuration
   const handleSave = async () => {
@@ -508,11 +615,11 @@ export default function SettingsPage() {
         backgroundSize: '40px 40px',
       }}
     >
-      <div className="w-full max-w-4xl border border-black bg-[#F0F0E8] shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)]">
+      <div className="w-full max-w-4xl mx-2 sm:mx-4 lg:mx-auto border border-black bg-[#F0F0E8] shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)]">
         {/* Header */}
-        <div className="border-b border-black p-8 bg-white flex justify-between items-start">
+        <div className="border-b border-black p-4 sm:p-6 lg:p-8 bg-white flex flex-col sm:flex-row justify-between items-start gap-4">
           <div>
-            <h1 className="font-serif text-3xl font-bold tracking-tight uppercase">
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight uppercase">
               {t('settings.title')}
             </h1>
             <p className="font-mono text-xs text-gray-500 mt-2 uppercase tracking-wider">
@@ -521,14 +628,14 @@ export default function SettingsPage() {
             </p>
           </div>
           <Link href="/dashboard">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" className="w-full sm:w-auto">
               <ArrowLeft className="w-4 h-4" />
               {t('common.back')}
             </Button>
           </Link>
         </div>
 
-        <div className="p-8 space-y-10">
+        <div className="p-4 sm:p-6 lg:p-8 space-y-8 lg:space-y-10">
           {/* API Key Not Configured Warning */}
           {!statusLoading && systemStatus && !systemStatus.llm_configured && (
             <div className="border-2 border-amber-500 bg-amber-50 p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
@@ -721,12 +828,12 @@ export default function SettingsPage() {
               {/* Provider Selection */}
               <div className="space-y-2">
                 <Label>{t('settings.providerLabel')}</Label>
-                <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
                   {PROVIDERS.map((p) => (
                     <button
                       key={p}
                       onClick={() => handleProviderChange(p)}
-                      className={`px-3 py-2 text-xs uppercase ${SEGMENTED_BUTTON_BASE} ${
+                      className={`px-2 sm:px-3 py-2 text-xs uppercase ${SEGMENTED_BUTTON_BASE} ${
                         provider === p ? SEGMENTED_BUTTON_ACTIVE : SEGMENTED_BUTTON_INACTIVE
                       }`}
                     >
@@ -743,19 +850,67 @@ export default function SettingsPage() {
 
               {/* Model Input */}
               <div className="space-y-2">
-                <Label htmlFor="model">{t('settings.llmConfiguration.modelLabel')}</Label>
-                <Input
-                  id="model"
-                  value={model}
-                  onChange={(e) => setModel(e.target.value)}
-                  placeholder={providerInfo.defaultModel}
-                  className="font-mono"
-                />
-                <p className="text-xs text-gray-500 font-mono">
-                  {t('settings.llmConfiguration.defaultModel', {
-                    model: providerInfo.defaultModel,
-                  })}
-                </p>
+                {provider === 'openrouter' ? (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <Label>{t('settings.llmConfiguration.modelLabel')}</Label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={showFreeModelsOnly}
+                          onChange={(e) => setShowFreeModelsOnly(e.target.checked)}
+                          className="w-4 h-4 border-2 border-black rounded-none"
+                        />
+                        <span className="text-xs font-mono text-gray-600">Show free models only</span>
+                      </label>
+                    </div>
+                    <SearchableDropdown
+                      options={openRouterModels
+                        .filter((m) => !showFreeModelsOnly || m.id.includes(':free') || m.name?.toLowerCase().includes('(free)'))
+                        .map((m) => ({
+                          id: m.id,
+                          label: m.name || m.id,
+                          description: m.description || undefined,
+                          contextLength: m.context_length,
+                          maxCompletionTokens: m.max_completion_tokens,
+                        }))}
+                      value={model}
+                      onChange={setModel}
+                      placeholder={providerInfo.defaultModel}
+                      loading={openRouterModelsLoading}
+                      loadingText={t('settings.llmConfiguration.loadingModels')}
+                      emptyText={
+                        openRouterModelsError || t('settings.llmConfiguration.noModelsFound')
+                      }
+                      allowFreeform={true}
+                      pageSize={15}
+                    />
+                    {openRouterModelsError && (
+                      <p className="text-xs text-red-600 font-mono">
+                        {openRouterModelsError}
+                      </p>
+                    )}
+                    <p className="text-xs text-gray-500 font-mono">
+                      {t('settings.llmConfiguration.openRouterModelHelp')}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <Label htmlFor="model">{t('settings.llmConfiguration.modelLabel')}</Label>
+                    <Input
+                      id="model"
+                      value={model}
+                      onChange={(e) => setModel(e.target.value)}
+                      placeholder={providerInfo.defaultModel}
+                      className="font-mono"
+                    />
+                    <p className="text-xs text-gray-500 font-mono">
+                      {t('settings.llmConfiguration.defaultModel', {
+                        model: providerInfo.defaultModel,
+                      })}
+                    </p>
+                  </>
+                )}
               </div>
 
               {/* API Key Input */}
@@ -804,11 +959,11 @@ export default function SettingsPage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <Button
                   onClick={handleSave}
                   disabled={status === 'saving' || status === 'loading'}
-                  className="flex-1"
+                  className="w-full sm:flex-1"
                 >
                   {status === 'saving' ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -828,6 +983,7 @@ export default function SettingsPage() {
                   variant="outline"
                   onClick={handleTestConnection}
                   disabled={status === 'testing' || status === 'saving'}
+                  className="w-full sm:w-auto"
                 >
                   {status === 'testing' ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -889,7 +1045,7 @@ export default function SettingsPage() {
                           <p className="font-mono text-[10px] uppercase tracking-wider text-gray-600">
                             {item.label}
                           </p>
-                          <pre className="mt-1 whitespace-pre-wrap rounded-none border border-black bg-white p-3 text-xs text-gray-800 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+                          <pre className="mt-1 whitespace-pre-wrap break-all rounded-none border border-black bg-white p-3 text-xs text-gray-800 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
                             {item.value}
                           </pre>
                         </div>
@@ -1065,7 +1221,7 @@ export default function SettingsPage() {
         </div>
 
         {/* Footer */}
-        <div className="bg-[#E5E5E0] p-4 border-t border-black flex justify-between items-center">
+        <div className="bg-[#E5E5E0] p-4 border-t border-black flex flex-col sm:flex-row justify-between items-center gap-2">
           <div className="flex items-center gap-2">
             <Image
               src="/logo.svg"

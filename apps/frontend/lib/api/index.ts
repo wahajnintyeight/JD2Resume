@@ -42,6 +42,8 @@ export {
   PROVIDER_INFO,
   fetchPromptConfig,
   updatePromptConfig,
+  fetchOpenRouterModels,
+  fetchApiKey,
   type LLMProvider,
   type LLMConfig,
   type LLMConfigUpdate,
@@ -51,4 +53,7 @@ export {
   type PromptOption,
   type PromptConfig,
   type PromptConfigUpdate,
+  type OpenRouterModel,
+  type OpenRouterModelsResponse,
+  type OpenRouterPricing,
 } from './config';

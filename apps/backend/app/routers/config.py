@@ -4,6 +4,7 @@ import json
 import logging
 from pathlib import Path
 
+import httpx
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 
 from app.config import settings
@@ -23,6 +24,9 @@ from app.schemas import (
     ApiKeysUpdateRequest,
     ApiKeysUpdateResponse,
     ResetDatabaseRequest,
+    OpenRouterModelsResponse,
+    OpenRouterModel,
+    OpenRouterPricing,
 )
 from app.prompts import DEFAULT_IMPROVE_PROMPT_ID, IMPROVE_PROMPT_OPTIONS
 from app.config import (
@@ -456,6 +460,38 @@ async def delete_api_key(provider: str) -> dict:
     return {"message": f"API key for {provider} has been removed"}
 
 
+@router.get("/api-keys/{provider}")
+async def get_api_key(provider: str) -> dict:
+    """Get API key for a specific provider.
+
+    Args:
+        provider: The provider name (openai, anthropic, google, openrouter, deepseek)
+
+    Returns:
+        API key if configured
+
+    Note:
+        This is a local-only endpoint for single-user deployments.
+        In production/multi-user scenarios, add proper authentication.
+    """
+    if provider not in SUPPORTED_PROVIDERS:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported provider: {provider}. Supported: {SUPPORTED_PROVIDERS}",
+        )
+
+    stored_keys = get_api_keys_from_config()
+    key = stored_keys.get(provider)
+
+    if not key:
+        raise HTTPException(
+            status_code=404,
+            detail=f"No API key configured for {provider}",
+        )
+
+    return {"provider": provider, "api_key": key}
+
+
 @router.post("/reset")
 async def reset_database_endpoint(request: ResetDatabaseRequest) -> dict:
     """Reset the database and clear all data.
@@ -483,3 +519,98 @@ async def reset_database_endpoint(request: ResetDatabaseRequest) -> dict:
         )
     db.reset_database()
     return {"message": "Database and all data have been reset successfully"}
+
+
+@router.get("/openrouter-models", response_model=OpenRouterModelsResponse)
+async def get_openrouter_models(api_key: str | None = None) -> OpenRouterModelsResponse:
+    """Fetch available models from OpenRouter API.
+
+    This endpoint proxies the OpenRouter models API to avoid exposing
+    the user's API key in the frontend. Can use either the provided API key
+    or the stored configuration.
+
+    Args:
+        api_key: Optional API key to use. If not provided, uses stored key.
+
+    Returns:
+        List of available OpenRouter models with basic metadata.
+
+    Raises:
+        HTTPException: If OpenRouter API key is not configured or API call fails.
+    """
+    # Use provided API key or fall back to stored key
+    key_to_use = api_key
+    if not key_to_use:
+        # Check both api_keys structure and root-level api_key (for backward compatibility)
+        stored_keys = get_api_keys_from_config()
+        key_to_use = stored_keys.get("openrouter")
+        
+        # Also check the LLM config root-level api_key if provider is openrouter
+        if not key_to_use:
+            stored = _load_config()
+            if stored.get("provider") == "openrouter":
+                key_to_use = stored.get("api_key")
+
+    if not key_to_use:
+        raise HTTPException(
+            status_code=400,
+            detail="OpenRouter API key not configured. Please set your API key first.",
+        )
+
+    try:
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(
+                "https://openrouter.ai/api/v1/models",
+                headers={"Authorization": f"Bearer {key_to_use}"},
+            )
+            response.raise_for_status()
+            data = response.json()
+
+            # Transform OpenRouter response to our schema
+            models = []
+            for model_data in data.get("data", []):
+                pricing_data = model_data.get("pricing", {})
+                pricing = OpenRouterPricing(
+                    prompt=pricing_data.get("prompt"),
+                    completion=pricing_data.get("completion"),
+                    request=pricing_data.get("request"),
+                    image=pricing_data.get("image"),
+                )
+
+                # Get max_completion_tokens from top_provider if available
+                top_provider = model_data.get("top_provider", {})
+                max_completion_tokens = top_provider.get("max_completion_tokens")
+
+                model = OpenRouterModel(
+                    id=model_data.get("id", ""),
+                    name=model_data.get("name", ""),
+                    description=model_data.get("description"),
+                    context_length=model_data.get("context_length"),
+                    max_completion_tokens=max_completion_tokens,
+                    pricing=pricing,
+                )
+                models.append(model)
+
+            # Sort by name for better UX
+            models.sort(key=lambda m: m.name.lower())
+
+            return OpenRouterModelsResponse(models=models)
+
+    except httpx.HTTPStatusError as e:
+        logging.error(f"OpenRouter API error: {e.response.status_code} - {e.response.text}")
+        raise HTTPException(
+            status_code=502,
+            detail=f"OpenRouter API error: {e.response.status_code}. Please check your API key.",
+        )
+    except httpx.RequestError as e:
+        logging.error(f"Failed to connect to OpenRouter API: {e}")
+        raise HTTPException(
+            status_code=503,
+            detail="Unable to connect to OpenRouter API. Please try again later.",
+        )
+    except Exception as e:
+        logging.error(f"Unexpected error fetching OpenRouter models: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="An unexpected error occurred while fetching models.",
+        )

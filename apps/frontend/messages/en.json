@@ -26,7 +26,9 @@
     "filter": "Filter",
     "reset": "Reset",
     "apply": "Apply",
-    "selectOption": "Select an option...",
+"selectOption": "Select an option...",
+    "noResults": "No results found",
+    "useCustomValue": "Use custom value",
     "unknown": "Unknown",
     "keysCleared": "API keys cleared successfully",
     "databaseReset": "Database reset successfully",
@@ -669,7 +671,10 @@
       },
       "healthWarnings": {
         "empty_content": "LLM returned empty content for the health check."
-      }
+      },
+      "loadingModels": "Loading models...",
+      "noModelsFound": "No models found. Check your API key.",
+      "openRouterModelHelp": "Type to enter a custom model ID, or select from the dropdown after entering your API key."
     },
     "contentGeneration": {
       "title": "Content Generation",

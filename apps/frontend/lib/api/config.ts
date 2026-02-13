@@ -350,6 +350,22 @@ export async function clearAllApiKeys(): Promise<void> {
   }
 }
 
+// Fetch API key for a specific provider
+export async function fetchApiKey(provider: ApiKeyProvider): Promise<string> {
+  const res = await apiFetch(`/config/api-keys/${provider}`, { credentials: 'include' });
+
+  if (!res.ok) {
+    if (res.status === 404) {
+      return '';
+    }
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.detail || `Failed to fetch API key (status ${res.status}).`);
+  }
+
+  const data = await res.json();
+  return data.api_key || '';
+}
+
 // Reset database
 export async function resetDatabase(): Promise<void> {
   const res = await apiFetch('/config/reset', {
@@ -363,4 +379,42 @@ export async function resetDatabase(): Promise<void> {
     const data = await res.json().catch(() => ({}));
     throw new Error(data.detail || `Failed to reset database (status ${res.status}).`);
   }
+}
+
+// OpenRouter Models types
+export interface OpenRouterPricing {
+  prompt: string | null;
+  completion: string | null;
+  request: string | null;
+  image: string | null;
+}
+
+export interface OpenRouterModel {
+  id: string;
+  name: string;
+  description: string | null;
+  context_length: number | null;
+  max_completion_tokens: number | null;
+  pricing: OpenRouterPricing | null;
+}
+
+export interface OpenRouterModelsResponse {
+  models: OpenRouterModel[];
+}
+
+// Fetch available OpenRouter models
+export async function fetchOpenRouterModels(apiKey?: string): Promise<OpenRouterModelsResponse> {
+  // Build URL with optional API key query parameter
+  const url = apiKey
+    ? `/config/openrouter-models?api_key=${encodeURIComponent(apiKey)}`
+    : '/config/openrouter-models';
+
+  const res = await apiFetch(url, { credentials: 'include' });
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.detail || `Failed to fetch OpenRouter models (status ${res.status}).`);
+  }
+
+  return res.json();
 }

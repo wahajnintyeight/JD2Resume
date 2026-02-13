@@ -687,3 +687,30 @@ class StatusResponse(BaseModel):
     llm_healthy: bool
     has_master_resume: bool
     database_stats: dict[str, Any]
+
+
+# OpenRouter Models
+class OpenRouterPricing(BaseModel):
+    """Pricing information for an OpenRouter model."""
+
+    prompt: str | None = None
+    completion: str | None = None
+    request: str | None = None
+    image: str | None = None
+
+
+class OpenRouterModel(BaseModel):
+    """OpenRouter model information."""
+
+    id: str
+    name: str
+    description: str | None = None
+    context_length: int | None = None
+    max_completion_tokens: int | None = None
+    pricing: OpenRouterPricing | None = None
+
+
+class OpenRouterModelsResponse(BaseModel):
+    """Response for OpenRouter models list."""
+
+    models: list[OpenRouterModel]

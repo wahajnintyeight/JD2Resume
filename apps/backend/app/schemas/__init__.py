@@ -26,6 +26,9 @@ from app.schemas.models import (
     LLMConfigRequest,
     LLMConfigResponse,
     normalize_resume_data,
+    OpenRouterModel,
+    OpenRouterModelsResponse,
+    OpenRouterPricing,
     PersonalInfo,
     Project,
     PromptConfigRequest,
@@ -98,4 +101,7 @@ __all__ = [
     "GenerateContentResponse",
     "HealthResponse",
     "StatusResponse",
+    "OpenRouterModel",
+    "OpenRouterModelsResponse",
+    "OpenRouterPricing",
 ]

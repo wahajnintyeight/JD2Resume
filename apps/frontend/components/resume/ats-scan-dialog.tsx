@@ -276,7 +276,7 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                     <h4 className="font-mono text-sm font-bold uppercase text-red-900 mb-2">
                       Scan Failed
                     </h4>
-                    <p className="font-mono text-sm text-red-800">{error}</p>
+                    <p className="font-mono text-sm text-red-800 break-words">{error}</p>
                     <Button
                       onClick={handleScan}
                       variant="outline"
