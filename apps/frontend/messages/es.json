@@ -671,7 +671,10 @@
       },
       "healthWarnings": {
         "empty_content": "El LLM devolvió contenido vacío en la verificación de salud."
-      }
+      },
+      "loadingModels": "Cargando modelos...",
+      "noModelsFound": "No se encontraron modelos. Verifica tu clave API.",
+      "openRouterModelHelp": "Escribe para ingresar un ID de modelo personalizado, o selecciona del menú desplegable después de ingresar tu clave API."
     },
     "contentGeneration": {
       "title": "Generación de contenido",
