@@ -27,6 +27,8 @@
     "reset": "リセット",
     "apply": "適用",
     "selectOption": "選択してください...",
+    "noResults": "結果が見つかりません",
+    "useCustomValue": "カスタム値を使用",
     "unknown": "不明",
     "keysCleared": "APIキーが正常にクリアされました",
     "databaseReset": "データベースが正常にリセットされました",

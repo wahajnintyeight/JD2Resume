@@ -27,6 +27,8 @@
     "reset": "重置",
     "apply": "应用",
     "selectOption": "请选择...",
+    "noResults": "未找到结果",
+    "useCustomValue": "使用自定义值",
     "unknown": "未知",
     "keysCleared": "API密钥已成功清除",
     "databaseReset": "数据库已成功重置",

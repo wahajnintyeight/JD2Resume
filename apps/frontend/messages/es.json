@@ -27,6 +27,8 @@
     "reset": "Restablecer",
     "apply": "Aplicar",
     "selectOption": "Selecciona una opción...",
+    "noResults": "No se encontraron resultados",
+    "useCustomValue": "Usar valor personalizado",
     "unknown": "Desconocido",
     "keysCleared": "Claves API borradas con éxito",
     "databaseReset": "Base de datos restablecida con éxito",

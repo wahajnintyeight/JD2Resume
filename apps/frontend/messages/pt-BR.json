@@ -27,6 +27,8 @@
     "reset": "Redefinir",
     "apply": "Aplicar",
     "selectOption": "Selecione uma opção...",
+    "noResults": "Nenhum resultado encontrado",
+    "useCustomValue": "Usar valor personalizado",
     "unknown": "Desconhecido",
     "keysCleared": "Chaves de API removidas com sucesso",
     "databaseReset": "Banco de dados redefinido com sucesso",
