@@ -671,7 +671,10 @@
       },
       "healthWarnings": {
         "empty_content": "健康检查返回了空内容。"
-      }
+      },
+      "loadingModels": "加载模型中...",
+      "noModelsFound": "未找到模型。请检查您的 API 密钥。",
+      "openRouterModelHelp": "输入自定义模型 ID，或在输入 API 密钥后从下拉菜单中选择。"
     },
     "contentGeneration": {
       "title": "内容生成",
