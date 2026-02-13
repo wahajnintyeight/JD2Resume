@@ -671,7 +671,10 @@
       },
       "healthWarnings": {
         "empty_content": "ヘルスチェックで空の内容が返されました。"
-      }
+      },
+      "loadingModels": "モデルを読み込み中...",
+      "noModelsFound": "モデルが見つかりません。APIキーを確認してください。",
+      "openRouterModelHelp": "カスタムモデルIDを入力するか、APIキー入力後にドロップダウンから選択してください。"
     },
     "contentGeneration": {
       "title": "コンテンツ生成",

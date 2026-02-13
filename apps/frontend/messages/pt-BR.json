@@ -671,7 +671,10 @@
       },
       "healthWarnings": {
         "empty_content": "O LLM retornou conteúdo vazio na verificação de integridade."
-      }
+      },
+      "loadingModels": "Carregando modelos...",
+      "noModelsFound": "Nenhum modelo encontrado. Verifique sua chave de API.",
+      "openRouterModelHelp": "Digite para inserir um ID de modelo personalizado, ou selecione no menu suspenso após inserir sua chave de API."
     },
     "contentGeneration": {
       "title": "Geração de Conteúdo",
