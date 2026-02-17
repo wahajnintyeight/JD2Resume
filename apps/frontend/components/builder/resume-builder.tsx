@@ -441,8 +441,7 @@ const ResumeBuilderContent = () => {
     }
     try {
       setIsDownloading(true);
-      const blob = await downloadResumePdf(resumeId, templateSettings, uiLanguage);
-      const filename = sanitizeFilename(resumeTitle, resumeId, 'resume');
+      const { blob, filename } = await downloadResumePdf(resumeId, templateSettings, uiLanguage);
       downloadBlobAsFile(blob, filename);
       showNotification(t('builder.alerts.downloadSuccess'), 'success');
     } catch (error) {

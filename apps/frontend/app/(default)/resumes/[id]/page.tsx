@@ -166,8 +166,7 @@ export default function ResumeViewerPage() {
 
   const handleDownload = async () => {
     try {
-      const blob = await downloadResumePdf(resumeId, undefined, uiLanguage);
-      const filename = sanitizeFilename(resumeTitle, resumeId, 'resume');
+      const { blob, filename } = await downloadResumePdf(resumeId, undefined, uiLanguage);
       downloadBlobAsFile(blob, filename);
       setShowDownloadSuccessDialog(true);
     } catch (err) {
