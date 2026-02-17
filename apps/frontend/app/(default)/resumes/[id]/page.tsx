@@ -20,7 +20,7 @@ import ATSScanDialog from '@/components/resume/ats-scan-dialog';
 import { useTranslations } from '@/lib/i18n';
 import { withLocalizedDefaultSections } from '@/lib/utils/section-helpers';
 import { useLanguage } from '@/lib/context/language-context';
-import { downloadBlobAsFile, openUrlInNewTab } from '@/lib/utils/download';
+import { downloadBlobAsFile, openUrlInNewTab, sanitizeFilename } from '@/lib/utils/download';
 
 type ProcessingStatus = 'pending' | 'processing' | 'ready' | 'failed';
 
@@ -166,7 +166,8 @@ export default function ResumeViewerPage() {
 
   const handleDownload = async () => {
     try {
-      const { blob, filename } = await downloadResumePdf(resumeId, undefined, uiLanguage);
+      const blob = await downloadResumePdf(resumeId, undefined, uiLanguage);
+      const filename = sanitizeFilename(resumeTitle, resumeId, 'resume');
       downloadBlobAsFile(blob, filename);
       setShowDownloadSuccessDialog(true);
     } catch (err) {
@@ -336,10 +337,14 @@ export default function ResumeViewerPage() {
                 }}
                 className="group flex items-center gap-2 cursor-pointer bg-transparent border-none p-0"
               >
-                <h2 className={`font-serif text-2xl font-bold border-b-2 border-transparent group-hover:border-black transition-colors ${!resumeTitle ? 'text-gray-400' : ''}`}>
+                <h2
+                  className={`font-serif text-2xl font-bold border-b-2 border-transparent group-hover:border-black transition-colors ${!resumeTitle ? 'text-gray-400' : ''}`}
+                >
                   {resumeTitle || t('resumeViewer.titlePlaceholder')}
                 </h2>
-                <Pencil className={`w-4 h-4 transition-opacity ${resumeTitle ? 'opacity-0 group-hover:opacity-60' : 'opacity-40 group-hover:opacity-60'}`} />
+                <Pencil
+                  className={`w-4 h-4 transition-opacity ${resumeTitle ? 'opacity-0 group-hover:opacity-60' : 'opacity-40 group-hover:opacity-60'}`}
+                />
               </button>
             )}
           </div>
