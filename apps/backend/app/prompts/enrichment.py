@@ -209,8 +209,18 @@ OUTPUT FORMAT (JSON only):
   "change_summary": "Brief explanation"
 }}
 
+CRITICAL SKILL HANDLING RULES:
+- PRESERVE ALL EXISTING SKILLS: You must NEVER remove skills already present in the CURRENT SKILLS list
+- ONLY ADD GENUINE TECHNICAL SKILLS: Only add skills that are actual technologies, tools, programming languages, frameworks, platforms, databases, cloud services, or technical methodologies
+- DO NOT ADD BUZZWORDS OR SOFT SKILLS: Avoid adding terms like "communication", "leadership", "stakeholder management", "strategic thinking", "teamwork"
+- DO NOT ADD GENERIC CONCEPTS: Do not add "agile", "scrum", "waterfall" unless specifically requested
+- VALIDATE BEFORE ADDING: Only add a skill if it is a recognized technical competency (e.g., "Python", "Kubernetes", "AWS Lambda", "GraphQL", "PostgreSQL", "Docker", "React", "TensorFlow")
+- EXAMPLES OF VALID TECHNICAL SKILLS: Programming languages, databases, cloud platforms, frameworks, libraries, tools, DevOps technologies, ML/AI frameworks, security tools, testing frameworks
+- EXAMPLES OF INVALID "SKILLS": "data storytelling", "product thinking", "growth mindset", "problem solving", "adaptability", "time management"
+
 RULES:
 - Keep skills concise and industry-standard
 - Group similar technologies if appropriate
 - Prioritize most relevant skills based on feedback
-- Only include skills that already exist in CURRENT SKILLS or are explicitly provided in USER'S FEEDBACK"""
+- Only include skills that already exist in CURRENT SKILLS or are explicitly provided in USER'S FEEDBACK
+- Only add NEW technical skills if explicitly requested by the user and they are genuine technical competencies"""

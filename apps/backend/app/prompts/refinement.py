@@ -144,6 +144,15 @@ CRITICAL RULES:
 4. Maintain the exact same JSON structure
 5. Do not use em-dashes (—) or their variants (---, --)
 
+SKILL HANDLING RULES (CRITICAL):
+- PRESERVE ALL EXISTING SKILLS: You must NEVER remove skills already present in the technicalSkills list
+- ONLY ADD GENUINE TECHNICAL SKILLS: Only add skills that are actual technologies, tools, programming languages, frameworks, platforms, databases, cloud services, or technical methodologies
+- DO NOT ADD BUZZWORDS OR SOFT SKILLS: Avoid adding terms like "communication", "leadership", "stakeholder management", "strategic thinking", "cross-functional collaboration"
+- DO NOT ADD GENERIC CONCEPTS: Do not add "agile", "scrum", "waterfall" unless specifically requested as hard requirements
+- VALIDATE BEFORE ADDING: Only add a skill if it is a recognized technical competency (e.g., "Python", "Kubernetes", "AWS Lambda", "GraphQL", "TensorFlow", "PostgreSQL", "Docker", "React")
+- EXAMPLES OF VALID TECHNICAL SKILLS: Programming languages, databases, cloud platforms, frameworks, libraries, tools, DevOps technologies, ML/AI frameworks, security tools, testing frameworks
+- EXAMPLES OF INVALID "SKILLS": "data storytelling", "product thinking", "growth mindset", "problem solving", "teamwork", "adaptability"
+
 Keywords to inject (only if supported by master resume):
 {keywords_to_inject}
 
@@ -172,6 +181,14 @@ VERIFY:
 - All skills exist in the master resume
 - All certifications exist in the master resume
 - No fabricated metrics or achievements
+
+SKILL PRESERVATION RULES (CRITICAL):
+- PRESERVE ALL EXISTING SKILLS: You must NEVER remove skills already present in the technicalSkills list from the original resume
+- ONLY RETAIN GENUINE TECHNICAL SKILLS: Ensure all skills in technicalSkills are actual technologies, tools, programming languages, frameworks, platforms, databases, or cloud services
+- REMOVE SOFT SKILLS from technicalSkills: If "communication", "leadership", "teamwork" appear in technicalSkills, remove them
+- REMOVE BUSINESS CONCEPTS from technicalSkills: If generic terms like "stakeholder management", "strategic planning", "data storytelling" appear in technicalSkills, remove them
+- VALIDATE TECHNICAL SKILLS: Ensure all skills are recognized technical competencies (e.g., "Python", "Kubernetes", "AWS Lambda", "GraphQL", "PostgreSQL", "Docker", "React")
+- ONLY ADD TECHNICAL SKILLS: If adding new skills, only add actual technical tools/languages/frameworks from the job description that are supported by the master resume
 
 Resume to polish:
 {resume}

@@ -156,6 +156,13 @@ CRITICAL_TRUTHFULNESS_RULES_TEMPLATE = """CRITICAL TRUTHFULNESS RULES - NEVER VI
 8. Preserve factual accuracy - only use information provided by the candidate as the primary foundation.
 9. SKILL ADDITION: You ARE encouraged to add relevant technical skills from the Job Description to the technicalSkills list to ensure a high ATS match, as these will be reviewed by the candidate.
 
+SKILL HANDLING RULES (CRITICAL):
+- PRESERVE ALL EXISTING SKILLS: You must NEVER remove skills already present in the original resume's technicalSkills list
+- ONLY ADD GENUINE TECHNICAL SKILLS: Only add skills that are actual technologies, tools, programming languages, frameworks, platforms, or technical methodologies
+- DO NOT ADD BUZZWORDS: Avoid adding soft skills ("communication", "leadership"), generic terms ("agile", "scrum" unless specifically requested), or business jargon ("stakeholder management", "strategic planning")
+- VALIDATE BEFORE ADDING: Only add a skill if it appears in the job description AND is a recognized technical competency (e.g., "Python", "Kubernetes", "AWS Lambda", "GraphQL", "TensorFlow")
+- DO NOT ADD: Concepts, processes, or soft skills disguised as technical terms ("cross-functional collaboration", "data storytelling", "product thinking", "growth mindset")
+
 Violation of these rules could cause serious problems for the candidate in job interviews.
 """
 
@@ -178,6 +185,8 @@ ATS_CORE_RULES = """ATS OPTIMIZATION RULES (CRITICAL FOR PASSING AUTOMATED SCREE
    - DO NOT include soft skills (communication, teamwork, leadership) in technicalSkills array
    - Place the most critical/required skills first in the list
    - Use flat comma-separated format - avoid nested categories for better ATS parsing
+   - PRESERVE ALL EXISTING SKILLS: Never remove skills already present in the original resume
+   - ADD ONLY TECHNICAL SKILLS: Only add actual technologies, tools, languages, frameworks - not buzzwords or concepts
 
 3. EXACT LANGUAGE MATCHING (CRITICAL):
    - Use the EXACT phrases from the job description, not synonyms
