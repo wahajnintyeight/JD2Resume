@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { fetchResumeList, type ResumeListItem } from '@/lib/api/resume';
+import { fetchResumeList, type ResumeListItem, deleteResume } from '@/lib/api/resume';
 import { Button } from '@/components/ui/button';
 import { Card, CardTitle, CardDescription } from '@/components/ui/card';
 import { ResumeUploadDialog } from '@/components/dashboard/resume-upload-dialog';
@@ -11,6 +11,7 @@ import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
 import X from 'lucide-react/dist/esm/icons/x';
 import Upload from 'lucide-react/dist/esm/icons/upload';
 import FileText from 'lucide-react/dist/esm/icons/file-text';
+import Trash2 from 'lucide-react/dist/esm/icons/trash-2';
 
 interface ResumeManagerDialogProps {
   isOpen: boolean;
@@ -66,6 +67,18 @@ export default function ResumeManagerDialog({
       onResumeChanged?.();
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to remove master status');
+    }
+  };
+
+  const handleDeleteResume = async (resumeId: string, resumeName: string) => {
+    if (!confirm(`Are you sure you want to delete "${resumeName}"? This action cannot be undone.`)) return;
+
+    try {
+      await deleteResume(resumeId);
+      await loadResumes();
+      onResumeChanged?.();
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to delete resume');
     }
   };
 
@@ -187,26 +200,37 @@ export default function ResumeManagerDialog({
                     </CardDescription>
 
                     {/* Actions */}
-                    <div className="mt-4 flex gap-2">
-                      {resume.is_master ? (
-                        <Button
-                          onClick={() => handleRemoveMaster(resume.resume_id)}
-                          variant="destructive"
-                          size="sm"
-                          className="flex-1"
-                        >
-                          Remove Master
-                        </Button>
-                      ) : (
-                        <Button
-                          onClick={() => handleSetAsMaster(resume)}
-                          variant="default"
-                          size="sm"
-                          className="flex-1"
-                        >
-                          Set as Master
-                        </Button>
-                      )}
+                    <div className="mt-4 flex flex-col gap-2">
+                      <div className="flex gap-2">
+                        {resume.is_master ? (
+                          <Button
+                            onClick={() => handleRemoveMaster(resume.resume_id)}
+                            variant="destructive"
+                            size="sm"
+                            className="flex-1"
+                          >
+                            Remove Master
+                          </Button>
+                        ) : (
+                          <Button
+                            onClick={() => handleSetAsMaster(resume)}
+                            variant="default"
+                            size="sm"
+                            className="flex-1"
+                          >
+                            Set as Master
+                          </Button>
+                        )}
+                      </div>
+                      <Button
+                        onClick={() => handleDeleteResume(resume.resume_id, resume.title || resume.filename || 'Resume')}
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center justify-center gap-2 border-red-600 text-red-600 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </Button>
                     </div>
                   </Card>
                 ))}
