@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { AlertTriangle, CheckCircle, X, ChevronDown, ChevronRight } from 'lucide-react';
+import { AlertTriangle, CheckCircle, X, ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useTranslations } from '@/lib/i18n';
@@ -18,6 +18,7 @@ interface DiffPreviewModalProps {
   diffSummary?: ResumeDiffSummary;
   detailedChanges?: ResumeFieldDiff[];
   errorMessage?: string;
+  isSaving?: boolean;
 }
 
 export function DiffPreviewModal({
@@ -28,6 +29,7 @@ export function DiffPreviewModal({
   diffSummary,
   detailedChanges,
   errorMessage,
+  isSaving = false,
 }: DiffPreviewModalProps) {
   const { t } = useTranslations();
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
@@ -298,8 +300,16 @@ export function DiffPreviewModal({
             <X className="w-4 h-4" />
             {t('tailor.diffModal.rejectButton')}
           </Button>
-          <Button onClick={onConfirm} className="gap-2 bg-[#15803D] hover:bg-[#166534]">
-            <CheckCircle className="w-4 h-4" />
+          <Button 
+            onClick={onConfirm} 
+            disabled={isSaving}
+            className="gap-2 bg-[#15803D] hover:bg-[#166534]"
+          >
+            {isSaving ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <CheckCircle className="w-4 h-4" />
+            )}
             {t('tailor.diffModal.confirmButton')}
           </Button>
         </div>

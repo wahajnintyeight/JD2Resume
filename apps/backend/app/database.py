@@ -291,7 +291,24 @@ class Database:
             "resume_id": resume_id,
             "created_at": now,
         }
-        self.jobs.insert(doc)
+        
+        try:
+            doc_id = self.jobs.insert(doc)
+        except ValueError as e:
+            if "already exists" in str(e):
+                # Database ID collision - get the next available ID manually
+                logger.warning("TinyDB doc_id collision detected: %s", e)
+                # Get all document IDs and find the next available one
+                all_docs = self.jobs.all()
+                if all_docs:
+                    max_id = max(d.doc_id for d in all_docs)
+                    # TinyDB will use max_id + 1 for the next insert
+                    # Force it by updating the internal counter
+                    self.jobs._next_id = max_id + 1
+                doc_id = self.jobs.insert(doc)
+            else:
+                raise
+        
         return doc
 
     def get_job(self, job_id: str) -> dict[str, Any] | None:
