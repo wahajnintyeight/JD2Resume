@@ -98,7 +98,25 @@ class Database:
             "created_at": now,
             "updated_at": now,
         }
-        self.resumes.insert(doc)
+        
+        # Retry loop to handle TinyDB ID collisions
+        while True:
+            try:
+                self.resumes.insert(doc)
+                break
+            except ValueError as e:
+                if "already exists" in str(e):
+                    logger.warning("TinyDB doc_id collision detected in resumes: %s. Fixing counter...", e)
+                    # Force TinyDB to recalculate the next ID
+                    all_docs = self.resumes.all()
+                    if all_docs:
+                        max_id = max(d.doc_id for d in all_docs)
+                        self.resumes._next_id = max_id + 1
+                    else:
+                        self.resumes._next_id = 1
+                    continue
+                raise
+        
         return doc
 
     async def create_resume_atomic_master(
@@ -345,7 +363,25 @@ class Database:
             "improvements": improvements,
             "created_at": now,
         }
-        self.improvements.insert(doc)
+        
+        # Retry loop to handle TinyDB ID collisions
+        while True:
+            try:
+                self.improvements.insert(doc)
+                break
+            except ValueError as e:
+                if "already exists" in str(e):
+                    logger.warning("TinyDB doc_id collision detected in improvements: %s. Fixing counter...", e)
+                    # Force TinyDB to recalculate the next ID
+                    all_docs = self.improvements.all()
+                    if all_docs:
+                        max_id = max(d.doc_id for d in all_docs)
+                        self.improvements._next_id = max_id + 1
+                    else:
+                        self.improvements._next_id = 1
+                    continue
+                raise
+        
         return doc
 
     def get_improvement_by_tailored_resume(
@@ -417,7 +453,25 @@ class Database:
                 "created_at": now,
                 "updated_at": now,
             }
-            self.ats_scans.insert(doc)
+            
+            # Retry loop to handle TinyDB ID collisions
+            while True:
+                try:
+                    self.ats_scans.insert(doc)
+                    break
+                except ValueError as e:
+                    if "already exists" in str(e):
+                        logger.warning("TinyDB doc_id collision detected in ats_scans: %s. Fixing counter...", e)
+                        # Force TinyDB to recalculate the next ID
+                        all_docs = self.ats_scans.all()
+                        if all_docs:
+                            max_id = max(d.doc_id for d in all_docs)
+                            self.ats_scans._next_id = max_id + 1
+                        else:
+                            self.ats_scans._next_id = 1
+                        continue
+                    raise
+            
             return doc
     
     def get_ats_scan(self, resume_id: str) -> dict[str, Any] | None:

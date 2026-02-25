@@ -11,9 +11,9 @@ from pydantic import BaseModel
 from app.config import settings
 
 # LLM timeout configuration (seconds) - base values
-LLM_TIMEOUT_HEALTH_CHECK = 30
-LLM_TIMEOUT_COMPLETION = 120
-LLM_TIMEOUT_JSON = 180  # JSON completions may take longer
+LLM_TIMEOUT_HEALTH_CHECK = 60
+LLM_TIMEOUT_COMPLETION = 180
+LLM_TIMEOUT_JSON = 240  # JSON completions may take longer
 
 # LLM-004: OpenRouter JSON-capable models (explicit allowlist)
 OPENROUTER_JSON_CAPABLE_MODELS = {
