@@ -27,6 +27,7 @@ import { getVersionString } from '@/lib/config/version';
 import { ToggleSwitch } from '@/components/ui/toggle-switch';
 import { useStatusCache } from '@/lib/context/status-cache';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
@@ -69,9 +70,10 @@ const PROVIDERS: LLMProvider[] = [
 ];
 
 const SEGMENTED_BUTTON_BASE =
-  'border border-black font-mono transition-all duration-150 ease-out shadow-[2px_2px_0px_0px_#000000] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none disabled:cursor-not-allowed disabled:opacity-50';
-const SEGMENTED_BUTTON_ACTIVE = 'bg-blue-700 text-white border-black hover:bg-blue-800';
-const SEGMENTED_BUTTON_INACTIVE = 'bg-white text-black hover:bg-[#E5E5E0]';
+  'rounded-full border border-white/10 bg-white/5 font-mono tracking-widest transition-all duration-200 hover:bg-white/10 hover:border-white/20 hover:text-white disabled:cursor-not-allowed disabled:opacity-50';
+const SEGMENTED_BUTTON_ACTIVE =
+  'bg-indigo-600 text-white border-indigo-400/30 shadow-lg shadow-indigo-500/20';
+const SEGMENTED_BUTTON_INACTIVE = 'text-white/60';
 
 const unwrapCodeBlock = (value?: string | null): string | null => {
   if (!value) return null;
@@ -607,45 +609,52 @@ export default function SettingsPage() {
   const requiresApiKey = providerInfo.requiresKey ?? true;
 
   return (
-    <div
-      className="flex flex-col items-center justify-start p-6 md:p-12 min-h-screen overflow-y-auto"
-      style={{
-        backgroundImage:
-          'linear-gradient(rgba(29, 78, 216, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(29, 78, 216, 0.05) 1px, transparent 1px)',
-        backgroundSize: '40px 40px',
-      }}
-    >
-      <div className="w-full max-w-4xl mx-2 sm:mx-4 lg:mx-auto border border-black bg-[#F0F0E8] shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)]">
-        {/* Header */}
-        <div className="border-b border-black p-4 sm:p-6 lg:p-8 bg-white flex flex-col sm:flex-row justify-between items-start gap-4">
-          <div>
-            <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight uppercase">
-              {t('settings.title')}
-            </h1>
-            <p className="font-mono text-xs text-gray-500 mt-2 uppercase tracking-wider">
-              {'// '}
-              {t('settings.subtitle')}
-            </p>
+    <div className="max-w-7xl mx-auto w-full px-6 md:px-12 py-10 md:py-16 space-y-12">
+      {/* Page header */}
+      <section className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] items-start gap-10">
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-[10px] font-bold uppercase tracking-widest mb-4">
+            <Settings2 className="w-3 h-3" />
+            {t('settings.title')}
           </div>
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-3">
+            {t('settings.title')}
+          </h1>
+          <p className="text-white/50 text-base max-w-xl">{t('settings.subtitle')}</p>
+        </div>
+        <div className="flex flex-col sm:flex-row lg:flex-col gap-3 lg:items-end">
           <Link href="/dashboard">
-            <Button variant="outline" size="sm" className="w-full sm:w-auto">
+            <Button variant="outline" size="lg" className="w-full lg:w-60">
               <ArrowLeft className="w-4 h-4" />
               {t('common.back')}
             </Button>
           </Link>
+          <Button
+            variant="secondary"
+            size="lg"
+            onClick={refreshStatus}
+            disabled={statusLoading}
+            className="w-full lg:w-60"
+          >
+            <RefreshCw className={`w-4 h-4 ${statusLoading ? 'animate-spin' : ''}`} />
+            {t('settings.systemStatus.refresh')}
+          </Button>
         </div>
+      </section>
 
-        <div className="p-4 sm:p-6 lg:p-8 space-y-8 lg:space-y-10">
+      <div className="space-y-10">
           {/* API Key Not Configured Warning */}
           {!statusLoading && systemStatus && !systemStatus.llm_configured && (
-            <div className="border-2 border-amber-500 bg-amber-50 p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
-              <div className="flex items-start gap-3">
-                <div className="w-3 h-3 bg-amber-500 mt-1 shrink-0"></div>
+            <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/20 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-5 h-5 text-amber-400" />
+                </div>
                 <div className="flex-1">
-                  <p className="font-mono text-sm font-bold uppercase tracking-wider text-amber-800">
+                  <p className="text-sm font-bold text-amber-300 mb-1">
                     {t('settings.setupRequired.title')}
                   </p>
-                  <p className="font-mono text-xs text-amber-700 mt-1">
+                  <p className="text-xs text-amber-400/80">
                     {t('settings.setupRequired.description')}
                   </p>
                 </div>
@@ -654,51 +663,56 @@ export default function SettingsPage() {
           )}
 
           {/* System Status Panel */}
-          <section className="space-y-4">
-            <div className="flex items-center justify-between border-b border-black/10 pb-2">
+          <Card className="space-y-6">
+            <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <Activity className="w-4 h-4" />
-                  <h2 className="font-mono text-sm font-bold uppercase tracking-wider">
-                    {t('settings.systemStatus.title')}
-                  </h2>
+                <div className="h-10 w-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+                  <Activity className="w-5 h-5" />
                 </div>
+                <div>
+                  <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold">
+                    {t('settings.systemStatus.title')}
+                  </p>
+                  <h2 className="text-lg font-bold">{t('settings.systemStatus.title')}</h2>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
                 {lastFetched && (
-                  <span className="font-mono text-xs text-gray-400 flex items-center gap-1">
+                  <span className="text-xs text-white/40 font-mono flex items-center gap-1">
                     <Clock className="w-3 h-3" />
                     {formatLastFetched()}
                   </span>
                 )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={refreshStatus}
+                  disabled={statusLoading}
+                  className="gap-1 text-xs"
+                >
+                  <RefreshCw className={`w-3 h-3 ${statusLoading ? 'animate-spin' : ''}`} />
+                  {t('settings.systemStatus.refresh')}
+                </Button>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={refreshStatus}
-                disabled={statusLoading}
-                className="gap-1 text-xs"
-              >
-                <RefreshCw className={`w-3 h-3 ${statusLoading ? 'animate-spin' : ''}`} />
-                {t('settings.systemStatus.refresh')}
-              </Button>
             </div>
 
             {statusLoading ? (
               <div className="flex items-center justify-center p-8">
-                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+                <Loader2 className="w-6 h-6 animate-spin text-white/40" />
               </div>
             ) : !systemStatus ? (
-              <div className="flex flex-col items-center justify-center p-8 gap-3 border border-dashed border-red-300 bg-red-50">
-                <p className="font-mono text-xs text-red-600 uppercase">
+              <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-6 text-center">
+                <p className="text-xs uppercase tracking-widest text-red-300 font-bold">
                   {t('settings.systemStatus.unableToConnect')}
                 </p>
-                <p className="font-mono text-xs text-gray-600">
+                <p className="text-xs text-white/50 font-mono mt-2">
                   {t('settings.systemStatus.expectedAt', { apiUrl: API_URL })}
                 </p>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={refreshStatus}
-                  className="gap-1 text-xs"
+                  className="gap-1 text-xs mt-4"
                 >
                   <RefreshCw className="w-3 h-3" />
                   {t('common.retry')}
@@ -707,18 +721,18 @@ export default function SettingsPage() {
             ) : (
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {/* LLM Status */}
-                <div className="border border-black bg-white p-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <Server className="w-4 h-4 text-gray-500" />
-                    <span className="font-mono text-xs uppercase text-gray-500">
+                    <Server className="w-4 h-4 text-white/40" />
+                    <span className="font-mono text-xs uppercase text-white/40">
                       {t('settings.statusCards.llm')}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     {systemStatus.llm_healthy ? (
-                      <CheckCircle2 className="w-5 h-5 text-green-600" />
+                      <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                     ) : (
-                      <XCircle className="w-5 h-5 text-red-500" />
+                      <XCircle className="w-5 h-5 text-red-400" />
                     )}
                     <span className="font-mono text-sm font-bold">
                       {systemStatus.llm_healthy
@@ -729,15 +743,15 @@ export default function SettingsPage() {
                 </div>
 
                 {/* Database Status */}
-                <div className="border border-black bg-white p-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <Database className="w-4 h-4 text-gray-500" />
-                    <span className="font-mono text-xs uppercase text-gray-500">
+                    <Database className="w-4 h-4 text-white/40" />
+                    <span className="font-mono text-xs uppercase text-white/40">
                       {t('settings.statusCards.database')}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                     <span className="font-mono text-sm font-bold">
                       {t('settings.statusValues.connected')}
                     </span>
@@ -745,10 +759,10 @@ export default function SettingsPage() {
                 </div>
 
                 {/* Resumes Count */}
-                <div className="border border-black bg-white p-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <FileText className="w-4 h-4 text-gray-500" />
-                    <span className="font-mono text-xs uppercase text-gray-500">
+                    <FileText className="w-4 h-4 text-white/40" />
+                    <span className="font-mono text-xs uppercase text-white/40">
                       {t('settings.statusCards.resumes')}
                     </span>
                   </div>
@@ -758,10 +772,10 @@ export default function SettingsPage() {
                 </div>
 
                 {/* Jobs Count */}
-                <div className="border border-black bg-white p-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <Briefcase className="w-4 h-4 text-gray-500" />
-                    <span className="font-mono text-xs uppercase text-gray-500">
+                    <Briefcase className="w-4 h-4 text-white/40" />
+                    <span className="font-mono text-xs uppercase text-white/40">
                       {t('settings.statusCards.jobs')}
                     </span>
                   </div>
@@ -775,10 +789,10 @@ export default function SettingsPage() {
             {/* Additional Stats Row */}
             {systemStatus && (
               <div className="grid grid-cols-2 gap-4">
-                <div className="border border-black bg-white p-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <Sparkles className="w-4 h-4 text-gray-500" />
-                    <span className="font-mono text-xs uppercase text-gray-500">
+                    <Sparkles className="w-4 h-4 text-white/40" />
+                    <span className="font-mono text-xs uppercase text-white/40">
                       {t('settings.statusCards.improvements')}
                     </span>
                   </div>
@@ -786,24 +800,24 @@ export default function SettingsPage() {
                     {systemStatus.database_stats.total_improvements}
                   </span>
                 </div>
-                <div className="border border-black bg-white p-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <FileText className="w-4 h-4 text-gray-500" />
-                    <span className="font-mono text-xs uppercase text-gray-500">
+                    <FileText className="w-4 h-4 text-white/40" />
+                    <span className="font-mono text-xs uppercase text-white/40">
                       {t('settings.statusCards.masterResume')}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     {systemStatus.has_master_resume ? (
                       <>
-                        <CheckCircle2 className="w-5 h-5 text-green-600" />
+                        <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                         <span className="font-mono text-sm font-bold">
                           {t('settings.statusValues.configured')}
                         </span>
                       </>
                     ) : (
                       <>
-                        <XCircle className="w-5 h-5 text-amber-500" />
+                        <XCircle className="w-5 h-5 text-amber-400" />
                         <span className="font-mono text-sm font-bold">
                           {t('settings.statusValues.notSet')}
                         </span>
@@ -813,15 +827,22 @@ export default function SettingsPage() {
                 </div>
               </div>
             )}
-          </section>
+          </Card>
 
           {/* LLM Configuration */}
-          <section className="space-y-6">
-            <div className="flex items-center gap-2 border-b border-black/10 pb-2">
-              <Key className="w-4 h-4" />
-              <h2 className="font-mono text-sm font-bold uppercase tracking-wider">
-                {t('settings.llmConfigurationTitle')}
-              </h2>
+          <Card className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+                <Key className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold">
+                  {t('settings.llmConfigurationTitle')}
+                </p>
+                <h2 className="text-xl font-bold tracking-tight">
+                  {t('settings.llmConfigurationTitle')}
+                </h2>
+              </div>
             </div>
 
             <div className="grid gap-6">
@@ -841,7 +862,7 @@ export default function SettingsPage() {
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-gray-500 font-mono">
+                <p className="text-xs text-white/40 font-mono">
                   {t('settings.llmConfiguration.selectedProvider', {
                     provider: providerInfo.name,
                   })}
@@ -859,9 +880,9 @@ export default function SettingsPage() {
                           type="checkbox"
                           checked={showFreeModelsOnly}
                           onChange={(e) => setShowFreeModelsOnly(e.target.checked)}
-                          className="w-4 h-4 border-2 border-black rounded-none"
+                          className="w-4 h-4 border border-white/20 rounded"
                         />
-                        <span className="text-xs font-mono text-gray-600">Show free models only</span>
+                        <span className="text-xs font-mono text-white/50">Show free models only</span>
                       </label>
                     </div>
                     <SearchableDropdown
@@ -886,11 +907,11 @@ export default function SettingsPage() {
                       pageSize={15}
                     />
                     {openRouterModelsError && (
-                      <p className="text-xs text-red-600 font-mono">
+                      <p className="text-xs text-red-300 font-mono">
                         {openRouterModelsError}
                       </p>
                     )}
-                    <p className="text-xs text-gray-500 font-mono">
+                    <p className="text-xs text-white/40 font-mono">
                       {t('settings.llmConfiguration.openRouterModelHelp')}
                     </p>
                   </>
@@ -904,7 +925,7 @@ export default function SettingsPage() {
                       placeholder={providerInfo.defaultModel}
                       className="font-mono"
                     />
-                    <p className="text-xs text-gray-500 font-mono">
+                    <p className="text-xs text-white/40 font-mono">
                       {t('settings.llmConfiguration.defaultModel', {
                         model: providerInfo.defaultModel,
                       })}
@@ -918,7 +939,7 @@ export default function SettingsPage() {
                 <Label htmlFor="apiKey">
                   {t('settings.llmConfiguration.apiKeyLabel')}{' '}
                   {!requiresApiKey && (
-                    <span className="text-gray-400">
+                    <span className="text-white/50">
                       {t('settings.llmConfiguration.apiKeyOptionalForOllama')}
                     </span>
                   )}
@@ -937,7 +958,7 @@ export default function SettingsPage() {
                   disabled={!requiresApiKey}
                 />
                 {requiresApiKey && hasStoredApiKey && !apiKey && (
-                  <p className="text-xs text-gray-500 font-mono">
+                  <p className="text-xs text-white/40 font-mono">
                     {t('settings.llmConfiguration.leaveBlankToKeepExistingKey')}
                   </p>
                 )}
@@ -953,7 +974,7 @@ export default function SettingsPage() {
                   placeholder={t('settings.llmConfiguration.baseUrlPlaceholder')}
                   className="font-mono"
                 />
-                <p className="text-xs text-gray-500 font-mono">
+                <p className="text-xs text-white/40 font-mono">
                   {t('settings.llmConfiguration.baseUrlDescription')}
                 </p>
               </div>
@@ -998,8 +1019,8 @@ export default function SettingsPage() {
 
               {/* Error Message */}
               {error && (
-                <div className="border border-red-300 bg-red-50 p-3">
-                  <p className="text-xs text-red-600 font-mono">
+                <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-4">
+                  <p className="text-xs text-red-300 font-mono">
                     {t('settings.llmConfiguration.errorPrefix', { error })}
                   </p>
                 </div>
@@ -1008,17 +1029,17 @@ export default function SettingsPage() {
               {/* Health Check Result */}
               {healthCheck && (
                 <div
-                  className={`border p-4 ${
+                  className={`rounded-2xl border p-4 ${
                     healthCheck.healthy
-                      ? 'border-green-300 bg-green-50'
-                      : 'border-red-300 bg-red-50'
+                      ? 'border-emerald-500/20 bg-emerald-500/10'
+                      : 'border-red-500/20 bg-red-500/10'
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-2">
                     {healthCheck.healthy ? (
-                      <CheckCircle2 className="w-5 h-5 text-green-600" />
+                      <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                     ) : (
-                      <XCircle className="w-5 h-5 text-red-500" />
+                      <XCircle className="w-5 h-5 text-red-400" />
                     )}
                     <span className="font-mono text-sm font-bold">
                       {healthCheck.healthy
@@ -1026,26 +1047,26 @@ export default function SettingsPage() {
                         : t('settings.llmConfiguration.connectionFailed')}
                     </span>
                   </div>
-                  <p className="font-mono text-xs text-gray-600">
+                  <p className="font-mono text-xs text-white/50">
                     {t('settings.llmConfiguration.connectionDetails', {
                       provider: healthCheck.provider,
                       model: healthCheck.model,
                     })}
                   </p>
                   {healthCheckError && (
-                    <p className="font-mono text-xs text-red-600 mt-1">{healthCheckError}</p>
+                    <p className="font-mono text-xs text-red-300 mt-1">{healthCheckError}</p>
                   )}
                   {healthCheckWarning && (
-                    <p className="font-mono text-xs text-amber-700 mt-1">{healthCheckWarning}</p>
+                    <p className="font-mono text-xs text-amber-300 mt-1">{healthCheckWarning}</p>
                   )}
                   {healthDetailItems.length > 0 && (
                     <div className="mt-3 space-y-3">
                       {healthDetailItems.map((item) => (
                         <div key={item.key}>
-                          <p className="font-mono text-[10px] uppercase tracking-wider text-gray-600">
+                          <p className="font-mono text-[10px] uppercase tracking-wider text-white/40">
                             {item.label}
                           </p>
-                          <pre className="mt-1 whitespace-pre-wrap break-all rounded-none border border-black bg-white p-3 text-xs text-gray-800 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+                          <pre className="mt-1 whitespace-pre-wrap break-all rounded-2xl border border-white/10 bg-white/5 p-3 text-xs text-white/80">
                             {item.value}
                           </pre>
                         </div>
@@ -1055,19 +1076,26 @@ export default function SettingsPage() {
                 </div>
               )}
             </div>
-          </section>
+          </Card>
 
           {/* Content Generation Section */}
-          <section className="space-y-6">
-            <div className="flex items-center gap-2 border-b border-black/10 pb-2">
-              <Settings2 className="w-4 h-4" />
-              <h2 className="font-mono text-sm font-bold uppercase tracking-wider">
-                {t('settings.contentGeneration.title')}
-              </h2>
+          <Card className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/70">
+                <Settings2 className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold">
+                  {t('settings.contentGeneration.title')}
+                </p>
+                <h2 className="text-xl font-bold tracking-tight">
+                  {t('settings.contentGeneration.title')}
+                </h2>
+              </div>
             </div>
 
             <div className="space-y-2">
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="text-sm text-white/50 mb-4">
                 {t('settings.contentGeneration.description')}
               </p>
 
@@ -1094,7 +1122,7 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <div className="pt-4 border-t border-gray-200">
+              <div className="pt-4 border-t border-white/10">
                 <Dropdown
                   options={localizedPromptOptions}
                   value={defaultPromptId}
@@ -1105,24 +1133,31 @@ export default function SettingsPage() {
                 />
               </div>
             </div>
-          </section>
+          </Card>
 
           {/* Language Settings Section */}
-          <section className="space-y-6">
-            <div className="flex items-center gap-2 border-b border-black/10 pb-2">
-              <Globe className="w-4 h-4" />
-              <h2 className="font-mono text-sm font-bold uppercase tracking-wider">
-                {t('settings.uiLanguage')} & {t('settings.contentLanguage')}
-              </h2>
+          <Card className="space-y-6">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-white/70">
+                <Globe className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-white/40 font-bold">
+                  {t('settings.uiLanguage')} & {t('settings.contentLanguage')}
+                </p>
+                <h2 className="text-xl font-bold tracking-tight">
+                  {t('settings.uiLanguage')} & {t('settings.contentLanguage')}
+                </h2>
+              </div>
             </div>
 
             {/* UI Language */}
             <div className="space-y-4">
               <div>
-                <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-white/70 mb-2">
                   {t('settings.uiLanguage')}
                 </h3>
-                <p className="text-sm text-gray-600 mb-3">{t('settings.uiLanguageDescription')}</p>
+                <p className="text-sm text-white/50 mb-3">{t('settings.uiLanguageDescription')}</p>
               </div>
 
               <div className="space-y-2">
@@ -1132,7 +1167,7 @@ export default function SettingsPage() {
                       key={`ui-${lang}`}
                       onClick={() => setUiLanguage(lang as Locale)}
                       disabled={languageLoading}
-                      className={`px-4 py-3 text-sm ${SEGMENTED_BUTTON_BASE} ${uiLanguage === lang ? SEGMENTED_BUTTON_ACTIVE : SEGMENTED_BUTTON_INACTIVE}`}
+                      className={`px-4 py-3 text-xs ${SEGMENTED_BUTTON_BASE} ${uiLanguage === lang ? SEGMENTED_BUTTON_ACTIVE : SEGMENTED_BUTTON_INACTIVE}`}
                     >
                       {languageNames[lang]}
                     </button>
@@ -1142,12 +1177,12 @@ export default function SettingsPage() {
             </div>
 
             {/* Content Language */}
-            <div className="space-y-4 pt-4 border-t border-gray-200">
+            <div className="space-y-4 pt-4 border-t border-white/10">
               <div>
-                <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
+                <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-white/70 mb-2">
                   {t('settings.contentLanguage')}
                 </h3>
-                <p className="text-sm text-gray-600 mb-3">
+                <p className="text-sm text-white/50 mb-3">
                   {t('settings.contentLanguageDescription')}
                 </p>
               </div>
@@ -1159,7 +1194,7 @@ export default function SettingsPage() {
                       key={`content-${lang}`}
                       onClick={() => setContentLanguage(lang as SupportedLanguage)}
                       disabled={languageLoading}
-                      className={`px-4 py-3 text-sm ${SEGMENTED_BUTTON_BASE} ${contentLanguage === lang ? SEGMENTED_BUTTON_ACTIVE : SEGMENTED_BUTTON_INACTIVE}`}
+                      className={`px-4 py-3 text-xs ${SEGMENTED_BUTTON_BASE} ${contentLanguage === lang ? SEGMENTED_BUTTON_ACTIVE : SEGMENTED_BUTTON_INACTIVE}`}
                     >
                       {languageNames[lang]}
                     </button>
@@ -1167,29 +1202,36 @@ export default function SettingsPage() {
                 </div>
               </div>
             </div>
-          </section>
+          </Card>
 
           {/* Danger Zone */}
-          <section className="space-y-6">
-            <div className="flex items-center gap-2 border-b border-red-200 pb-2">
-              <AlertTriangle className="w-4 h-4 text-red-600" />
-              <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-red-600">
-                {t('settings.dangerZone')}
-              </h2>
+          <Card className="space-y-6 border-red-500/20 bg-red-500/[0.07]">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-red-500/20 border border-red-500/30 flex items-center justify-center text-red-300">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-red-300/80 font-bold">
+                  {t('settings.dangerZone')}
+                </p>
+                <h2 className="text-xl font-bold tracking-tight text-red-200">
+                  {t('settings.dangerZone')}
+                </h2>
+              </div>
             </div>
 
             <div className="grid md:grid-cols-2 gap-6">
               {/* Clear API Keys */}
-              <div className="border border-red-200 bg-red-50/50 p-6 space-y-4">
+              <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-6 space-y-4">
                 <div>
-                  <h3 className="font-bold text-sm text-red-900 mb-1">
+                  <h3 className="font-bold text-sm text-red-100 mb-1">
                     {t('settings.clearApiKeys')}
                   </h3>
-                  <p className="text-xs text-red-700">{t('settings.clearApiKeysDescription')}</p>
+                  <p className="text-xs text-red-200/70">{t('settings.clearApiKeysDescription')}</p>
                 </div>
                 <Button
                   variant="outline"
-                  className="w-full border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800 hover:border-red-300"
+                  className="w-full border-red-500/30 text-red-200 hover:bg-red-500/20 hover:text-red-100"
                   onClick={() => setShowClearApiKeysDialog(true)}
                   disabled={isResetting}
                 >
@@ -1199,12 +1241,12 @@ export default function SettingsPage() {
               </div>
 
               {/* Reset Database */}
-              <div className="border border-red-200 bg-red-50/50 p-6 space-y-4">
+              <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-6 space-y-4">
                 <div>
-                  <h3 className="font-bold text-sm text-red-900 mb-1">
+                  <h3 className="font-bold text-sm text-red-100 mb-1">
                     {t('settings.resetDatabase')}
                   </h3>
-                  <p className="text-xs text-red-700">{t('settings.resetDatabaseDescription')}</p>
+                  <p className="text-xs text-red-200/70">{t('settings.resetDatabaseDescription')}</p>
                 </div>
                 <Button
                   variant="destructive"
@@ -1217,52 +1259,32 @@ export default function SettingsPage() {
                 </Button>
               </div>
             </div>
-          </section>
+          </Card>
         </div>
 
-        {/* Footer */}
-        <div className="bg-[#E5E5E0] p-4 border-t border-black flex flex-col sm:flex-row justify-between items-center gap-2">
+        {/* Footer: version + system status */}
+        <div className="mt-8 flex flex-col sm:flex-row justify-between items-center gap-3 py-4 border-t border-white/5 text-white/30">
           <div className="flex items-center gap-2">
-            <Image
-              src="/logo.svg"
-              alt="Resume Matcher"
-              width={20}
-              height={20}
-              className="w-5 h-5"
-            />
-            <span className="font-mono text-xs text-gray-500">
-              {getVersionString().toUpperCase()}
-            </span>
+            <Image src="/logo.svg" alt="Resume Matcher" width={16} height={16} className="w-4 h-4 opacity-40" />
+            <span className="font-mono text-xs">{getVersionString().toUpperCase()}</span>
           </div>
           <div className="flex items-center gap-2">
             {statusLoading ? (
-              <>
-                <Loader2 className="w-3 h-3 animate-spin text-gray-500" />
-                <span className="font-mono text-xs text-gray-500">
-                  {t('settings.footer.status.checking')}
-                </span>
-              </>
+              <><Loader2 className="w-3 h-3 animate-spin" /><span className="font-mono text-xs">{t('settings.footer.status.checking')}</span></>
             ) : systemStatus ? (
               <>
-                <div
-                  className={`w-3 h-3 ${systemStatus.status === 'ready' ? 'bg-green-700' : 'bg-amber-500'}`}
-                ></div>
-                <span
-                  className={`font-mono text-xs font-bold ${systemStatus.status === 'ready' ? 'text-green-700' : 'text-amber-600'}`}
-                >
-                  {systemStatus.status === 'ready'
-                    ? t('settings.footer.status.ready')
-                    : t('settings.footer.status.setupRequired')}
+                <div className={`w-2 h-2 rounded-full ${systemStatus.status === 'ready' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                <span className={`font-mono text-xs font-bold ${
+                  systemStatus.status === 'ready' ? 'text-emerald-400' : 'text-amber-400'
+                }`}>
+                  {systemStatus.status === 'ready' ? t('settings.footer.status.ready') : t('settings.footer.status.setupRequired')}
                 </span>
               </>
             ) : (
-              <span className="font-mono text-xs text-gray-500">
-                {t('settings.footer.status.offline')}
-              </span>
+              <span className="font-mono text-xs">{t('settings.footer.status.offline')}</span>
             )}
           </div>
         </div>
-      </div>
 
       <ConfirmDialog
         open={showClearApiKeysDialog}
@@ -1280,7 +1302,7 @@ export default function SettingsPage() {
         title={t('confirmations.resetDatabase')}
         description={t('confirmations.resetDatabaseDescription')}
         confirmLabel={t('common.reset')}
-        variant="danger"
+        variant="destructive"
         onConfirm={handleResetDatabase}
       />
 
@@ -1290,10 +1312,12 @@ export default function SettingsPage() {
         title={successMessage.title}
         description={successMessage.description}
         confirmLabel={t('common.close')}
-        showCancelButton={false}
-        variant="success"
+        variant="default"
         onConfirm={() => setShowSuccessDialog(false)}
       />
     </div>
   );
 }
+
+
+

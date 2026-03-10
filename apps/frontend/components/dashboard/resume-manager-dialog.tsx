@@ -1,17 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { fetchResumeList, type ResumeListItem, deleteResume } from '@/lib/api/resume';
+import { fetchResumeList, type ResumeListItem, deleteResume, unsetMasterResume } from '@/lib/api/resume';
 import { Button } from '@/components/ui/button';
-import { Card, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ResumeUploadDialog } from '@/components/dashboard/resume-upload-dialog';
 import SetMasterDialog from '@/components/dashboard/set-master-dialog';
-import { unsetMasterResume } from '@/lib/api/resume';
 import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
 import X from 'lucide-react/dist/esm/icons/x';
 import Upload from 'lucide-react/dist/esm/icons/upload';
 import FileText from 'lucide-react/dist/esm/icons/file-text';
 import Trash2 from 'lucide-react/dist/esm/icons/trash-2';
+import { cn } from '@/lib/utils';
 
 interface ResumeManagerDialogProps {
   isOpen: boolean;
@@ -102,136 +102,148 @@ export default function ResumeManagerDialog({
         onClick={onClose}
       />
 
-      {/* Dialog with slide-up animation */}
+      {/* Dialog Content */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
         <div
-          className="pointer-events-auto w-full max-w-5xl max-h-[90vh] overflow-hidden border-2 border-black bg-[#F0F0E8] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] animate-slide-up"
+          className="pointer-events-auto w-full max-w-5xl max-h-[90vh] overflow-hidden border border-border bg-background shadow-sw-card animate-in fade-in zoom-in duration-200"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="border-b-2 border-black bg-[#E5E5E0] p-6">
+          <div className="border-b border-border bg-card p-8">
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="font-serif text-3xl font-bold uppercase text-black">
-                  Manage Resumes
+                <h2 className="font-serif text-4xl font-medium tracking-tight text-foreground">
+                  Manage Library
                 </h2>
-                <p className="mt-1 font-mono text-sm uppercase text-gray-600">
+                <p className="mt-2 font-mono text-xs uppercase tracking-widest text-muted-foreground">
                   {'// '}Upload, view, and set master resumes
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex items-center gap-4">
                 <Button
                   onClick={() => setShowUploadDialog(true)}
-                  variant="default"
-                  size="sm"
                   className="flex items-center gap-2"
                 >
                   <Upload className="h-4 w-4" />
-                  Upload Resume
+                  Upload New
                 </Button>
-                <Button onClick={onClose} variant="ghost" size="icon">
-                  <X className="h-5 w-5" />
+                <Button onClick={onClose} variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+                  <X className="h-6 w-6" />
                 </Button>
               </div>
             </div>
           </div>
 
           {/* Content */}
-          <div className="overflow-y-auto p-6" style={{ maxHeight: 'calc(90vh - 120px)' }}>
+          <div className="overflow-y-auto p-8 bg-background" style={{ maxHeight: 'calc(90vh - 140px)' }}>
             {loading ? (
-              <div className="flex items-center justify-center py-20">
-                <Loader2 className="h-8 w-8 animate-spin text-blue-700" />
-                <p className="ml-3 font-mono text-sm uppercase text-gray-600">
-                  Loading resumes...
+              <div className="flex flex-col items-center justify-center py-24 gap-4">
+                <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  Syncing library...
                 </p>
               </div>
             ) : error ? (
-              <div className="border-2 border-red-600 bg-red-50 p-4 shadow-[4px_4px_0px_0px_#000000]">
-                <p className="font-mono text-sm text-red-800">{error}</p>
+              <div className="border border-destructive/20 bg-destructive/5 p-6 flex items-center gap-4">
+                <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center text-destructive">
+                  <X className="h-5 w-5" />
+                </div>
+                <p className="font-mono text-sm text-destructive">{error}</p>
               </div>
             ) : resumes.length === 0 ? (
-              <Card variant="outline" className="p-12 text-center">
-                <FileText className="mx-auto h-16 w-16 text-gray-400" />
-                <h3 className="mt-4 font-serif text-xl font-bold uppercase text-gray-900">
-                  No resumes yet
+              <Card className="p-20 text-center border-dashed border-2">
+                <div className="mx-auto h-20 w-20 flex items-center justify-center border border-border bg-secondary text-muted-foreground mb-6">
+                  <FileText className="h-10 w-10" />
+                </div>
+                <h3 className="font-serif text-3xl font-medium text-foreground">
+                  No documents found
                 </h3>
-                <p className="mt-2 font-mono text-sm text-gray-600">
-                  Upload your first resume to get started
+                <p className="mt-3 text-muted-foreground max-w-sm mx-auto">
+                  Start by uploading your first professional resume to begin tailoring.
                 </p>
                 <Button
                   onClick={() => setShowUploadDialog(true)}
-                  variant="default"
-                  className="mt-4"
+                  className="mt-8"
+                  size="lg"
                 >
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload Resume
+                  <Upload className="mr-2 h-5 w-5" />
+                  Upload Now
                 </Button>
               </Card>
             ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {resumes.map((resume) => (
                   <Card
                     key={resume.resume_id}
-                    variant="outline"
-                    className="flex flex-col transition-all hover:shadow-[6px_6px_0px_0px_#000000]"
+                    variant="interactive"
+                    className="flex flex-col group h-full"
                   >
-                    {/* Master Badge */}
-                    {resume.is_master && (
-                      <div className="mb-3">
-                        <span className="inline-block border-2 border-black bg-blue-700 px-3 py-1 font-mono text-xs font-bold uppercase text-white shadow-[2px_2px_0px_0px_#000000]">
-                          Master: {getCategoryDisplay(resume.master_category)}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Resume Info */}
-                    <CardTitle className="text-lg line-clamp-2">
-                      {resume.title || resume.filename || 'Untitled Resume'}
-                    </CardTitle>
-
-                    {resume.filename && (
-                      <p className="mt-2 font-mono text-xs text-gray-600 truncate">
-                        {resume.filename}
-                      </p>
-                    )}
-
-                    <CardDescription className="mt-auto pt-3">
-                      {new Date(resume.updated_at || resume.created_at).toLocaleDateString()}
-                    </CardDescription>
-
-                    {/* Actions */}
-                    <div className="mt-4 flex flex-col gap-2">
-                      <div className="flex gap-2">
+                    <CardContent className="p-6 flex flex-col h-full">
+                      {/* Master Badge */}
+                      <div className="h-8 mb-4">
                         {resume.is_master ? (
-                          <Button
-                            onClick={() => handleRemoveMaster(resume.resume_id)}
-                            variant="destructive"
-                            size="sm"
-                            className="flex-1"
-                          >
-                            Remove Master
-                          </Button>
+                          <span className="inline-flex items-center gap-2 border border-success/20 bg-success/10 px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-widest text-success">
+                            <CheckCircle2Icon className="h-3 w-3" />
+                            Master: {getCategoryDisplay(resume.master_category)}
+                          </span>
                         ) : (
-                          <Button
-                            onClick={() => handleSetAsMaster(resume)}
-                            variant="default"
-                            size="sm"
-                            className="flex-1"
-                          >
-                            Set as Master
-                          </Button>
+                          <span className="inline-block px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-widest text-muted-foreground bg-secondary opacity-0 group-hover:opacity-100 transition-opacity">
+                            Standard Draft
+                          </span>
                         )}
                       </div>
-                      <Button
-                        onClick={() => handleDeleteResume(resume.resume_id, resume.title || resume.filename || 'Resume')}
-                        variant="outline"
-                        size="sm"
-                        className="flex items-center justify-center gap-2 border-red-600 text-red-600 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        Delete
-                      </Button>
-                    </div>
+
+                      {/* Resume Info */}
+                      <CardTitle className="text-xl font-medium text-foreground line-clamp-2 leading-tight">
+                        {resume.title || resume.filename || 'Untitled Profile'}
+                      </CardTitle>
+
+                      {resume.filename && (
+                        <p className="mt-2 font-mono text-[10px] uppercase tracking-widest text-muted-foreground truncate">
+                          {resume.filename}
+                        </p>
+                      )}
+
+                      <div className="mt-auto pt-6 flex flex-col gap-4">
+                        <p className="font-mono text-[9px] uppercase tracking-widest text-muted-foreground flex items-center justify-between border-t border-border/50 pt-4">
+                          <span>Updated</span>
+                          <span className="font-bold text-foreground">
+                            {new Date(resume.updated_at || resume.created_at).toLocaleDateString()}
+                          </span>
+                        </p>
+
+                        <div className="flex flex-col gap-2">
+                          {resume.is_master ? (
+                            <Button
+                              onClick={() => handleRemoveMaster(resume.resume_id)}
+                              variant="outline"
+                              size="sm"
+                              className="w-full text-foreground border-border hover:bg-secondary"
+                            >
+                              Remove Master Status
+                            </Button>
+                          ) : (
+                            <Button
+                              onClick={() => handleSetAsMaster(resume)}
+                              variant="default"
+                              size="sm"
+                              className="w-full"
+                            >
+                              Promote to Master
+                            </Button>
+                          )}
+                          <Button
+                            onClick={() => handleDeleteResume(resume.resume_id, resume.title || resume.filename || 'Resume')}
+                            variant="secondary"
+                            size="sm"
+                            className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 border-transparent"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete Document
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
                   </Card>
                 ))}
               </div>
@@ -239,14 +251,19 @@ export default function ResumeManagerDialog({
 
             {/* Info Box */}
             {resumes.length > 0 && (
-              <div className="mt-6 border-2 border-blue-700 bg-blue-50 p-4 shadow-[4px_4px_0px_0px_#000000]">
-                <h4 className="font-mono text-sm font-bold uppercase text-blue-900">💡 Tip</h4>
-                <p className="mt-2 font-mono text-sm text-blue-800">
-                  Master resumes are used as templates when tailoring. You can have multiple
-                  masters for different career paths (e.g., "Software Engineer", "Data
-                  Scientist").
-                </p>
-              </div>
+              <Card className="mt-8 bg-primary/5 border-primary/10">
+                <CardContent className="p-6 flex items-start gap-5">
+                  <div className="h-10 w-10 flex items-center justify-center border border-primary/20 bg-primary/10 text-primary shrink-0">
+                    <Info className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-mono text-[10px] font-bold uppercase tracking-widest text-primary">Library Architecture</h4>
+                    <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                      Master resumes serve as base templates for AI tailoring. You can maintain separate masters for distinct career paths (e.g., &quot;Lead Developer&quot; vs &quot;Product Manager&quot;).
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
             )}
           </div>
         </div>

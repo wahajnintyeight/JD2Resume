@@ -39,7 +39,9 @@ export function ModelInfoCard({
   const tokenInfo = [
     contextLength && `Context: ${formatTokens(contextLength)}`,
     maxCompletionTokens && `Max: ${formatTokens(maxCompletionTokens)}`,
-  ].filter(Boolean).join(' | ');
+  ]
+    .filter(Boolean)
+    .join(' | ');
 
   // Truncate description for preview
   const shouldTruncate = description && description.length > 150;
@@ -48,37 +50,37 @@ export function ModelInfoCard({
     : description;
 
   return (
-    <div className={`mt-3 rounded border-2 border-black bg-[#F0F0E8] p-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] ${className}`}>
+    <div
+      className={`mt-3 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/5 ${className}`}
+    >
       {/* Header with label and token info */}
       <div className="flex flex-wrap items-center gap-2 mb-2">
         <div className="flex items-center gap-1.5">
-          <Info className="w-3.5 h-3.5 text-blue-600" />
-          <span className="text-xs font-bold uppercase tracking-wider text-gray-700 font-mono">
+          <Info className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-300" />
+          <span className="text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-white/70 font-mono">
             {label}
           </span>
         </div>
         {hasTokenInfo && (
-          <div className="flex items-center gap-1.5 text-xs font-mono text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+          <div className="flex items-center gap-1.5 text-xs font-mono text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100 dark:text-indigo-200 dark:bg-indigo-500/10 dark:border-indigo-500/20">
             <span>{tokenInfo}</span>
           </div>
         )}
       </div>
 
       {/* Model ID */}
-      <p className="font-mono text-sm text-black font-semibold break-all mb-2">
+      <p className="font-mono text-sm text-gray-900 dark:text-white font-semibold break-all mb-2">
         {value}
       </p>
 
       {/* Description */}
       {description && (
-        <div className="text-sm text-gray-600 leading-relaxed">
-          <p className={!isExpanded ? 'line-clamp-3' : ''}>
-            {displayDescription}
-          </p>
+        <div className="text-sm text-gray-600 dark:text-white/60 leading-relaxed">
+          <p className={!isExpanded ? 'line-clamp-3' : ''}>{displayDescription}</p>
           {shouldTruncate && (
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="mt-2 flex items-center gap-1 text-xs font-mono text-blue-600 hover:text-blue-700 transition-colors"
+              className="mt-2 flex items-center gap-1 text-xs font-mono text-indigo-600 hover:text-indigo-700 transition-colors dark:text-indigo-300 dark:hover:text-indigo-200"
             >
               {isExpanded ? (
                 <>

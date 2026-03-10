@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { ChevronDown, X } from 'lucide-react';
+import { Check, ChevronDown, X } from 'lucide-react';
 import { useTranslations } from '@/lib/i18n';
 import { ModelInfoCard } from './model-info-card';
 
@@ -157,7 +157,7 @@ export function SearchableDropdown({
   // Handle scroll to load more
   const handleScroll = useCallback(() => {
     if (!listRef.current || !hasMore) return;
-    
+
     const { scrollTop, scrollHeight, clientHeight } = listRef.current;
     // Load more when user scrolls to within 50px of the bottom
     if (scrollTop + clientHeight >= scrollHeight - 50) {
@@ -198,12 +198,12 @@ export function SearchableDropdown({
   return (
     <div className={`space-y-1 ${className}`} ref={containerRef}>
       {label && (
-        <label className="font-mono text-xs font-bold uppercase tracking-wider text-gray-700 block">
+        <label className="font-mono text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-white/70 block">
           {label}
         </label>
       )}
 
-      {description && <p className="text-sm text-gray-600">{description}</p>}
+      {description && <p className="text-sm text-gray-600 dark:text-white/50">{description}</p>}
 
       <div className="relative">
         {/* Input Field */}
@@ -217,7 +217,7 @@ export function SearchableDropdown({
             onKeyDown={handleKeyDown}
             placeholder={displayPlaceholder}
             disabled={disabled}
-            className="w-full border-2 border-black bg-white px-4 py-3 pr-20 font-mono text-sm transition-all duration-150 ease-out shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-y-[2px] hover:translate-x-[2px] focus:shadow-none focus:translate-y-[2px] focus:translate-x-[2px] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] disabled:hover:translate-none rounded-none"
+            className="w-full rounded-full border border-gray-300 bg-white px-5 py-3 pr-20 font-mono text-sm text-gray-900 transition-all duration-200 ease-out placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white disabled:opacity-50 disabled:cursor-not-allowed dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder:text-white/40 dark:focus-visible:ring-indigo-400 dark:focus-visible:ring-offset-[#050505]"
             autoComplete="off"
           />
           <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
@@ -225,20 +225,20 @@ export function SearchableDropdown({
               <button
                 type="button"
                 onClick={handleClear}
-                className="p-1 hover:bg-gray-100 rounded-none transition-colors"
+                className="p-1 rounded-full hover:bg-gray-100 transition-colors dark:hover:bg-white/10"
                 aria-label="Clear selection"
               >
-                <X className="w-4 h-4 text-gray-400" />
+                <X className="w-4 h-4 text-gray-500 dark:text-white/60" />
               </button>
             )}
             <button
               type="button"
               onClick={() => setIsOpen(!isOpen)}
-              className="p-1 hover:bg-gray-100 rounded-none transition-colors"
+              className="p-1 rounded-full hover:bg-gray-100 transition-colors dark:hover:bg-white/10"
               aria-label={isOpen ? 'Close dropdown' : 'Open dropdown'}
             >
               <ChevronDown
-                className={`w-4 h-4 transition-transform duration-200 ${
+                className={`w-4 h-4 text-gray-500 dark:text-white/60 transition-transform duration-200 ${
                   isOpen ? 'rotate-180' : ''
                 }`}
               />
@@ -248,43 +248,43 @@ export function SearchableDropdown({
 
         {/* Dropdown Menu */}
         {isOpen && (
-          <div className="absolute top-full left-0 right-0 mt-1 z-50 border-2 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-none">
+          <div className="absolute top-full left-0 right-0 mt-2 z-50 rounded-2xl border border-gray-200 bg-white shadow-lg shadow-black/10 dark:border-white/10 dark:bg-[#0A0A0A]/95 dark:shadow-2xl dark:shadow-black/60 dark:backdrop-blur-2xl overflow-hidden">
             {/* Options List */}
-            <div 
+            <div
               ref={listRef}
               className="max-h-64 overflow-y-auto"
               onScroll={handleScroll}
             >
               {loading ? (
-                <div className="px-4 py-6 text-center text-gray-500 font-mono text-sm">
+                <div className="px-4 py-6 text-center text-gray-500 dark:text-white/50 font-mono text-sm">
                   {loadingText || t('common.loading')}
                 </div>
               ) : filteredOptions.length === 0 ? (
                 allowFreeform && searchQuery.trim() ? (
                   <button
                     onClick={() => handleSelect(searchQuery.trim())}
-                    className="w-full px-4 py-3 text-left font-mono transition-colors duration-150 border-b border-black last:border-b-0 bg-white text-black hover:bg-[#F0F0E8] active:bg-gray-100"
+                    className="w-full px-4 py-3 text-left font-mono transition-colors duration-150 border-b border-gray-200 last:border-b-0 bg-white text-gray-900 hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-white dark:hover:bg-white/10"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="text-gray-400">{t('common.useCustomValue')}:</span>
-                      <span className="font-bold">{searchQuery.trim()}</span>
+                      <span className="text-gray-500 dark:text-white/50">{t('common.useCustomValue')}:</span>
+                      <span className="font-bold text-gray-900 dark:text-white">{searchQuery.trim()}</span>
                     </div>
                   </button>
                 ) : (
-                  <div className="px-4 py-6 text-center text-gray-500 font-mono text-sm">
+                  <div className="px-4 py-6 text-center text-gray-500 dark:text-white/50 font-mono text-sm">
                     {emptyText || t('common.noResults')}
                   </div>
                 )
               ) : (
                 <>
-                  {allowFreeform && searchQuery.trim() && !filteredOptions.some(opt => opt.id === searchQuery.trim()) && (
+                  {allowFreeform && searchQuery.trim() && !filteredOptions.some((opt) => opt.id === searchQuery.trim()) && (
                     <button
                       onClick={() => handleSelect(searchQuery.trim())}
-                      className="w-full px-4 py-3 text-left font-mono transition-colors duration-150 border-b-2 border-black bg-[#F0F0E8] text-black hover:bg-gray-100 active:bg-gray-100"
+                      className="w-full px-4 py-3 text-left font-mono transition-colors duration-150 border-b border-gray-200 bg-gray-50 text-gray-900 hover:bg-gray-100 dark:border-white/10 dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
                     >
                       <div className="flex items-center gap-2">
-                        <span className="text-gray-500">{t('common.useCustomValue')}:</span>
-                        <span className="font-bold">{searchQuery.trim()}</span>
+                        <span className="text-gray-500 dark:text-white/50">{t('common.useCustomValue')}:</span>
+                        <span className="font-bold text-gray-900 dark:text-white">{searchQuery.trim()}</span>
                       </div>
                     </button>
                   )}
@@ -292,11 +292,11 @@ export function SearchableDropdown({
                     <button
                       key={option.id}
                       onClick={() => handleSelect(option.id)}
-                      className={`w-full px-4 py-3 text-left font-mono transition-colors duration-150 border-b border-black last:border-b-0 ${
+                      className={`w-full px-4 py-3 text-left font-mono transition-colors duration-150 border-b border-gray-200 last:border-b-0 dark:border-white/10 ${
                         option.id === value
-                          ? 'bg-blue-700 text-white'
-                          : 'bg-white text-black hover:bg-[#F0F0E8]'
-                      } active:bg-gray-100`}
+                          ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-600/20 dark:text-white'
+                          : 'bg-white text-gray-900 hover:bg-gray-50 dark:bg-transparent dark:text-white/80 dark:hover:bg-white/5'
+                      }`}
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
@@ -306,22 +306,26 @@ export function SearchableDropdown({
                           </div>
                           {/* Token info */}
                           {getTokenInfo(option) && (
-                            <div className={`text-xs mt-1 font-mono ${
-                              option.id === value ? 'opacity-80' : 'text-gray-500'
-                            }`}>
+                            <div
+                              className={`text-xs mt-1 font-mono ${
+                                option.id === value
+                                  ? 'text-indigo-700/80 dark:text-white/80'
+                                  : 'text-gray-500 dark:text-white/50'
+                              }`}
+                            >
                               {getTokenInfo(option)}
                             </div>
                           )}
                         </div>
                         {option.id === value && (
-                          <div className="text-lg font-bold mt-0.5 shrink-0">✓</div>
+                          <Check className="w-4 h-4 text-indigo-600 dark:text-indigo-300 mt-0.5 shrink-0" />
                         )}
                       </div>
                     </button>
                   ))}
                   {/* Loading indicator for more items */}
                   {hasMore && (
-                    <div className="px-4 py-2 text-center text-gray-500 font-mono text-xs border-b border-black">
+                    <div className="px-4 py-2 text-center text-gray-500 dark:text-white/40 font-mono text-xs border-b border-gray-200 dark:border-white/10">
                       Scroll for more... ({displayedOptions.length} / {filteredOptions.length})
                     </div>
                   )}

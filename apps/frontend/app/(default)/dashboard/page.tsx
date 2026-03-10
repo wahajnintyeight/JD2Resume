@@ -1,565 +1,614 @@
 'use client';
 
-import { SwissGrid } from '@/components/home/swiss-grid';
-import { ResumeUploadDialog } from '@/components/dashboard/resume-upload-dialog';
-import ResumeManagerDialog from '@/components/dashboard/resume-manager-dialog';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { ConfirmDialog } from '@/components/ui/confirm-dialog';
-import { Card, CardTitle, CardDescription } from '@/components/ui/card';
-import Link from 'next/link';
-import { useTranslations } from '@/lib/i18n';
-
-// Optimized Imports for Performance (No Barrel Imports)
-import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
-import AlertCircle from 'lucide-react/dist/esm/icons/alert-circle';
-import RefreshCw from 'lucide-react/dist/esm/icons/refresh-cw';
-import Plus from 'lucide-react/dist/esm/icons/plus';
-import Settings from 'lucide-react/dist/esm/icons/settings';
-import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle';
-
+import { cn } from '@/lib/utils';
 import {
-  fetchResume,
-  fetchResumeList,
-  deleteResume,
-  retryProcessing,
-  fetchJobDescription,
-  type ResumeListItem,
-} from '@/lib/api/resume';
-import { useStatusCache } from '@/lib/context/status-cache';
+  Upload,
+  FileText,
+  Trash2,
+  Settings,
+  Plus,
+  CheckCircle2,
+  Info,
+  Search,
+  ChevronRight,
+  Bell,
+  User,
+  LayoutDashboard,
+  Loader2,
+  Sparkles,
+  ArrowRight,
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { ResumeUploadDialog } from '@/components/dashboard/resume-upload-dialog';
+import { fetchResumeList, deleteResume, type ResumeListItem } from '@/lib/api/resume';
+import { useIsMobile } from '@/hooks/use-mobile';
 
-type ProcessingStatus = 'pending' | 'processing' | 'ready' | 'failed' | 'loading';
+type ResumeItem = {
+  id: string;
+  name: string;
+  date: string;
+  isMaster: boolean;
+  size: string;
+};
 
-export default function DashboardPage() {
-  const { t, locale } = useTranslations();
-  const [masterResumeId, setMasterResumeId] = useState<string | null>(null);
-  const [processingStatus, setProcessingStatus] = useState<ProcessingStatus>('loading');
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [tailoredResumes, setTailoredResumes] = useState<ResumeListItem[]>([]);
-  const [isRetrying, setIsRetrying] = useState(false);
-  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
-  const [showMasterManager, setShowMasterManager] = useState(false);
+export default function Dashboard() {
+  const [resumes, setResumes] = useState<ResumeItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('home');
+  const isMobile = useIsMobile();
   const router = useRouter();
 
-  // Status cache for optimistic counter updates and LLM status check
-  const {
-    status: systemStatus,
-    isLoading: statusLoading,
-    incrementResumes,
-    decrementResumes,
-    setHasMasterResume,
-  } = useStatusCache();
-
-  // Request id guard for concurrent loadTailoredResumes invocations
-  const loadRequestIdRef = useRef(0);
-  // Lightweight in-memory cache for job snippets to avoid N+1 refetches
-  const jobSnippetCacheRef = useRef<Record<string, string>>({});
-
-  // Check if LLM is configured (API key is set)
-  const isLlmConfigured = !statusLoading && systemStatus?.llm_configured;
-
-  const isTailorEnabled =
-    Boolean(masterResumeId) && processingStatus === 'ready' && isLlmConfigured;
-
-  const formatDate = (value: string) => {
-    if (!value) return t('common.unknown');
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return t('common.unknown');
-
-    const dateLocale =
-      locale === 'es' ? 'es-ES' : locale === 'zh' ? 'zh-CN' : locale === 'ja' ? 'ja-JP' : 'en-US';
-
-    return date.toLocaleDateString(dateLocale, {
-      month: 'short',
-      day: '2-digit',
-      year: 'numeric',
-    });
+  const loadResumes = async () => {
+    try {
+      setLoading(true);
+      const data = await fetchResumeList(true);
+      const mappedResumes: ResumeItem[] = data.map((r: ResumeListItem) => ({
+        id: r.resume_id,
+        name: r.filename || r.title || 'Untitled',
+        date: new Date(r.updated_at || r.created_at).toLocaleDateString(),
+        isMaster: r.is_master,
+        size: '1.2 MB', // Mock size
+      }));
+      setResumes(mappedResumes);
+    } catch (err) {
+      console.error('Failed to load resumes:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const checkResumeStatus = useCallback(async (resumeId: string) => {
-    try {
-      setProcessingStatus('loading');
-      const data = await fetchResume(resumeId);
-      const status = data.raw_resume?.processing_status || 'pending';
-      setProcessingStatus(status as ProcessingStatus);
-    } catch (err: unknown) {
-      console.error('Failed to check resume status:', err);
-      // If resume not found (404), clear the stale localStorage
-      if (err instanceof Error && err.message.includes('404')) {
-        localStorage.removeItem('master_resume_id');
-        setMasterResumeId(null);
-        return;
-      }
-      setProcessingStatus('failed');
-    }
+  useEffect(() => {
+    loadResumes();
   }, []);
 
-  useEffect(() => {
-    const storedId = localStorage.getItem('master_resume_id');
-    if (storedId) {
-      setMasterResumeId(storedId);
-      checkResumeStatus(storedId);
-    }
-  }, [checkResumeStatus]);
-
-  const loadTailoredResumes = useCallback(async () => {
+  const removeResume = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this resume?')) return;
     try {
-      const data = await fetchResumeList(true);
-      const masterFromList = data.find((r) => r.is_master);
-      const storedId = localStorage.getItem('master_resume_id');
-      const resolvedMasterId = masterFromList?.resume_id || storedId;
-
-      if (resolvedMasterId) {
-        localStorage.setItem('master_resume_id', resolvedMasterId);
-        setMasterResumeId(resolvedMasterId);
-        checkResumeStatus(resolvedMasterId);
-      } else {
-        localStorage.removeItem('master_resume_id');
-        setMasterResumeId(null);
-      }
-
-      const filtered = data.filter((r) => r.resume_id !== resolvedMasterId);
-      setTailoredResumes(filtered);
-
-      // Only fetch job descriptions for resumes that are actually tailored
-      // (identified by having a non-null parent_id). This avoids N+1 calls
-      // for untailored resumes.
-      const tailoredWithParent = filtered.filter((r) => r.parent_id);
-
-      // Guard against concurrent invocations overwriting each other
-      const requestId = ++loadRequestIdRef.current;
-
-      // Fetch job description snippets for tailored resumes in parallel and attach to state
-      // Use a small in-memory cache to avoid re-fetching the same snippet repeatedly.
-      const jobSnippets: Record<string, string> = {};
-      await Promise.all(
-        tailoredWithParent.map(async (r) => {
-          // Use cached snippet when available
-          if (jobSnippetCacheRef.current[r.resume_id]) {
-            jobSnippets[r.resume_id] = jobSnippetCacheRef.current[r.resume_id];
-            return;
-          }
-          try {
-            const jd = await fetchJobDescription(r.resume_id);
-            const snippet = (jd?.content || '').slice(0, 80);
-            jobSnippetCacheRef.current[r.resume_id] = snippet;
-            jobSnippets[r.resume_id] = snippet;
-          } catch {
-            // ignore missing job descriptions and cache empty result
-            jobSnippetCacheRef.current[r.resume_id] = '';
-            jobSnippets[r.resume_id] = '';
-          }
-        })
-      );
-
-      // Only apply results if this invocation is the latest (prevents stale overwrite)
-      if (requestId === loadRequestIdRef.current) {
-        setTailoredResumes((prev) =>
-          prev.map((r) => ({ ...r, jobSnippet: jobSnippets[r.resume_id] || '' }))
-        );
-      }
-    } catch (err) {
-      console.error('Failed to load tailored resumes:', err);
-    }
-  }, [checkResumeStatus]);
-
-  useEffect(() => {
-    loadTailoredResumes();
-  }, [loadTailoredResumes]);
-
-  // Refresh list when window gains focus (e.g., returning from viewer after delete)
-  useEffect(() => {
-    const handleFocus = () => {
-      loadTailoredResumes();
-    };
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
-  }, [loadTailoredResumes, checkResumeStatus]);
-
-  const handleUploadComplete = (resumeId: string) => {
-    localStorage.setItem('master_resume_id', resumeId);
-    setMasterResumeId(resumeId);
-    // Check status after upload completes
-    checkResumeStatus(resumeId);
-    // Update cached counters
-    incrementResumes();
-    setHasMasterResume(true);
-  };
-
-  const handleRetryProcessing = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!masterResumeId) return;
-    setIsRetrying(true);
-    try {
-      const result = await retryProcessing(masterResumeId);
-      if (result.processing_status === 'ready') {
-        setProcessingStatus('ready');
-      } else if (
-        result.processing_status === 'processing' ||
-        result.processing_status === 'pending'
-      ) {
-        setProcessingStatus(result.processing_status);
-      } else {
-        setProcessingStatus('failed');
-      }
-    } catch (err) {
-      console.error('Retry processing failed:', err);
-      setProcessingStatus('failed');
-    } finally {
-      setIsRetrying(false);
-    }
-  };
-
-  const handleDeleteAndReupload = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowDeleteDialog(true);
-  };
-
-  const confirmDeleteAndReupload = async () => {
-    if (!masterResumeId) return;
-    try {
-      await deleteResume(masterResumeId);
-      decrementResumes();
-      setHasMasterResume(false);
-      localStorage.removeItem('master_resume_id');
-      setMasterResumeId(null);
-      setProcessingStatus('loading');
-      setIsUploadDialogOpen(true);
-      await loadTailoredResumes();
+      await deleteResume(id);
+      await loadResumes();
     } catch (err) {
       console.error('Failed to delete resume:', err);
     }
   };
 
-  const getStatusDisplay = () => {
-    switch (processingStatus) {
-      case 'loading':
-        return {
-          text: t('dashboard.status.checking'),
-          icon: <Loader2 className="w-3 h-3 animate-spin" />,
-          color: 'text-gray-500',
-        };
-      case 'processing':
-        return {
-          text: t('dashboard.status.processing'),
-          icon: <Loader2 className="w-3 h-3 animate-spin" />,
-          color: 'text-blue-700',
-        };
-      case 'ready':
-        return { text: t('dashboard.status.ready'), icon: null, color: 'text-green-700' };
-      case 'failed':
-        return {
-          text: t('dashboard.status.failed'),
-          icon: <AlertCircle className="w-3 h-3" />,
-          color: 'text-red-600',
-        };
-      default:
-        return { text: t('dashboard.status.pending'), icon: null, color: 'text-gray-500' };
-    }
-  };
+  const openResume = (id: string) => router.push(`/resumes/${id}`);
+  const goTailor = () => router.push('/tailor');
+  const goSettings = () => router.push('/settings');
+  const goDashboard = () => router.push('/dashboard');
 
-  const getMonogram = (title: string): string => {
-    const words = title.split(/\s+/).filter((w) => /^[a-zA-Z]/.test(w));
-    return words
-      .slice(0, 3)
-      .map((w) => w.charAt(0).toUpperCase())
-      .join('');
-  };
-
-  // Muted palette that complements the #F0F0E8 canvas
-  const cardPalette = [
-    { bg: '#1D4ED8', fg: '#FFFFFF' }, // Hyper Blue
-    { bg: '#15803D', fg: '#FFFFFF' }, // Signal Green
-    { bg: '#000000', fg: '#FFFFFF' }, // Ink
-    { bg: '#92400E', fg: '#FFFFFF' }, // Warm Brown
-    { bg: '#7C3AED', fg: '#FFFFFF' }, // Violet
-    { bg: '#0E7490', fg: '#FFFFFF' }, // Teal
-    { bg: '#B91C1C', fg: '#FFFFFF' }, // Deep Red
-    { bg: '#4338CA', fg: '#FFFFFF' }, // Indigo
-  ];
-
-  const hashTitle = (title: string): number => {
-    let hash = 0;
-    for (let i = 0; i < title.length; i++) {
-      hash = (hash << 5) - hash + title.charCodeAt(i);
-      hash |= 0;
-    }
-    return Math.abs(hash);
-  };
-
-  const totalCards = 1 + tailoredResumes.length + 1;
-  const fillerCount = Math.max(0, (5 - (totalCards % 5)) % 5);
-  const extraFillerCount = 5;
-  // Use Tailwind classes for fillers now that we have them in config or use specific hex if needed
-  // Using the hex values from before to maintain exact look, or we could map them to variants
-  const fillerPalette = ['bg-[#E5E5E0]', 'bg-[#D8D8D2]', 'bg-[#CFCFC7]', 'bg-[#E0E0D8]'];
+  const filteredResumes = resumes.filter((r) =>
+    r.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      
+    <main className="min-h-screen bg-[#050505] text-white font-sans overflow-x-hidden">
+      {/* Atmospheric Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-600/10 blur-[120px] rounded-full" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-900/10 blur-[120px] rounded-full" />
+      </div>
 
-      {/* Configuration Warning Banner */}
-      {masterResumeId && !isLlmConfigured && !statusLoading && (
-        <div className="border-2 border-warning bg-amber-50 p-4 shadow-sw-default mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-warning" />
-            <div>
-              <p className="font-mono text-sm font-bold uppercase tracking-wider text-amber-800">
-                {t('dashboard.llmNotConfiguredTitle')}
-              </p>
-              <p className="font-mono text-xs text-amber-700 mt-0.5">
-                {t('dashboard.llmNotConfiguredMessage')}
-              </p>
-            </div>
-          </div>
-          <Link href="/settings">
-            <Button variant="outline" size="sm" className="border-warning text-amber-700">
-              <Settings className="w-4 h-4 mr-2" />
-              {t('nav.settings')}
-            </Button>
-          </Link>
-        </div>
-      )}
-
-      <SwissGrid>
-        {/* 1. Master Resume Logic */}
-        {!masterResumeId ? (
-          // LLM Not Configured or Upload State
-          !isLlmConfigured && !statusLoading ? (
-            <Link href="/settings" className="block h-full">
-              <Card
-                variant="interactive"
-                className="aspect-square h-full border-dashed border-warning bg-amber-50"
-              >
-                <div className="flex-1 flex flex-col justify-between">
-                  <div className="w-14 h-14 border-2 border-warning bg-white flex items-center justify-center mb-4">
-                    <AlertTriangle className="w-7 h-7 text-warning" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg uppercase text-amber-800 mb-2">
-                      {t('dashboard.setupRequiredTitle')}
-                    </CardTitle>
-                    <CardDescription className="text-amber-700 text-xs">
-                      {t('dashboard.setupRequiredMessage')}
-                    </CardDescription>
-                    <div className="flex items-center gap-2 mt-4 text-amber-700 group-hover:text-amber-900">
-                      <Settings className="w-4 h-4" />
-                      <span className="font-mono text-xs font-bold uppercase">
-                        {t('nav.goToSettings')}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </Card>
-            </Link>
-          ) : (
-            <ResumeUploadDialog
-              open={isUploadDialogOpen}
-              onOpenChange={setIsUploadDialogOpen}
-              onUploadComplete={handleUploadComplete}
-              trigger={
-                <Card
-                  variant="interactive"
-                  className="aspect-square h-full hover:bg-primary hover:text-canvas"
-                >
-                  <div className="flex-1 flex flex-col justify-between pointer-events-none">
-                    <div className="w-14 h-14 border-2 border-current flex items-center justify-center mb-4">
-                      <span className="text-2xl leading-none relative top-[-2px]">+</span>
-                    </div>
-                    <div>
-                      <CardTitle className="text-xl uppercase">
-                        {t('dashboard.initializeMasterResume')}
-                      </CardTitle>
-                      <CardDescription className="mt-2 opacity-60 group-hover:opacity-100 text-current">
-                        {'// '}
-                        {t('dashboard.initializeSequence')}
-                      </CardDescription>
-                    </div>
-                  </div>
-                </Card>
-              }
-            />
-          )
+      <AnimatePresence mode="wait">
+        {isMobile ? (
+          <MobileDashboard
+            key="mobile"
+            resumes={filteredResumes}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            onUploadClick={() => setIsUploadModalOpen(true)}
+            onRemove={removeResume}
+            onCreateFromJd={goTailor}
+            onOpenResume={openResume}
+            onGoDashboard={goDashboard}
+            onGoSettings={goSettings}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            loading={loading}
+          />
         ) : (
-          // Master Resume Exists
-          <Card
-            variant="interactive"
-            className="aspect-square h-full"
-            onClick={() => router.push(`/resumes/${masterResumeId}`)}
-          >
-            <div className="flex-1 flex flex-col h-full">
-              <div className="flex justify-between items-start mb-6">
-                <div className="w-16 h-16 border-2 border-black bg-blue-700 text-white flex items-center justify-center">
-                  <span className="font-mono font-bold text-lg">M</span>
-                </div>
-                <div className="flex gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 hover:bg-gray-100 hover:text-gray-900 z-10 rounded-none relative"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowMasterManager(true);
-                    }}
-                    title="Manage Master Resumes"
-                  >
-                    <Settings className="w-4 h-4" />
-                  </Button>
-                  {processingStatus === 'failed' && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 hover:bg-blue-100 hover:text-blue-700 z-10 rounded-none relative"
-                      onClick={handleRetryProcessing}
-                      disabled={isRetrying}
-                      title={t('dashboard.retryProcessing')}
-                    >
-                      {isRetrying ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <RefreshCw className="w-4 h-4" />
-                      )}
-                    </Button>
-                  )}
-                </div>
-              </div>
-
-              <CardTitle className="text-lg group-hover:text-primary">
-                {t('dashboard.masterResume')}
-              </CardTitle>
-
-              <div
-                className={`text-xs font-mono mt-auto pt-4 flex flex-col gap-2 uppercase ${getStatusDisplay().color}`}
-              >
-                <div className="flex items-center gap-1">
-                  {getStatusDisplay().icon}
-                  {t('dashboard.statusLine', { status: getStatusDisplay().text })}
-                </div>
-                {processingStatus === 'failed' && (
-                  <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-xs h-7 rounded-none border-black"
-                      onClick={handleRetryProcessing}
-                      disabled={isRetrying}
-                    >
-                      {isRetrying
-                        ? t('dashboard.retryingProcessing')
-                        : t('dashboard.retryProcessing')}
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="text-xs h-7 rounded-none border-red-600 text-red-600 hover:bg-red-50"
-                      onClick={handleDeleteAndReupload}
-                    >
-                      {t('dashboard.deleteAndReupload')}
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </div>
-          </Card>
+          <DesktopDashboard
+            key="desktop"
+            resumes={filteredResumes}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            onUploadClick={() => setIsUploadModalOpen(true)}
+            onRemove={removeResume}
+            onCreateFromJd={goTailor}
+            onOpenResume={openResume}
+            onGoDashboard={goDashboard}
+            onGoSettings={goSettings}
+            loading={loading}
+          />
         )}
+      </AnimatePresence>
 
-        {/* 2. Tailored Resumes */}
-        {tailoredResumes.map((resume) => {
-          const title =
-            resume.title || resume.jobSnippet || resume.filename || t('dashboard.tailoredResume');
-          const color = cardPalette[hashTitle(title) % cardPalette.length];
-          return (
-            <Card
-              key={resume.resume_id}
-              variant="interactive"
-              className="aspect-square h-full bg-canvas"
-              onClick={() => router.push(`/resumes/${resume.resume_id}`)}
-            >
-              <div className="flex-1 flex flex-col">
-                <div className="flex justify-between items-start mb-6">
-                  <div
-                    className="w-12 h-12 border-2 border-black flex items-center justify-center"
-                    style={{ backgroundColor: color.bg, color: color.fg }}
-                  >
-                    <span className="font-mono font-bold">{getMonogram(title)}</span>
-                  </div>
-                  <span className="font-mono text-xs text-gray-500 uppercase">
-                    {resume.processing_status}
-                  </span>
-                </div>
-                <CardTitle className="text-lg">
-                  <span className="block font-serif text-base font-bold leading-tight mb-1 w-full line-clamp-2">
-                    {title}
-                  </span>
-                </CardTitle>
-                <CardDescription className="mt-auto pt-4 uppercase">
-                  {t('dashboard.edited', {
-                    date: formatDate(resume.updated_at || resume.created_at),
-                  })}{' '}
-                </CardDescription>
-              </div>
-            </Card>
-          );
-        })}
-
-        {/* 3. Create Tailored Resume */}
-        <Card className="aspect-square h-full" variant="default">
-          <div className="flex-1 flex flex-col items-center justify-center text-center h-full">
-            <Button
-              onClick={() => router.push('/tailor')}
-              disabled={!isTailorEnabled}
-              className="w-20 h-20 bg-blue-700 text-white border-2 border-black shadow-sw-default hover:bg-blue-800 hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all rounded-none"
-            >
-              <Plus className="w-8 h-8" />
-            </Button>
-            <p className="text-xs font-mono mt-4 uppercase text-green-700">
-              {t('dashboard.createResume')}
-            </p>
-          </div>
-        </Card>
-
-        {/* 4. Fillers */}
-        {Array.from({ length: fillerCount }).map((_, index) => (
-          <Card
-            key={`filler-${index}`}
-            variant="ghost"
-            noPadding
-            className="hidden md:block bg-canvas aspect-square h-full opacity-50 pointer-events-none"
-          />
-        ))}
-
-        {Array.from({ length: extraFillerCount }).map((_, index) => (
-          <Card
-            key={`extra-filler-${index}`}
-            variant="ghost"
-            noPadding
-            className={`hidden md:block ${fillerPalette[index % fillerPalette.length]} aspect-square h-full opacity-70 pointer-events-none`}
-          />
-        ))}
-
-        <ConfirmDialog
-          open={showDeleteDialog}
-          onOpenChange={setShowDeleteDialog}
-          title={t('confirmations.deleteMasterResumeTitle')}
-          description={t('confirmations.deleteMasterResumeDescription')}
-          confirmLabel={t('dashboard.deleteAndReupload')}
-          cancelLabel={t('confirmations.keepResumeCancelLabel')}
-          onConfirm={confirmDeleteAndReupload}
-          variant="danger"
-        />
-      </SwissGrid>
-
-      {/* Resume Manager Dialog */}
-      <ResumeManagerDialog
-        isOpen={showMasterManager}
-        onClose={() => setShowMasterManager(false)}
-        onResumeChanged={() => {
-          // Refresh the resume list when changes are made
-          loadTailoredResumes();
+      <ResumeUploadDialog
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+        onUploadComplete={() => {
+          setIsUploadModalOpen(false);
+          loadResumes();
         }}
       />
-    </div>
+    </main>
+  );
+}
+
+interface DesktopDashboardProps {
+  resumes: ResumeItem[];
+  searchQuery: string;
+  onSearchChange: (value: string) => void;
+  onUploadClick: () => void;
+  onRemove: (id: string) => void;
+  onCreateFromJd: () => void;
+  onOpenResume: (id: string) => void;
+  onGoDashboard: () => void;
+  onGoSettings: () => void;
+  loading: boolean;
+}
+
+function DesktopDashboard({
+  resumes,
+  searchQuery,
+  onSearchChange,
+  onUploadClick,
+  onRemove,
+  onCreateFromJd,
+  onOpenResume,
+  onGoDashboard,
+  onGoSettings,
+  loading,
+}: DesktopDashboardProps) {
+  const hasMaster = resumes.some((resume) => resume.isMaster);
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      exit={{ opacity: 0 }}
+      className="relative z-10 flex flex-col min-h-screen"
+    >
+
+      <div className="flex-1 mx-auto w-full max-w-7xl px-8 py-20 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-20">
+        <div className="space-y-20">
+          <section>
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.1 }}
+            >
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 mb-6">
+                <div className="w-1 h-1 rounded-full bg-indigo-500 animate-pulse" />
+                <span className="text-[10px] font-bold uppercase tracking-widest text-indigo-400">Workspace Overview</span>
+              </div>
+              <h1 className="text-8xl font-bold leading-[0.88] tracking-tighter text-white">
+                Your Career,<br />Refined.
+              </h1>
+              <p className="mt-8 max-w-xl text-xl text-white/40 font-medium leading-relaxed">
+                Manage your professional identity with precision. Tailor your master resume to any job description in seconds.
+              </p>
+            </motion.div>
+
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              className="mt-12 flex flex-wrap gap-4"
+            >
+              <Button size="lg" onClick={onCreateFromJd} className="group">
+                <Plus className="h-5 w-5" />
+                Tailor from JD
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Button>
+              <Button variant="outline" size="lg" onClick={onUploadClick}>
+                <Upload className="h-5 w-5" />
+                Upload Master
+              </Button>
+            </motion.div>
+          </section>
+
+          <section className="space-y-10">
+            <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between border-b border-white/5 pb-10">
+              <div>
+                <h2 className="text-4xl font-bold tracking-tight text-white">Documents</h2>
+                <p className="mt-2 text-[11px] font-bold uppercase tracking-widest text-white/20">
+                  {resumes.length} items in your library
+                </p>
+              </div>
+              <div className="w-full max-w-xs relative">
+                <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-white/20" />
+                <Input
+                  placeholder="Search library..."
+                  className="pl-12 bg-white/[0.02] border-white/5 rounded-full focus:bg-white/[0.05] transition-all"
+                  value={searchQuery}
+                  onChange={(e) => onSearchChange(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6">
+              {loading ? (
+                <div className="flex justify-center py-24">
+                  <Loader2 className="h-12 w-12 animate-spin text-indigo-600" />
+                </div>
+              ) : resumes.map((resume, idx) => (
+                <motion.div
+                  key={resume.id}
+                  initial={{ x: -20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ delay: 0.1 + idx * 0.05 }}
+                >
+                  <Card 
+                    variant="interactive"
+                    className="group"
+                    onClick={() => onOpenResume(resume.id)}
+                  >
+                    <CardContent className="p-0">
+                      <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
+                        <div className="flex items-center gap-8">
+                          <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/5 bg-white/[0.02] text-white/40 group-hover:bg-indigo-600 group-hover:text-white group-hover:border-indigo-500/20 transition-all duration-500">
+                            <FileText className="h-8 w-8" />
+                          </div>
+                          <div>
+                            <h3 className="text-2xl font-bold tracking-tight text-white group-hover:text-indigo-400 transition-colors">
+                              {resume.name}
+                            </h3>
+                            <div className="mt-2 flex flex-wrap items-center gap-4 text-[10px] font-bold uppercase tracking-widest text-white/20">
+                              <span className="flex items-center gap-1.5">
+                                <LayoutDashboard className="h-3 w-3" />
+                                {resume.date}
+                              </span>
+                              <span className="h-3 w-px bg-white/10" />
+                              <span>{resume.size}</span>
+                              {resume.isMaster && (
+                                <span className="text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                                  Master
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => { e.stopPropagation(); onOpenResume(resume.id); }}
+                          >
+                            Open
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-red-400 hover:bg-red-500/10 rounded-full"
+                            onClick={(e) => { e.stopPropagation(); onRemove(resume.id); }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+
+              {!loading && resumes.length === 0 && (
+                <div className="p-24 text-center border border-dashed border-white/10 rounded-[3rem] bg-white/[0.02] backdrop-blur-sm">
+                  <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-3xl border border-white/5 bg-white/[0.02] text-white/10 mb-8">
+                    <FileText className="h-12 w-12" />
+                  </div>
+                  <h3 className="text-3xl font-bold tracking-tight text-white">No documents found</h3>
+                  <p className="mt-4 text-white/40 max-w-sm mx-auto text-lg font-medium">
+                    {searchQuery ? 'Try a different search term.' : 'Start by uploading your master resume.'}
+                  </p>
+                  <Button
+                    onClick={onUploadClick}
+                    className="mt-10"
+                    size="lg"
+                  >
+                    <Plus className="h-5 w-5" />
+                    Upload Now
+                  </Button>
+                </div>
+              )}
+            </div>
+          </section>
+        </div>
+
+        <aside className="space-y-12">
+          <motion.div
+            initial={{ x: 20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+          >
+            <Card className="bg-white/[0.02] border-white/5 p-10 space-y-10">
+              <div>
+                <h3 className="text-2xl font-bold tracking-tight mb-8">Library Stats</h3>
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">Total Resumes</span>
+                    <span className="text-2xl font-bold text-white">{resumes.length}</span>
+                  </div>
+                  <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">Master Status</span>
+                    <span className={cn("text-[10px] font-bold uppercase tracking-widest", hasMaster ? "text-emerald-400" : "text-red-400")}>
+                      {hasMaster ? "Complete" : "Missing"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-white/40">Profile Strength</span>
+                  <span className="text-xs font-bold text-white">85%</span>
+                </div>
+                <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+                  <div className="h-full bg-indigo-600 transition-all duration-1000 shadow-[0_0_12px_rgba(79,70,229,0.4)]" style={{ width: '85%' }} />
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ x: 20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
+            <Card variant="outline" className="p-10 bg-indigo-500/[0.02] border-indigo-500/10">
+              <div className="flex items-start gap-6">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
+                  <Sparkles className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-400">AI Insights</p>
+                  <p className="mt-4 text-base text-white/40 font-medium leading-relaxed">
+                    Tailored resumes increase interview chances by 40%. Use &quot;Tailor New&quot; to optimize for specific roles.
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+
+          <motion.div
+            initial={{ x: 20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.5 }}
+          >
+            <Card variant="outline" className="p-10 bg-emerald-500/[0.02] border-emerald-500/10">
+              <div className="flex items-start gap-6">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-400">
+                  <CheckCircle2 className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-emerald-400">System Status</p>
+                  <p className="mt-4 text-base text-white/40 font-medium leading-relaxed">
+                    All optimization models are online and ready for processing.
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+        </aside>
+      </div>
+    </motion.div>
+  );
+}
+
+interface MobileDashboardProps extends DesktopDashboardProps {
+  activeTab: string;
+  onTabChange: (tab: string) => void;
+}
+
+function MobileDashboard({
+  resumes,
+  searchQuery,
+  onSearchChange,
+  onUploadClick,
+  onRemove,
+  onCreateFromJd,
+  onOpenResume,
+  onGoDashboard,
+  onGoSettings,
+  activeTab,
+  onTabChange,
+  loading,
+}: MobileDashboardProps) {
+  const hasMaster = resumes.some((resume) => resume.isMaster);
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      exit={{ opacity: 0 }}
+      className="pb-28 relative z-10 min-h-screen"
+    >
+      <header className="sticky top-0 z-50 border-b border-white/5 bg-[#050505]/50 backdrop-blur-xl px-6 py-5 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-indigo-500/20 bg-indigo-600 text-white shadow-lg shadow-indigo-500/20">
+            <FileText className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="text-xs font-bold tracking-tight text-white">Resume Master</div>
+            <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/40">Dashboard</div>
+          </div>
+        </div>
+        <Button size="icon" variant="outline" onClick={onGoSettings} className="rounded-full">
+          <Bell className="h-4 w-4" />
+        </Button>
+      </header>
+
+      <div className="px-6 py-10 space-y-10">
+        <section>
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+          >
+            <h1 className="text-5xl font-bold tracking-tighter text-white leading-[0.95]">
+              Hello,<br />Professional.
+            </h1>
+            <p className="mt-6 text-white/40 text-lg font-medium leading-relaxed">
+              Your career library is ready.
+            </p>
+          </motion.div>
+        </section>
+
+        <section className="grid grid-cols-2 gap-4">
+          <Button
+            variant="outline"
+            className="h-auto flex-col items-start gap-4 p-6 text-left border-white/5 bg-white/[0.02] rounded-[2rem]"
+            onClick={onCreateFromJd}
+          >
+            <div className="h-10 w-10 flex items-center justify-center rounded-xl border border-white/5 bg-white/[0.02] text-white">
+              <Sparkles className="h-5 w-5" />
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-widest">Tailor New</span>
+          </Button>
+          <Button
+            variant="outline"
+            className="h-auto flex-col items-start gap-4 p-6 text-left border-white/5 bg-white/[0.02] rounded-[2rem]"
+            onClick={onUploadClick}
+          >
+            <div className="h-10 w-10 flex items-center justify-center rounded-xl border border-white/5 bg-white/[0.02] text-white">
+              <Upload className="h-5 w-5" />
+            </div>
+            <span className="text-[10px] font-bold uppercase tracking-widest">Upload</span>
+          </Button>
+        </section>
+
+        <section className="space-y-6">
+          <div className="flex items-center justify-between border-b border-white/5 pb-4">
+            <h2 className="text-2xl font-bold tracking-tight text-white">Library</h2>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-white/20">
+              {resumes.length} Items
+            </span>
+          </div>
+
+          <div className="space-y-4">
+            {loading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="h-10 w-10 animate-spin text-indigo-600" />
+              </div>
+            ) : resumes.map((resume, idx) => (
+              <motion.div
+                key={resume.id}
+                initial={{ y: 10, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: idx * 0.05 }}
+              >
+                <Card
+                  variant="interactive"
+                  className="group"
+                  onClick={() => onOpenResume(resume.id)}
+                >
+                  <CardContent className="p-0">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-start gap-4 flex-1">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/5 bg-white/[0.02] text-white/40 group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-500">
+                          <FileText className="h-6 w-6" />
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold tracking-tight text-white leading-tight">{resume.name}</h3>
+                          <p className="mt-1 text-[10px] font-bold uppercase tracking-widest text-white/20">
+                            {resume.date} • {resume.size}
+                          </p>
+                          {resume.isMaster && (
+                            <span className="mt-3 inline-flex border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-widest text-emerald-400">
+                              Master Set
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="text-red-400 opacity-50 rounded-full"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onRemove(resume.id);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+
+            {!loading && resumes.length === 0 && (
+              <div className="p-16 text-center border border-dashed border-white/10 rounded-[2.5rem] bg-white/[0.02]">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border border-white/5 bg-white/[0.02] text-white/10 mb-6">
+                  <FileText className="h-8 w-8" />
+                </div>
+                <h3 className="text-2xl font-bold tracking-tight text-white">Empty Library</h3>
+                <Button
+                  onClick={onUploadClick}
+                  className="mt-8 w-full"
+                >
+                  Upload Master
+                </Button>
+              </div>
+            )}
+          </div>
+        </section>
+
+        <Card variant="outline" className="bg-indigo-500/[0.02] border-indigo-500/10 p-8">
+          <div className="flex items-start gap-5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-indigo-500/20 bg-indigo-500/10 text-indigo-400">
+              <Info className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-400">Quick Tip</p>
+              <p className="mt-3 text-sm text-white/40 font-medium leading-relaxed">
+                Always keep your master resume up to date for the best AI tailoring results.
+              </p>
+            </div>
+          </div>
+        </Card>
+      </div>
+
+      <nav className="fixed bottom-0 left-0 right-0 border-t border-white/5 bg-[#050505]/80 backdrop-blur-xl pb-safe z-50">
+        <div className="grid grid-cols-4 h-20">
+          {[
+            { id: 'home', label: 'Home', icon: LayoutDashboard, action: onGoDashboard },
+            { id: 'tailor', label: 'Tailor', icon: Sparkles, action: onCreateFromJd },
+            { id: 'upload', label: 'Upload', icon: Plus, action: onUploadClick },
+            { id: 'settings', label: 'Settings', icon: Settings, action: onGoSettings },
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => {
+                  tab.action();
+                  onTabChange(tab.id);
+                }}
+                className={`flex flex-col items-center justify-center gap-1.5 transition-all ${
+                  isActive ? 'text-indigo-400' : 'text-white/20'
+                }`}
+              >
+                <div className={cn(
+                  "p-2 rounded-xl transition-all duration-300",
+                  isActive && "bg-indigo-500/10 text-indigo-400"
+                )}>
+                  <Icon className="h-6 w-6" />
+                </div>
+                <span className="text-[9px] font-bold uppercase tracking-widest">{tab.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </nav>
+    </motion.div>
   );
 }
