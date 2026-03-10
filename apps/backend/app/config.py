@@ -140,13 +140,37 @@ class Settings(BaseSettings):
     port: int = 8000
     frontend_base_url: str = "http://localhost:3000"
 
+    # Job Description Configuration
+    max_jd_length: int = 3000
+
     # CORS Configuration
     cors_origins: list[str] = [
         "http://localhost:3000",
         "http://localhost:3333",
         "http://127.0.0.1:3000",
-        "http://157.173.116.135:1010"
+        "http://157.173.116.135:1010",
     ]
+
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, v: Any) -> list[str]:
+        if v is None:
+            return v
+        if isinstance(v, list):
+            return [str(item).strip() for item in v if str(item).strip()]
+        if isinstance(v, str):
+            raw = v.strip()
+            if not raw:
+                return []
+            if raw.startswith("["):
+                try:
+                    parsed = json.loads(raw)
+                except json.JSONDecodeError:
+                    parsed = None
+                if isinstance(parsed, list):
+                    return [str(item).strip() for item in parsed if str(item).strip()]
+            return [part.strip() for part in raw.split(",") if part.strip()]
+        return v
 
     # Paths
     data_dir: Path = Path(__file__).parent.parent / "data"

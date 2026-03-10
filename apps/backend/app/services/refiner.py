@@ -27,12 +27,13 @@ from app.schemas.refinement import (
     RefinementConfig,
     RefinementResult,
 )
+from app.config import settings
 
 logger = logging.getLogger(__name__)
 
-# LLM-012: Job description truncation limits
-MAX_JD_LENGTH = 2000
-MIN_TRUNCATION_WARNING_LENGTH = 1500
+# LLM-012: Job description truncation limits (from environment config)
+MAX_JD_LENGTH = settings.max_jd_length
+MIN_TRUNCATION_WARNING_LENGTH = int(MAX_JD_LENGTH * 0.75)
 
 
 def _keyword_in_text(keyword: str, text: str) -> bool:

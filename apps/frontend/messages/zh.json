@@ -555,7 +555,15 @@
       "projectChanges": "项目变更",
       "certificationChanges": "认证变更",
       "rejectButton": "拒绝并重新生成",
-      "confirmButton": "确认并保存"
+      "confirmButton": "确认并保存",
+      "decisionLabel": "决定",
+      "decisionAccepted": "已接受",
+      "decisionRejected": "已拒绝",
+      "decisionPending": "待定",
+      "acceptAll": "Accept All",
+      "acceptSection": "Accept Section",
+      "acceptChange": "接受",
+      "rejectChange": "拒绝"
     },
     "regenerateDialog": {
       "title": "重新生成定制简历？",

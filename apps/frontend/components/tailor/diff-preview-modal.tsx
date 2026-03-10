@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AlertTriangle, CheckCircle, X, ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -21,6 +21,8 @@ interface DiffPreviewModalProps {
   isSaving?: boolean;
 }
 
+type ChangeDecision = 'accepted' | 'rejected' | 'pending';
+
 export function DiffPreviewModal({
   isOpen,
   onClose,
@@ -35,6 +37,19 @@ export function DiffPreviewModal({
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(['title', 'summary', 'skills', 'descriptions', 'experience'])
   );
+  const [changeDecisions, setChangeDecisions] = useState<Record<number, ChangeDecision>>({});
+
+  useEffect(() => {
+    if (!detailedChanges || detailedChanges.length === 0) {
+      setChangeDecisions({});
+      return;
+    }
+    const nextDecisions: Record<number, ChangeDecision> = {};
+    detailedChanges.forEach((_, index) => {
+      nextDecisions[index] = 'pending';
+    });
+    setChangeDecisions(nextDecisions);
+  }, [detailedChanges, isOpen]);
 
   if (!diffSummary || !detailedChanges) {
     return (
@@ -46,14 +61,14 @@ export function DiffPreviewModal({
           }
         }}
       >
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col p-6 bg-[#F0F0E8] border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)]">
-          <DialogHeader className="border-b-2 border-black pb-4 bg-white -mx-6 -mt-6 px-6 pt-6">
-            <DialogTitle className="font-serif text-2xl font-bold uppercase tracking-tight">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col p-4 sm:p-6 bg-[#F0F0E8] border-2 border-black shadow-[4px_4px_0px_0px_#000000]">
+          <DialogHeader className="border-b-2 border-black pb-4 bg-white -mx-4 sm:-mx-6 -mt-4 sm:-mt-6 px-4 sm:px-6 pt-4 sm:pt-6 text-left">
+            <DialogTitle className="font-serif text-xl sm:text-2xl font-bold uppercase tracking-tight">
               {t('tailor.missingDiffDialog.title')}
             </DialogTitle>
           </DialogHeader>
 
-          <div className="mt-6 border-2 border-black bg-white p-4 font-mono text-xs text-gray-700">
+          <div className="mt-5 border-2 border-black bg-white p-4 font-mono text-xs text-gray-700">
             {t('tailor.missingDiffDialog.description')}
           </div>
           <div className="mt-3 flex items-center gap-2 font-mono text-xs text-amber-700">
@@ -61,11 +76,11 @@ export function DiffPreviewModal({
             <span>{t('tailor.missingDiffDialog.confirmLabel')}</span>
           </div>
 
-          <div className="flex justify-end items-center gap-3 pt-4 border-t-2 border-black bg-white -mx-6 -mb-6 px-6 py-4">
-            <Button variant="outline" onClick={onClose} className="gap-2">
+          <div className="flex flex-col sm:flex-row sm:justify-end items-stretch sm:items-center gap-3 pt-4 border-t-2 border-black bg-white -mx-4 sm:-mx-6 -mb-4 sm:-mb-6 px-4 sm:px-6 py-4">
+            <Button variant="outline" onClick={onClose} className="gap-2 w-full sm:w-auto">
               {t('common.cancel')}
             </Button>
-            <Button variant="warning" onClick={onConfirm} className="gap-2">
+            <Button variant="warning" onClick={onConfirm} className="gap-2 w-full sm:w-auto">
               {t('tailor.missingDiffDialog.confirmLabel')}
             </Button>
           </div>
@@ -84,15 +99,61 @@ export function DiffPreviewModal({
     setExpandedSections(newExpanded);
   };
 
+  const updateDecision = (index: number, decision: ChangeDecision) => {
+    setChangeDecisions((prev) => {
+      const current = prev[index] ?? 'pending';
+      const nextDecision = current === decision ? 'pending' : decision;
+      return { ...prev, [index]: nextDecision };
+    });
+  };
+
+  const decisionLabels = {
+    decision: t('tailor.diffModal.decisionLabel'),
+    accept: t('tailor.diffModal.acceptChange'),
+    reject: t('tailor.diffModal.rejectChange'),
+    accepted: t('tailor.diffModal.decisionAccepted'),
+    rejected: t('tailor.diffModal.decisionRejected'),
+    pending: t('tailor.diffModal.decisionPending'),
+  };
+
+  const indexedChanges = detailedChanges.map((change, index) => ({ change, index }));
+
   // Group changes by type
-  const titleChanges = detailedChanges.filter((c) => c.field_type === 'title');
-  const summaryChanges = detailedChanges.filter((c) => c.field_type === 'summary');
-  const skillChanges = detailedChanges.filter((c) => c.field_type === 'skill');
-  const descChanges = detailedChanges.filter((c) => c.field_type === 'description');
-  const certChanges = detailedChanges.filter((c) => c.field_type === 'certification');
-  const experienceChanges = detailedChanges.filter((c) => c.field_type === 'experience');
-  const educationChanges = detailedChanges.filter((c) => c.field_type === 'education');
-  const projectChanges = detailedChanges.filter((c) => c.field_type === 'project');
+  const titleChanges = indexedChanges.filter((c) => c.change.field_type === 'title');
+  const summaryChanges = indexedChanges.filter((c) => c.change.field_type === 'summary');
+  const skillChanges = indexedChanges.filter((c) => c.change.field_type === 'skill');
+  const descChanges = indexedChanges.filter((c) => c.change.field_type === 'description');
+  const certChanges = indexedChanges.filter((c) => c.change.field_type === 'certification');
+  const experienceChanges = indexedChanges.filter((c) => c.change.field_type === 'experience');
+  const educationChanges = indexedChanges.filter((c) => c.change.field_type === 'education');
+  const projectChanges = indexedChanges.filter((c) => c.change.field_type === 'project');
+
+  const acceptAllChanges = () => {
+    setChangeDecisions((prev) => {
+      const next = { ...prev };
+      detailedChanges.forEach((_, index) => {
+        next[index] = 'accepted';
+      });
+      return next;
+    });
+  };
+
+  const acceptSectionChanges = (indices: number[]) => {
+    setChangeDecisions((prev) => {
+      const next = { ...prev };
+      indices.forEach((index) => {
+        next[index] = 'accepted';
+      });
+      return next;
+    });
+  };
+
+  const allAccepted =
+    detailedChanges.length > 0 &&
+    detailedChanges.every((_, index) => changeDecisions[index] === 'accepted');
+
+  const isSectionAccepted = (changes: { index: number }[]) =>
+    changes.length > 0 && changes.every(({ index }) => changeDecisions[index] === 'accepted');
 
   return (
     <Dialog
@@ -103,57 +164,81 @@ export function DiffPreviewModal({
         }
       }}
     >
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col p-6 bg-[#F0F0E8] border-2 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)]">
-        <DialogHeader className="border-b-2 border-black pb-4 bg-white -mx-6 -mt-6 px-6 pt-6">
-          <DialogTitle className="font-serif text-2xl font-bold uppercase tracking-tight">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col p-4 sm:p-6 bg-[#F0F0E8] border-2 border-black shadow-[4px_4px_0px_0px_#000000]">
+        <DialogHeader className="border-b-2 border-black pb-4 bg-white -mx-4 sm:-mx-6 -mt-4 sm:-mt-6 px-4 sm:px-6 pt-4 sm:pt-6 text-left">
+          <DialogTitle className="font-serif text-xl sm:text-2xl font-bold uppercase tracking-tight">
             {t('tailor.diffModal.title')}
           </DialogTitle>
-          <p className="font-mono text-xs text-gray-600 mt-2">
+          <p className="font-mono text-[11px] sm:text-xs text-gray-600 mt-2">
             {'// '}
             {t('tailor.diffModal.subtitle')}
           </p>
         </DialogHeader>
 
         {/* Summary cards */}
-        <div className="border-2 border-black bg-white p-4 mt-4">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-3 h-3 bg-[#1D4ED8]"></div>
-            <h3 className="font-mono text-sm font-bold uppercase tracking-wider">
-              {t('tailor.diffModal.summary')}
-            </h3>
+        <div className="border-2 border-black bg-white p-3 sm:p-4 mt-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-[#1D4ED8]"></div>
+              <h3 className="font-mono text-sm font-bold uppercase tracking-wider">
+                {t('tailor.diffModal.summary')}
+              </h3>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="success"
+              onClick={acceptAllChanges}
+              disabled={detailedChanges.length === 0 || allAccepted}
+              className="w-full sm:w-auto justify-center"
+            >
+              {t('tailor.diffModal.acceptAll')}
+            </Button>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <StatCard
-              label={t('tailor.diffModal.skillsAdded')}
-              value={diffSummary.skills_added}
-              variant="success"
-            />
-            <StatCard
-              label={t('tailor.diffModal.skillsRemoved')}
-              value={diffSummary.skills_removed}
-              variant="warning"
-            />
-            <StatCard
-              label={t('tailor.diffModal.certificationsAdded')}
-              value={diffSummary.certifications_added}
-              variant="info"
-            />
-            <StatCard
-              label={t('tailor.diffModal.descriptionsModified')}
-              value={diffSummary.descriptions_modified}
-              variant="info"
-            />
-            <StatCard
-              label={t('tailor.diffModal.titleChanged')}
-              value={diffSummary.title_changed ? 1 : 0}
-              variant={diffSummary.title_changed ? 'info' : 'success'}
-            />
-            <StatCard
-              label={t('tailor.diffModal.highRiskChanges')}
-              value={diffSummary.high_risk_changes}
-              variant={diffSummary.high_risk_changes > 0 ? 'danger' : 'success'}
-            />
+          <div className="flex gap-3 overflow-x-auto pb-2 sm:grid sm:grid-cols-3 lg:grid-cols-6 sm:gap-4 sm:pb-0">
+            <div className="min-w-[140px] sm:min-w-0">
+              <StatCard
+                label={t('tailor.diffModal.skillsAdded')}
+                value={diffSummary.skills_added}
+                variant="success"
+              />
+            </div>
+            <div className="min-w-[140px] sm:min-w-0">
+              <StatCard
+                label={t('tailor.diffModal.skillsRemoved')}
+                value={diffSummary.skills_removed}
+                variant="warning"
+              />
+            </div>
+            <div className="min-w-[140px] sm:min-w-0">
+              <StatCard
+                label={t('tailor.diffModal.certificationsAdded')}
+                value={diffSummary.certifications_added}
+                variant="info"
+              />
+            </div>
+            <div className="min-w-[140px] sm:min-w-0">
+              <StatCard
+                label={t('tailor.diffModal.descriptionsModified')}
+                value={diffSummary.descriptions_modified}
+                variant="info"
+              />
+            </div>
+            <div className="min-w-[140px] sm:min-w-0">
+              <StatCard
+                label={t('tailor.diffModal.titleChanged')}
+                value={diffSummary.title_changed ? 1 : 0}
+                variant={diffSummary.title_changed ? 'info' : 'success'}
+              />
+            </div>
+            <div className="min-w-[140px] sm:min-w-0">
+              <StatCard
+                label={t('tailor.diffModal.highRiskChanges')}
+                value={diffSummary.high_risk_changes}
+                variant={diffSummary.high_risk_changes > 0 ? 'danger' : 'success'}
+              />
+            </div>
           </div>
 
           {diffSummary.high_risk_changes > 0 && (
@@ -180,7 +265,7 @@ export function DiffPreviewModal({
         )}
 
         {/* Detailed changes list */}
-        <div className="flex-1 min-h-0 overflow-y-auto mt-4 space-y-4">
+        <div className="flex-1 min-h-0 overflow-y-auto mt-4 space-y-3 sm:space-y-4">
           {/* Title changes */}
           {titleChanges.length > 0 && (
             <ChangeSection
@@ -188,10 +273,21 @@ export function DiffPreviewModal({
               count={titleChanges.length}
               isExpanded={expandedSections.has('title')}
               onToggle={() => toggleSection('title')}
+              onAcceptAll={() => acceptSectionChanges(titleChanges.map((item) => item.index))}
+              acceptLabel={t('tailor.diffModal.acceptSection')}
+              isAccepted={isSectionAccepted(titleChanges)}
             >
-              {titleChanges.map((change, idx) => (
-                <ChangeItem key={idx} change={change} />
-              ))}
+              {titleChanges.map(({ change, index }, idx) => {
+                return (
+                  <ChangeItem
+                    key={`${change.field_path}-${idx}`}
+                    change={change}
+                    decision={changeDecisions[index] ?? 'pending'}
+                    onDecisionChange={(decision) => updateDecision(index, decision)}
+                    labels={decisionLabels}
+                  />
+                );
+              })}
             </ChangeSection>
           )}
 
@@ -202,10 +298,21 @@ export function DiffPreviewModal({
               count={summaryChanges.length}
               isExpanded={expandedSections.has('summary')}
               onToggle={() => toggleSection('summary')}
+              onAcceptAll={() => acceptSectionChanges(summaryChanges.map((item) => item.index))}
+              acceptLabel={t('tailor.diffModal.acceptSection')}
+              isAccepted={isSectionAccepted(summaryChanges)}
             >
-              {summaryChanges.map((change, idx) => (
-                <ChangeItem key={idx} change={change} />
-              ))}
+              {summaryChanges.map(({ change, index }, idx) => {
+                return (
+                  <ChangeItem
+                    key={`${change.field_path}-${idx}`}
+                    change={change}
+                    decision={changeDecisions[index] ?? 'pending'}
+                    onDecisionChange={(decision) => updateDecision(index, decision)}
+                    labels={decisionLabels}
+                  />
+                );
+              })}
             </ChangeSection>
           )}
 
@@ -216,10 +323,21 @@ export function DiffPreviewModal({
               count={skillChanges.length}
               isExpanded={expandedSections.has('skills')}
               onToggle={() => toggleSection('skills')}
+              onAcceptAll={() => acceptSectionChanges(skillChanges.map((item) => item.index))}
+              acceptLabel={t('tailor.diffModal.acceptSection')}
+              isAccepted={isSectionAccepted(skillChanges)}
             >
-              {skillChanges.map((change, idx) => (
-                <ChangeItem key={idx} change={change} />
-              ))}
+              {skillChanges.map(({ change, index }, idx) => {
+                return (
+                  <ChangeItem
+                    key={`${change.field_path}-${idx}`}
+                    change={change}
+                    decision={changeDecisions[index] ?? 'pending'}
+                    onDecisionChange={(decision) => updateDecision(index, decision)}
+                    labels={decisionLabels}
+                  />
+                );
+              })}
             </ChangeSection>
           )}
 
@@ -230,10 +348,23 @@ export function DiffPreviewModal({
               count={experienceChanges.length}
               isExpanded={expandedSections.has('experience')}
               onToggle={() => toggleSection('experience')}
+              onAcceptAll={() =>
+                acceptSectionChanges(experienceChanges.map((item) => item.index))
+              }
+              acceptLabel={t('tailor.diffModal.acceptSection')}
+              isAccepted={isSectionAccepted(experienceChanges)}
             >
-              {experienceChanges.map((change, idx) => (
-                <ChangeItem key={idx} change={change} />
-              ))}
+              {experienceChanges.map(({ change, index }, idx) => {
+                return (
+                  <ChangeItem
+                    key={`${change.field_path}-${idx}`}
+                    change={change}
+                    decision={changeDecisions[index] ?? 'pending'}
+                    onDecisionChange={(decision) => updateDecision(index, decision)}
+                    labels={decisionLabels}
+                  />
+                );
+              })}
             </ChangeSection>
           )}
 
@@ -244,10 +375,21 @@ export function DiffPreviewModal({
               count={descChanges.length}
               isExpanded={expandedSections.has('descriptions')}
               onToggle={() => toggleSection('descriptions')}
+              onAcceptAll={() => acceptSectionChanges(descChanges.map((item) => item.index))}
+              acceptLabel={t('tailor.diffModal.acceptSection')}
+              isAccepted={isSectionAccepted(descChanges)}
             >
-              {descChanges.map((change, idx) => (
-                <ChangeItem key={idx} change={change} />
-              ))}
+              {descChanges.map(({ change, index }, idx) => {
+                return (
+                  <ChangeItem
+                    key={`${change.field_path}-${idx}`}
+                    change={change}
+                    decision={changeDecisions[index] ?? 'pending'}
+                    onDecisionChange={(decision) => updateDecision(index, decision)}
+                    labels={decisionLabels}
+                  />
+                );
+              })}
             </ChangeSection>
           )}
 
@@ -258,10 +400,21 @@ export function DiffPreviewModal({
               count={educationChanges.length}
               isExpanded={expandedSections.has('education')}
               onToggle={() => toggleSection('education')}
+              onAcceptAll={() => acceptSectionChanges(educationChanges.map((item) => item.index))}
+              acceptLabel={t('tailor.diffModal.acceptSection')}
+              isAccepted={isSectionAccepted(educationChanges)}
             >
-              {educationChanges.map((change, idx) => (
-                <ChangeItem key={idx} change={change} />
-              ))}
+              {educationChanges.map(({ change, index }, idx) => {
+                return (
+                  <ChangeItem
+                    key={`${change.field_path}-${idx}`}
+                    change={change}
+                    decision={changeDecisions[index] ?? 'pending'}
+                    onDecisionChange={(decision) => updateDecision(index, decision)}
+                    labels={decisionLabels}
+                  />
+                );
+              })}
             </ChangeSection>
           )}
 
@@ -272,10 +425,21 @@ export function DiffPreviewModal({
               count={projectChanges.length}
               isExpanded={expandedSections.has('project')}
               onToggle={() => toggleSection('project')}
+              onAcceptAll={() => acceptSectionChanges(projectChanges.map((item) => item.index))}
+              acceptLabel={t('tailor.diffModal.acceptSection')}
+              isAccepted={isSectionAccepted(projectChanges)}
             >
-              {projectChanges.map((change, idx) => (
-                <ChangeItem key={idx} change={change} />
-              ))}
+              {projectChanges.map(({ change, index }, idx) => {
+                return (
+                  <ChangeItem
+                    key={`${change.field_path}-${idx}`}
+                    change={change}
+                    decision={changeDecisions[index] ?? 'pending'}
+                    onDecisionChange={(decision) => updateDecision(index, decision)}
+                    labels={decisionLabels}
+                  />
+                );
+              })}
             </ChangeSection>
           )}
 
@@ -286,24 +450,35 @@ export function DiffPreviewModal({
               count={certChanges.length}
               isExpanded={expandedSections.has('certifications')}
               onToggle={() => toggleSection('certifications')}
+              onAcceptAll={() => acceptSectionChanges(certChanges.map((item) => item.index))}
+              acceptLabel={t('tailor.diffModal.acceptSection')}
+              isAccepted={isSectionAccepted(certChanges)}
             >
-              {certChanges.map((change, idx) => (
-                <ChangeItem key={idx} change={change} />
-              ))}
+              {certChanges.map(({ change, index }, idx) => {
+                return (
+                  <ChangeItem
+                    key={`${change.field_path}-${idx}`}
+                    change={change}
+                    decision={changeDecisions[index] ?? 'pending'}
+                    onDecisionChange={(decision) => updateDecision(index, decision)}
+                    labels={decisionLabels}
+                  />
+                );
+              })}
             </ChangeSection>
           )}
         </div>
 
         {/* Action buttons */}
-        <div className="flex justify-between items-center pt-4 border-t-2 border-black bg-white -mx-6 -mb-6 px-6 py-4">
-          <Button variant="outline" onClick={onReject} className="gap-2">
+        <div className="flex flex-col sm:flex-row sm:justify-between items-stretch sm:items-center gap-3 pt-4 border-t-2 border-black bg-white -mx-4 sm:-mx-6 -mb-4 sm:-mb-6 px-4 sm:px-6 py-4">
+          <Button variant="outline" onClick={onReject} className="gap-2 w-full sm:w-auto justify-center">
             <X className="w-4 h-4" />
             {t('tailor.diffModal.rejectButton')}
           </Button>
           <Button 
             onClick={onConfirm} 
             disabled={isSaving}
-            className="gap-2 bg-[#15803D] hover:bg-[#166534]"
+            className="gap-2 bg-[#15803D] hover:bg-[#166534] w-full sm:w-auto justify-center"
           >
             {isSaving ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -335,8 +510,10 @@ function StatCard({ label, value, variant }: StatCardProps) {
 
   return (
     <div className={`border-2 p-3 ${colors[variant]}`}>
-      <div className="font-mono text-2xl font-bold">{value}</div>
-      <div className="font-mono text-xs uppercase tracking-wider mt-1">{label}</div>
+      <div className="font-mono text-xl sm:text-2xl font-bold">{value}</div>
+      <div className="font-mono text-[10px] sm:text-xs uppercase tracking-wider mt-1">
+        {label}
+      </div>
     </div>
   );
 }
@@ -347,23 +524,53 @@ interface ChangeSectionProps {
   count: number;
   isExpanded: boolean;
   onToggle: () => void;
+  onAcceptAll: () => void;
+  acceptLabel: string;
+  isAccepted: boolean;
   children: React.ReactNode;
 }
 
-function ChangeSection({ title, count, isExpanded, onToggle, children }: ChangeSectionProps) {
+function ChangeSection({
+  title,
+  count,
+  isExpanded,
+  onToggle,
+  onAcceptAll,
+  acceptLabel,
+  isAccepted,
+  children,
+}: ChangeSectionProps) {
   return (
     <div className="border-2 border-black bg-white">
-      <button
-        onClick={onToggle}
-        className="w-full flex items-center justify-between p-3 hover:bg-gray-50"
-      >
-        <div className="flex items-center gap-2">
-          {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-          <span className="font-mono text-sm font-bold uppercase tracking-wider">
-            {title} ({count})
-          </span>
+      <div className="flex flex-col sm:flex-row sm:items-stretch">
+        <button
+          onClick={onToggle}
+          className="w-full sm:flex-1 flex items-center justify-between p-3 sm:p-4 hover:bg-gray-50 text-left"
+        >
+          <div className="flex items-center gap-2">
+            {isExpanded ? (
+              <ChevronDown className="w-4 h-4" />
+            ) : (
+              <ChevronRight className="w-4 h-4" />
+            )}
+            <span className="font-mono text-sm font-bold uppercase tracking-wider">
+              {title} ({count})
+            </span>
+          </div>
+        </button>
+        <div className="border-t-2 sm:border-t-0 sm:border-l-2 border-black p-2 sm:p-3 bg-white">
+          <Button
+            type="button"
+            size="sm"
+            variant="success"
+            onClick={onAcceptAll}
+            disabled={isAccepted}
+            className="w-full justify-center"
+          >
+            {acceptLabel}
+          </Button>
         </div>
-      </button>
+      </div>
 
       {isExpanded && <div className="border-t-2 border-black p-4 space-y-3">{children}</div>}
     </div>
@@ -373,9 +580,19 @@ function ChangeSection({ title, count, isExpanded, onToggle, children }: ChangeS
 // Helper component: change item
 interface ChangeItemProps {
   change: ResumeFieldDiff;
+  decision: ChangeDecision;
+  onDecisionChange: (decision: ChangeDecision) => void;
+  labels: {
+    decision: string;
+    accept: string;
+    reject: string;
+    accepted: string;
+    rejected: string;
+    pending: string;
+  };
 }
 
-function ChangeItem({ change }: ChangeItemProps) {
+function ChangeItem({ change, decision, onDecisionChange, labels }: ChangeItemProps) {
   const typeColors = {
     added: 'border-l-4 border-[#15803D] bg-[#F0FDF4]',
     removed: 'border-l-4 border-[#DC2626] bg-[#FEF2F2]',
@@ -388,25 +605,73 @@ function ChangeItem({ change }: ChangeItemProps) {
     modified: '~',
   };
 
+  const decisionStyles = {
+    accepted: 'bg-[#15803D] text-white',
+    rejected: 'bg-[#DC2626] text-white',
+    pending: 'bg-[#F0F0E8] text-black',
+  };
+
+  const decisionText = {
+    accepted: labels.accepted,
+    rejected: labels.rejected,
+    pending: labels.pending,
+  }[decision];
+
   return (
-    <div className={`p-3 ${typeColors[change.change_type]}`}>
+    <div
+      className={`border-2 border-black p-3 shadow-[2px_2px_0px_0px_#000000] ${typeColors[change.change_type]}`}
+    >
       <div className="flex items-start gap-2">
         <span className="font-mono text-xs font-bold uppercase tracking-wider text-gray-500">
           {typeLabels[change.change_type]}
         </span>
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           {change.original_value && (
-            <div className="line-through text-[#DC2626] font-mono text-sm mb-1">
+            <div className="line-through text-[#DC2626] font-mono text-sm mb-1 break-words">
               {change.original_value}
             </div>
           )}
           {change.new_value && (
-            <div className="text-gray-900 font-mono text-sm">{change.new_value}</div>
+            <div className="text-gray-900 font-mono text-sm break-words">{change.new_value}</div>
           )}
         </div>
         {change.change_type === 'added' && change.confidence === 'high' && (
           <AlertTriangle className="w-4 h-4 text-[#F97316] shrink-0" />
         )}
+      </div>
+      <div className="mt-3 border-t-2 border-black pt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-xs font-bold uppercase tracking-wider text-gray-600">
+            {labels.decision}
+          </span>
+          <span
+            className={`border-2 border-black px-2 py-1 font-mono text-xs font-bold uppercase tracking-wider ${decisionStyles[decision]}`}
+          >
+            {decisionText}
+          </span>
+        </div>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <Button
+            type="button"
+            size="sm"
+            variant={decision === 'accepted' ? 'success' : 'outline'}
+            onClick={() => onDecisionChange('accepted')}
+            aria-pressed={decision === 'accepted'}
+            className="w-full sm:w-auto justify-center"
+          >
+            {labels.accept}
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            variant={decision === 'rejected' ? 'destructive' : 'outline'}
+            onClick={() => onDecisionChange('rejected')}
+            aria-pressed={decision === 'rejected'}
+            className="w-full sm:w-auto justify-center"
+          >
+            {labels.reject}
+          </Button>
+        </div>
       </div>
     </div>
   );

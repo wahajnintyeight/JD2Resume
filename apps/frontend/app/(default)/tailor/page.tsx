@@ -22,9 +22,9 @@ import { DiffPreviewModal } from '@/components/tailor/diff-preview-modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import MasterResumeSelector from '@/components/dashboard/master-resume-selector';
 
-// LLM-012: Job description length limits (must match backend)
-const MAX_JD_LENGTH = 2000;
-const JD_LENGTH_WARNING_THRESHOLD = 1500;
+// LLM-012: Job description length limits (from env, must match backend)
+const MAX_JD_LENGTH = parseInt(process.env.NEXT_PUBLIC_MAX_JD_LENGTH || '3000', 10);
+const JD_LENGTH_WARNING_THRESHOLD = Math.floor(MAX_JD_LENGTH * 0.75);
 
 export default function TailorPage() {
   const { t } = useTranslations();

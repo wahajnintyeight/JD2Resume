@@ -555,7 +555,15 @@
       "projectChanges": "プロジェクトの変更",
       "certificationChanges": "資格の変更",
       "rejectButton": "拒否して再生成",
-      "confirmButton": "確認して保存"
+      "confirmButton": "確認して保存",
+      "decisionLabel": "判断",
+      "decisionAccepted": "承認",
+      "decisionRejected": "却下",
+      "decisionPending": "保留",
+      "acceptAll": "Accept All",
+      "acceptSection": "Accept Section",
+      "acceptChange": "承認",
+      "rejectChange": "却下"
     },
     "regenerateDialog": {
       "title": "カスタマイズ済み履歴書を再生成しますか？",

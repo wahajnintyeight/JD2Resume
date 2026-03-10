@@ -555,7 +555,15 @@
       "projectChanges": "Project Changes",
       "certificationChanges": "Certification Changes",
       "rejectButton": "Reject & Regenerate",
-      "confirmButton": "Confirm & Save"
+      "confirmButton": "Confirm & Save",
+      "decisionLabel": "Decision",
+      "decisionAccepted": "Accepted",
+      "decisionRejected": "Rejected",
+      "decisionPending": "Pending",
+      "acceptAll": "Accept All",
+      "acceptSection": "Accept Section",
+      "acceptChange": "Accept",
+      "rejectChange": "Reject"
     },
     "regenerateDialog": {
       "title": "Regenerate tailored resume?",

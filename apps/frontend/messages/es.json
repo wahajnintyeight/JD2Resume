@@ -555,7 +555,15 @@
       "projectChanges": "Cambios en proyectos",
       "certificationChanges": "Cambios en certificaciones",
       "rejectButton": "Rechazar y regenerar",
-      "confirmButton": "Confirmar y guardar"
+      "confirmButton": "Confirmar y guardar",
+      "decisionLabel": "DecisiÃ³n",
+      "decisionAccepted": "Aceptado",
+      "decisionRejected": "Rechazado",
+      "decisionPending": "Pendiente",
+      "acceptAll": "Aceptar todo",
+      "acceptSection": "Aceptar seccion",
+      "acceptChange": "Aceptar",
+      "rejectChange": "Rechazar"
     },
     "regenerateDialog": {
       "title": "¿Regenerar el currículum personalizado?",
