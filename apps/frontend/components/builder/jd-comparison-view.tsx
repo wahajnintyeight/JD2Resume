@@ -62,7 +62,7 @@ export function JDComparisonView({ jobDescription, resumeData }: JDComparisonVie
   return (
     <div className="h-full flex flex-col">
       {/* Stats Bar */}
-      <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
+      <div className="flex items-center justify-between px-4 py-3 bg-zinc-900 border-b border-zinc-800">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <Target className="w-4 h-4 text-blue-600" />

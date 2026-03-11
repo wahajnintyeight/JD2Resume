@@ -1,9 +1,8 @@
 'use client';
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useTranslations } from '@/lib/i18n';
+import { AlertCircle, RefreshCw, Home, ShieldAlert, Terminal } from 'lucide-react';
+import { motion } from 'motion/react';
 
 interface ErrorBoundaryStrings {
   title: string;
@@ -25,8 +24,8 @@ interface State {
 }
 
 /**
- * Error Boundary component to catch React errors and display a fallback UI.
- * Prevents entire app from crashing when a component throws an error.
+ * Redesigned Error Boundary for ResumeMaster AI
+ * Matches the dark, professional aesthetic of the application.
  */
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
@@ -39,8 +38,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Log error to console (could be sent to error tracking service)
-    console.error('Error Boundary caught an error:', error, errorInfo);
+    console.error('ErrorBoundary caught an error:', error, errorInfo);
     this.setState({ errorInfo });
   }
 
@@ -54,10 +52,10 @@ export class ErrorBoundary extends Component<Props, State> {
 
   render() {
     const strings: ErrorBoundaryStrings = this.props.strings ?? {
-      title: 'Something Went Wrong',
-      description: 'An unexpected error occurred. This has been logged for review.',
-      tryAgain: 'Try Again',
-      reloadPage: 'Reload Page',
+      title: 'System Interruption',
+      description: 'An unexpected error occurred within the application engine. Our team has been notified.',
+      tryAgain: 'Reset Session',
+      reloadPage: 'Reload Application',
     };
 
     if (this.state.hasError) {
@@ -66,40 +64,70 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-[400px] flex flex-col items-center justify-center p-8 bg-[#F0F0E8]">
-          <div className="max-w-md w-full bg-white border border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] p-8">
-            <div className="flex items-center gap-3 mb-4">
-              <AlertTriangle className="w-8 h-8 text-red-600" />
-              <h2 className="font-serif text-2xl font-bold uppercase">{strings.title}</h2>
-            </div>
+        <div className="min-h-screen flex items-center justify-center p-6 bg-[#050505] text-zinc-100 font-sans">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="max-w-xl w-full"
+          >
+            <div className="bg-zinc-900/50 border border-zinc-800 rounded-[32px] p-8 md:p-12 shadow-2xl shadow-indigo-500/5 backdrop-blur-xl">
+              {/* Icon & Badge */}
+              <div className="flex items-center gap-4 mb-8">
+                <div className="w-14 h-14 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center justify-center text-red-500">
+                  <ShieldAlert size={32} />
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-red-500 uppercase tracking-[0.2em] mb-1">Critical Error</div>
+                  <h2 className="text-2xl font-bold tracking-tight">{strings.title}</h2>
+                </div>
+              </div>
 
-            <p className="text-gray-600 mb-4 font-mono text-sm">{strings.description}</p>
+              <p className="text-zinc-400 text-base leading-relaxed mb-8">
+                {strings.description}
+              </p>
 
-            {process.env.NODE_ENV === 'development' && this.state.error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-none">
-                <p className="font-mono text-xs text-red-700 break-all">
-                  {this.state.error.message}
+              {/* Error Details (Dev Only) */}
+              {process.env.NODE_ENV === 'development' && this.state.error && (
+                <div className="mb-8 rounded-2xl bg-black border border-zinc-800 overflow-hidden">
+                  <div className="flex items-center gap-2 px-4 py-2 bg-zinc-900/50 border-b border-zinc-800">
+                    <Terminal size={12} className="text-zinc-500" />
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Stack Trace</span>
+                  </div>
+                  <div className="p-4 overflow-x-auto">
+                    <pre className="font-mono text-xs text-red-400/80 leading-relaxed whitespace-pre-wrap">
+                      {this.state.error.message}
+                      {this.state.error.stack && `\n\n${this.state.error.stack.split('\n').slice(0, 3).join('\n')}`}
+                    </pre>
+                  </div>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button
+                  onClick={this.handleReset}
+                  className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 text-sm font-bold rounded-2xl transition-all active:scale-95"
+                >
+                  <Home size={18} />
+                  {strings.tryAgain}
+                </button>
+                <button
+                  onClick={this.handleReload}
+                  className="flex-1 flex items-center justify-center gap-2 px-6 py-3.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-2xl shadow-lg shadow-indigo-900/40 transition-all active:scale-95"
+                >
+                  <RefreshCw size={18} />
+                  {strings.reloadPage}
+                </button>
+              </div>
+
+              {/* Support Link */}
+              <div className="mt-10 pt-8 border-t border-zinc-800 text-center">
+                <p className="text-xs text-zinc-500">
+                  Need immediate assistance? <a href="#" className="text-indigo-400 hover:underline font-medium">Contact Support</a>
                 </p>
               </div>
-            )}
-
-            <div className="flex gap-3">
-              <Button
-                onClick={this.handleReset}
-                variant="outline"
-                className="flex-1 border-black rounded-none shadow-[2px_2px_0px_0px_#000000] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all"
-              >
-                {strings.tryAgain}
-              </Button>
-              <Button
-                onClick={this.handleReload}
-                className="flex-1 bg-blue-700 hover:bg-blue-800 text-white rounded-none border border-black shadow-[2px_2px_0px_0px_#000000] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all"
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                {strings.reloadPage}
-              </Button>
             </div>
-          </div>
+          </motion.div>
         </div>
       );
     }
@@ -122,28 +150,6 @@ export function withErrorBoundary<P extends object>(
       </ErrorBoundary>
     );
   };
-}
-
-export function LocalizedErrorBoundary({
-  children,
-  fallback,
-}: {
-  children: ReactNode;
-  fallback?: ReactNode;
-}) {
-  const { t } = useTranslations();
-  const strings: ErrorBoundaryStrings = {
-    title: t('errors.boundary.title'),
-    description: t('errors.boundary.description'),
-    tryAgain: t('errors.boundary.tryAgain'),
-    reloadPage: t('errors.boundary.reloadPage'),
-  };
-
-  return (
-    <ErrorBoundary fallback={fallback} strings={strings}>
-      {children}
-    </ErrorBoundary>
-  );
 }
 
 export default ErrorBoundary;

@@ -55,7 +55,6 @@ import { downloadBlobAsFile, openUrlInNewTab, sanitizeFilename } from '@/lib/uti
 import type { RegenerateItemInput } from '@/lib/api/enrichment';
 
 type TabId = 'resume' | 'cover-letter' | 'outreach' | 'jd-match';
-
 const STORAGE_KEY = 'resume_builder_draft';
 const SETTINGS_STORAGE_KEY = 'resume_builder_settings';
 
@@ -127,7 +126,6 @@ const ResumeBuilderContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const resumeId = searchParams.get('id');
-
   useEffect(() => {
     if (resumeId || hasUnsavedChanges || improvedPreview) {
       return;
@@ -208,7 +206,6 @@ const ResumeBuilderContent = () => {
       showNotification(t('builder.regenerate.errors.applyFailed'), 'danger');
     },
   });
-
   // Build regenerate items from resume data
   const experienceItemsForRegenerate: RegenerateItemInput[] = useMemo(() => {
     return (resumeData.workExperience || []).map((exp, idx) => ({
@@ -283,7 +280,6 @@ const ResumeBuilderContent = () => {
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedChanges]);
-
   useEffect(() => {
     const loadResumeData = async () => {
       setLoadingState('loading');
@@ -320,9 +316,65 @@ const ResumeBuilderContent = () => {
               return;
             } catch {
               // Raw content is markdown, not JSON
-            }
-          }
-        } catch (err) {
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-hidden">
+        <RetroTabs
+          tabs={[
+            { id: 'resume', label: t('builder.previewTabs.resume') },
+            { id: 'cover-letter', label: t('builder.previewTabs.coverLetter'), disabled: !coverLetter },
+            { id: 'outreach', label: t('builder.previewTabs.outreach'), disabled: !outreachMessage },
+            { id: 'jd-match', label: t('builder.previewTabs.jdMatch'), disabled: !jobDescription },
+          ]}
+          activeTab={activeTab}
+          onTabChange={(id) => setActiveTab(id as TabId)}
+        />
+        <div className="h-full overflow-y-auto p-4">
+          {activeTab === 'resume' && (
+            <div className="grid grid-cols-2 gap-4">
+              <ResumeForm data={resumeData} onChange={handleUpdate} />
+              <PaginatedPreview data={localizedResumeDataForPreview} settings={templateSettings} />
+            </div>
+          )}
+          {activeTab === 'cover-letter' && (
+            <div className="grid grid-cols-2 gap-4">
+              <CoverLetterEditor value={coverLetter} onChange={setCoverLetter} />
+              <CoverLetterPreview content={coverLetter} />
+            </div>
+          )}
+          {activeTab === 'outreach' && (
+            <div className="grid grid-cols-2 gap-4">
+              <OutreachEditor value={outreachMessage} onChange={setOutreachMessage} />
+              <OutreachPreview content={outreachMessage} />
+            </div>
+          )}
+          {activeTab === 'jd-match' && (
+            <JDComparisonView jobDescription={jobDescription} resumeData={resumeData} />
+          )}
+        </div>
+      </div>
+      {/* Footer */}
+      <div className="p-4 bg-[#F0F0E8] flex justify-between items-center font-mono text-xs text-blue-700 border-t border-black no-print">
+        <span className="uppercase font-bold flex items-center gap-2">
+          <Image
+            src="/logo.svg"
+            alt="Resume Matcher"
+            width={20}
+            height={20}
+            className="w-5 h-5"
+          />
+          {t('builder.footer.moduleLabel')}
+        </span>
+      </div>
+    </div>
+  );
+};
+
+export const ResumeBuilder = () => (
+  <Suspense fallback={<div>Loading...</div>}>
+    <ResumeBuilderContent />
+  </Suspense>
+);
           console.error('Failed to load resume from API:', err);
         }
       }
@@ -365,7 +417,6 @@ const ResumeBuilderContent = () => {
 
     loadResumeData();
   }, [improvedPreview, improvedCoverLetter, improvedOutreach, resumeId]);
-
   // Fetch job description when we have a tailored resume
   useEffect(() => {
     let cancelled = false;
@@ -433,7 +484,6 @@ const ResumeBuilderContent = () => {
     setHasUnsavedChanges(false);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(lastSavedData));
   };
-
   const handleDownload = async () => {
     if (!resumeId) {
       showNotification(t('builder.alerts.downloadNotAvailable'), 'warning');
@@ -507,7 +557,6 @@ const ResumeBuilderContent = () => {
       setIsSavingPdf(false);
     }
   };
-
   // Cover letter handlers
   const handleSaveCoverLetter = async () => {
     if (!resumeId) return;
@@ -582,511 +631,62 @@ const ResumeBuilderContent = () => {
     }
   };
 
-  // On-demand generation handlers
-  const doGenerateCoverLetter = async () => {
-    if (!resumeId) return;
-    setIsGeneratingCoverLetter(true);
-    setShowRegenerateDialog(null);
-    try {
-      const content = await generateCoverLetter(resumeId);
-      setCoverLetter(content);
-    } catch (error) {
-      console.error('Failed to generate cover letter:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      showNotification(
-        t('builder.alerts.coverLetterGenerateFailed', { error: errorMessage }),
-        'danger'
-      );
-    } finally {
-      setIsGeneratingCoverLetter(false);
-    }
-  };
-
-  const handleGenerateCoverLetter = () => {
-    if (!resumeId) return;
-    // If content exists, show confirmation dialog
-    if (coverLetter) {
-      setShowRegenerateDialog('cover-letter');
-      return;
-    }
-    doGenerateCoverLetter();
-  };
-
-  const doGenerateOutreach = async () => {
-    if (!resumeId) return;
-    setIsGeneratingOutreach(true);
-    setShowRegenerateDialog(null);
-    try {
-      const content = await generateOutreachMessage(resumeId);
-      setOutreachMessage(content);
-    } catch (error) {
-      console.error('Failed to generate outreach message:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      showNotification(
-        t('builder.alerts.outreachGenerateFailed', { error: errorMessage }),
-        'danger'
-      );
-    } finally {
-      setIsGeneratingOutreach(false);
-    }
-  };
-
-  const handleGenerateOutreach = () => {
-    if (!resumeId) return;
-    // If content exists, show confirmation dialog
-    if (outreachMessage) {
-      setShowRegenerateDialog('outreach');
-      return;
-    }
-    doGenerateOutreach();
-  };
-
   return (
-    <div
-      className="h-screen w-full bg-[#F0F0E8] flex justify-center items-center p-4 md:p-8"
-      style={{
-        backgroundImage:
-          'linear-gradient(rgba(29, 78, 216, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(29, 78, 216, 0.1) 1px, transparent 1px)',
-        backgroundSize: '40px 40px',
-      }}
-    >
-      {/* Main Container */}
-      <div className="w-full h-full max-w-[90%] md:max-w-[95%] xl:max-w-[1800px] border border-black bg-[#F0F0E8] shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)] flex flex-col">
-        {/* Header Section */}
-        <div className="border-b border-black p-6 md:p-8 bg-[#F0F0E8] no-print">
-          {/* Top Row: Back button and Actions */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-            <div>
-              <Button
-                variant="link"
-                onClick={() => router.push('/dashboard')}
-                className="mb-2 -ml-1"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                {t('nav.backToDashboard')}
-              </Button>
-              <h1 className="font-serif text-3xl md:text-5xl text-black tracking-tight leading-[0.95] uppercase">
-                {t('nav.builder')}
-              </h1>
-              <div className="mt-3 flex items-center gap-3">
-                <p className="text-sm font-mono text-blue-700 uppercase tracking-wide font-bold">
-                  {'// '}
-                  {resumeId ? t('builder.editMode') : t('builder.createAndPreview')}
-                </p>
-                {hasUnsavedChanges && (
-                  <span className="flex items-center gap-1 text-xs font-mono text-amber-600 bg-amber-50 px-2 py-1 border border-amber-200">
-                    <AlertTriangle className="w-3 h-3" />
-                    {t('builder.unsavedDraft')}
-                  </span>
-                )}
-              </div>
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-hidden">
+        <RetroTabs
+          tabs={[
+            { id: 'resume', label: t('builder.previewTabs.resume') },
+            { id: 'cover-letter', label: t('builder.previewTabs.coverLetter'), disabled: !coverLetter },
+            { id: 'outreach', label: t('builder.previewTabs.outreach'), disabled: !outreachMessage },
+            { id: 'jd-match', label: t('builder.previewTabs.jdMatch'), disabled: !jobDescription },
+          ]}
+          activeTab={activeTab}
+          onTabChange={(id) => setActiveTab(id as TabId)}
+        />
+        <div className="h-full overflow-y-auto p-4">
+          {activeTab === 'resume' && (
+            <div className="grid grid-cols-2 gap-4">
+              <ResumeForm data={resumeData} onChange={handleUpdate} />
+              <PaginatedPreview data={localizedResumeDataForPreview} settings={templateSettings} />
             </div>
-
-            <div className="flex gap-3 mt-4 md:mt-0">
-              {/* Resume tab actions */}
-              {activeTab === 'resume' && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => regenerateWizard.startRegenerate()}
-                    disabled={!resumeId}
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    {t('builder.regenerate.buttonLabel')}
-                  </Button>
-                  <Button
-                    variant="warning"
-                    size="sm"
-                    onClick={handleReset}
-                    disabled={!hasUnsavedChanges}
-                  >
-                    <RotateCcw className="w-4 h-4" />
-                    {t('common.reset')}
-                  </Button>
-                  <Button size="sm" onClick={handleSave} disabled={!resumeId || isSaving}>
-                    <Save className="w-4 h-4" />
-                    {isSaving ? t('common.saving') : t('common.save')}
-                  </Button>
-                  <Button
-                    variant="success"
-                    size="sm"
-                    onClick={handleDownload}
-                    disabled={!resumeId || isDownloading}
-                  >
-                    <Download className="w-4 h-4" />
-                    {isDownloading ? t('common.generating') : t('common.download')}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleSavePdf}
-                    disabled={!resumeId || isSavingPdf}
-                  >
-                    <HardDrive className="w-4 h-4" />
-                    {isSavingPdf ? 'Saving...' : 'Save PDF'}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleDownloadDocx}
-                    disabled={!resumeId || isDownloadingDocx}
-                  >
-                    <FileText className="w-4 h-4" />
-                    {isDownloadingDocx ? t('common.generating') : 'DOCX'}
-                  </Button>
-                </>
-              )}
-
-              {/* Cover letter tab actions */}
-              {activeTab === 'cover-letter' && coverLetter && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleGenerateCoverLetter}
-                    disabled={isGeneratingCoverLetter}
-                  >
-                    {isGeneratingCoverLetter ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Sparkles className="w-4 h-4" />
-                    )}
-                    {t('coverLetter.regenerate')}
-                  </Button>
-                  <Button
-                    variant="success"
-                    size="sm"
-                    onClick={handleDownloadCoverLetter}
-                    disabled={!resumeId || isDownloading}
-                  >
-                    <Download className="w-4 h-4" />
-                    {isDownloading ? t('common.generating') : t('common.download')}
-                  </Button>
-                </>
-              )}
-
-              {/* Outreach tab actions */}
-              {activeTab === 'outreach' && outreachMessage && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleGenerateOutreach}
-                    disabled={isGeneratingOutreach}
-                  >
-                    {isGeneratingOutreach ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Sparkles className="w-4 h-4" />
-                    )}
-                    {t('outreach.regenerate')}
-                  </Button>
-                  <Button variant="success" size="sm" onClick={handleCopyOutreach}>
-                    {isCopied ? (
-                      <>
-                        <Check className="w-4 h-4" />
-                        {t('outreach.copied')}
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-4 h-4" />
-                        {t('outreach.copyToClipboard')}
-                      </>
-                    )}
-                  </Button>
-                </>
-              )}
+          )}
+          {activeTab === 'cover-letter' && (
+            <div className="grid grid-cols-2 gap-4">
+              <CoverLetterEditor value={coverLetter} onChange={setCoverLetter} />
+              <CoverLetterPreview content={coverLetter} />
             </div>
-          </div>
-        </div>
-
-        {/* Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 bg-black gap-[1px] flex-1 min-h-0">
-          {/* Left Panel: Editor */}
-          <div className="bg-[#F0F0E8] p-6 md:p-8 overflow-y-auto no-print">
-            <div className="max-w-3xl mx-auto space-y-6">
-              <div className="flex items-center gap-2 border-b-2 border-black pb-2">
-                <div className="w-3 h-3 bg-blue-700"></div>
-                <h2 className="font-mono text-lg font-bold uppercase tracking-wider">
-                  {activeTab === 'resume' && t('builder.leftPanel.editorPanel')}
-                  {activeTab === 'cover-letter' && t('builder.leftPanel.coverLetterEditor')}
-                  {activeTab === 'outreach' && t('builder.leftPanel.outreachEditor')}
-                  {activeTab === 'jd-match' && t('builder.leftPanel.jdMatchAnalysis')}
-                </h2>
-              </div>
-
-              {/* Resume Editor */}
-              {activeTab === 'resume' && (
-                <>
-                  <FormattingControls settings={templateSettings} onChange={handleSettingsChange} />
-                  <ResumeForm resumeData={resumeData} onUpdate={handleUpdate} />
-                </>
-              )}
-
-              {/* Cover Letter Editor */}
-              {activeTab === 'cover-letter' &&
-                (coverLetter ? (
-                  <CoverLetterEditor
-                    content={coverLetter}
-                    onChange={setCoverLetter}
-                    onSave={handleSaveCoverLetter}
-                    isSaving={isCoverLetterSaving}
-                  />
-                ) : (
-                  <GeneratePrompt
-                    type="cover-letter"
-                    isGenerating={isGeneratingCoverLetter}
-                    onGenerate={handleGenerateCoverLetter}
-                    isTailoredResume={isTailoredResume}
-                  />
-                ))}
-
-              {/* Outreach Editor */}
-              {activeTab === 'outreach' &&
-                (outreachMessage ? (
-                  <OutreachEditor
-                    content={outreachMessage}
-                    onChange={setOutreachMessage}
-                    onSave={handleSaveOutreach}
-                    isSaving={isOutreachSaving}
-                  />
-                ) : (
-                  <GeneratePrompt
-                    type="outreach"
-                    isGenerating={isGeneratingOutreach}
-                    onGenerate={handleGenerateOutreach}
-                    isTailoredResume={isTailoredResume}
-                  />
-                ))}
-
-              {/* JD Match Info Panel */}
-              {activeTab === 'jd-match' && (
-                <div className="space-y-4">
-                  <div className="border-2 border-black bg-white p-4">
-                    <h3 className="font-mono text-sm font-bold uppercase mb-2">
-                      {t('builder.jdMatch.aboutTitle')}
-                    </h3>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      {t('builder.jdMatch.aboutDescription')}
-                    </p>
-                  </div>
-
-                  <div className="border-2 border-black bg-[#F0F0E8] p-4">
-                    <h3 className="font-mono text-sm font-bold uppercase mb-2">
-                      {t('builder.jdMatch.highlightedKeywordsTitle')}
-                    </h3>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      {(() => {
-                        const template = t(
-                          'builder.jdMatch.highlightedKeywordsDescriptionTemplate'
-                        );
-                        const parts = template.split('__COLOR__');
-                        if (parts.length < 2) return template;
-                        return (
-                          <>
-                            {parts[0]}
-                            <mark className="bg-yellow-200 px-1">
-                              {t('builder.jdMatch.highlightColor')}
-                            </mark>
-                            {parts.slice(1).join('__COLOR__')}
-                          </>
-                        );
-                      })()}
-                    </p>
-                  </div>
-
-                  <div className="border-2 border-black bg-white p-4">
-                    <h3 className="font-mono text-sm font-bold uppercase mb-2">
-                      {t('builder.jdMatch.tipsTitle')}
-                    </h3>
-                    <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
-                      <li>{t('builder.jdMatch.tips.items.addMissingKeywords')}</li>
-                      <li>{t('builder.jdMatch.tips.items.focusTechnicalSkills')}</li>
-                      <li>{t('builder.jdMatch.tips.items.matchActionVerbs')}</li>
-                    </ul>
-                  </div>
-                </div>
-              )}
+          )}
+          {activeTab === 'outreach' && (
+            <div className="grid grid-cols-2 gap-4">
+              <OutreachEditor value={outreachMessage} onChange={setOutreachMessage} />
+              <OutreachPreview content={outreachMessage} />
             </div>
-          </div>
-
-          {/* Right Panel: Preview with Tabs */}
-          <div className="bg-[#E5E5E0] overflow-hidden flex flex-col no-print">
-            {/* Tabs Header */}
-            <div className="px-6 pt-3 shrink-0 bg-[#E5E5E0]">
-              <RetroTabs
-                tabs={[
-                  { id: 'resume', label: t('builder.previewTabs.resume') },
-                  {
-                    id: 'cover-letter',
-                    label: t('builder.previewTabs.coverLetter'),
-                    disabled: !coverLetter,
-                  },
-                  {
-                    id: 'outreach',
-                    label: t('builder.previewTabs.outreach'),
-                    disabled: !outreachMessage,
-                  },
-                  {
-                    id: 'jd-match',
-                    label: t('builder.previewTabs.jdMatch'),
-                    disabled: !jobDescription,
-                  },
-                ]}
-                activeTab={activeTab}
-                onTabChange={(id) => setActiveTab(id as TabId)}
-              />
-            </div>
-
-            {/* Preview Content */}
-            <div className="flex-1 overflow-y-auto">
-              {/* Resume Preview */}
-              {activeTab === 'resume' && (
-                <PaginatedPreview
-                  resumeData={localizedResumeDataForPreview}
-                  settings={templateSettings}
-                />
-              )}
-
-              {/* Cover Letter Preview */}
-              {activeTab === 'cover-letter' &&
-                (coverLetter && resumeData.personalInfo ? (
-                  <div className="p-6">
-                    <CoverLetterPreview
-                      content={coverLetter}
-                      personalInfo={resumeData.personalInfo}
-                      pageSize={templateSettings.pageSize}
-                    />
-                  </div>
-                ) : (
-                  <GeneratePrompt
-                    type="cover-letter"
-                    isGenerating={isGeneratingCoverLetter}
-                    onGenerate={handleGenerateCoverLetter}
-                    isTailoredResume={isTailoredResume}
-                  />
-                ))}
-
-              {/* Outreach Preview */}
-              {activeTab === 'outreach' &&
-                (outreachMessage ? (
-                  <div className="p-6">
-                    <OutreachPreview content={outreachMessage} />
-                  </div>
-                ) : (
-                  <GeneratePrompt
-                    type="outreach"
-                    isGenerating={isGeneratingOutreach}
-                    onGenerate={handleGenerateOutreach}
-                    isTailoredResume={isTailoredResume}
-                  />
-                ))}
-
-              {/* JD Match Comparison */}
-              {activeTab === 'jd-match' && jobDescription && (
-                <JDComparisonView jobDescription={jobDescription} resumeData={resumeData} />
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="p-4 bg-[#F0F0E8] flex justify-between items-center font-mono text-xs text-blue-700 border-t border-black no-print">
-          <span className="uppercase font-bold flex items-center gap-2">
-            <Image
-              src="/logo.svg"
-              alt="Resume Matcher"
-              width={20}
-              height={20}
-              className="w-5 h-5"
-            />
-            {t('builder.footer.moduleLabel')}
-          </span>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-700"></div>
-              <span className="uppercase">
-                {templateSettings.template === 'swiss-single' ||
-                templateSettings.template === 'modern'
-                  ? t('builder.footer.singleColumn')
-                  : t('builder.footer.twoColumn')}
-              </span>
-            </div>
-            <span className="text-gray-400">|</span>
-            <span className="uppercase">
-              {templateSettings.pageSize === 'A4' ? 'A4' : t('builder.pageSize.usLetter')}
-            </span>
-          </div>
+          )}
+          {activeTab === 'jd-match' && (
+            <JDComparisonView jobDescription={jobDescription} resumeData={resumeData} />
+          )}
         </div>
       </div>
-
-      {/* Regenerate Confirmation Dialog */}
-      <ConfirmDialog
-        open={showRegenerateDialog !== null}
-        onOpenChange={(open) => !open && setShowRegenerateDialog(null)}
-        title={t('builder.regenerateDialog.title', {
-          title:
-            showRegenerateDialog === 'cover-letter' ? t('coverLetter.title') : t('outreach.title'),
-        })}
-        description={t('builder.regenerateDialog.description', {
-          title:
-            showRegenerateDialog === 'cover-letter' ? t('coverLetter.title') : t('outreach.title'),
-        })}
-        confirmLabel={
-          showRegenerateDialog === 'cover-letter'
-            ? t('coverLetter.regenerate')
-            : t('outreach.regenerate')
-        }
-        cancelLabel={t('common.cancel')}
-        variant="warning"
-        onConfirm={
-          showRegenerateDialog === 'cover-letter' ? doGenerateCoverLetter : doGenerateOutreach
-        }
-      />
-
-      {/* Notification Dialog (replaces native alert()) */}
-      <ConfirmDialog
-        open={notificationDialog !== null}
-        onOpenChange={(open) => !open && setNotificationDialog(null)}
-        title={notificationDialog?.title ?? ''}
-        description={notificationDialog?.description ?? ''}
-        confirmLabel={t('common.ok')}
-        showCancelButton={false}
-        variant={notificationDialog?.variant ?? 'default'}
-        onConfirm={() => setNotificationDialog(null)}
-      />
-
-      {/* AI Regenerate Wizard */}
-      <RegenerateWizard
-        step={regenerateWizard.step}
-        onStepChange={regenerateWizard.setStep}
-        experienceItems={experienceItemsForRegenerate}
-        projectItems={projectItemsForRegenerate}
-        skillsItem={skillsItemForRegenerate}
-        selectedItems={regenerateWizard.selectedItems}
-        onSelectionChange={regenerateWizard.setSelectedItems}
-        instruction={regenerateWizard.instruction}
-        onInstructionChange={regenerateWizard.setInstruction}
-        regeneratedItems={regenerateWizard.regeneratedItems}
-        regenerateErrors={regenerateWizard.regenerateErrors}
-        isGenerating={regenerateWizard.isGenerating}
-        isApplying={regenerateWizard.isApplying}
-        error={regenerateWizard.error}
-        onGenerate={regenerateWizard.generate}
-        onAccept={regenerateWizard.acceptChanges}
-        onReject={regenerateWizard.rejectAndRegenerate}
-        onClose={regenerateWizard.reset}
-      />
+      {/* Footer */}
+      <div className="p-4 bg-[#F0F0E8] flex justify-between items-center font-mono text-xs text-blue-700 border-t border-black no-print">
+        <span className="uppercase font-bold flex items-center gap-2">
+          <Image
+            src="/logo.svg"
+            alt="Resume Matcher"
+            width={20}
+            height={20}
+            className="w-5 h-5"
+          />
+          {t('builder.footer.moduleLabel')}
+        </span>
+      </div>
     </div>
   );
 };
 
-export const ResumeBuilder = () => {
-  const { t } = useTranslations();
-  return (
-    <Suspense fallback={<div>{t('common.loading')}</div>}>
-      <ResumeBuilderContent />
-    </Suspense>
-  );
-};
+export const ResumeBuilder = () => (
+  <Suspense fallback={<div>Loading...</div>}>
+    <ResumeBuilderContent />
+  </Suspense>
+);

@@ -189,8 +189,8 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="border border-gray-200 bg-white rounded-none">
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-200 bg-gray-50">
+    <div className="border border-zinc-800 bg-zinc-900 rounded-2xl">
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-zinc-800 bg-zinc-800">
         {icon}
         <span className="font-mono text-xs font-bold uppercase text-gray-600">{title}</span>
       </div>

@@ -211,7 +211,7 @@ export const RegenerateDiffPreview: React.FC<RegenerateDiffPreviewProps> = ({
                       <span className="w-3 h-3 bg-red-600 border border-black" />
                       {t('builder.regenerate.diffPreview.originalLabel')}
                     </div>
-                    <div className="border-2 border-black bg-white p-3 space-y-1">
+                    <div className="border-2 border-zinc-700 bg-zinc-900 p-3 space-y-1 rounded-lg">
                       {item.original_content.length > 0 ? (
                         item.original_content.map((content, idx) => (
                           <p key={idx} className="text-sm text-red-700 line-through">
@@ -233,7 +233,7 @@ export const RegenerateDiffPreview: React.FC<RegenerateDiffPreviewProps> = ({
                       <span className="w-3 h-3 bg-green-700 border border-black" />
                       {t('builder.regenerate.diffPreview.newLabel')}
                     </div>
-                    <div className="border-2 border-black bg-white p-3 space-y-1">
+                    <div className="border-2 border-zinc-700 bg-zinc-900 p-3 space-y-1 rounded-lg">
                       {item.new_content.length > 0 ? (
                         item.new_content.map((content, idx) => (
                           <p key={idx} className="text-sm text-green-700">
