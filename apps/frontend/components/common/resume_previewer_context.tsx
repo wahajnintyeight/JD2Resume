@@ -55,6 +55,8 @@ export interface ResumeDiffSummary {
   high_risk_changes: number;
 }
 
+export type ChangeDecision = 'accepted' | 'rejected' | 'pending';
+
 export interface ResumeFieldDiff {
   field_path: string;
   field_type:

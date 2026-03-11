@@ -6,7 +6,10 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useResumePreview } from '@/components/common/resume_previewer_context';
-import type { ImprovedResult } from '@/components/common/resume_previewer_context';
+import type {
+  ChangeDecision,
+  ImprovedResult,
+} from '@/components/common/resume_previewer_context';
 import type { ResumeData } from '@/components/dashboard/resume-component';
 import {
   uploadJobDescriptions,
@@ -106,7 +109,10 @@ export default function TailorPage() {
     if (e.key === 'Enter') e.stopPropagation();
   };
 
-  const buildConfirmPayload = (result: ImprovedResult) => {
+  const buildConfirmPayload = (
+    result: ImprovedResult,
+    decisions?: Record<number, ChangeDecision>
+  ) => {
     if (!masterResumeId) {
       throw new Error('Master resume ID is missing.');
     }
@@ -131,11 +137,15 @@ export default function TailorPage() {
           suggestion: item.suggestion,
           lineNumber: typeof item.lineNumber === 'number' ? item.lineNumber : null,
         })) ?? [],
+      change_decisions: decisions,
     };
   };
 
-  const confirmAndNavigate = async (result: ImprovedResult) => {
-    const confirmed = await confirmImproveResume(buildConfirmPayload(result));
+  const confirmAndNavigate = async (
+    result: ImprovedResult,
+    decisions?: Record<number, ChangeDecision>
+  ) => {
+    const confirmed = await confirmImproveResume(buildConfirmPayload(result, decisions));
     incrementImprovements();
     incrementResumes();
     setImprovedData(confirmed);
@@ -226,7 +236,7 @@ export default function TailorPage() {
   };
 
   // User confirms changes
-  const handleConfirmChanges = async () => {
+  const handleConfirmChanges = async (decisions?: Record<number, ChangeDecision>) => {
     // Guard against double-clicks - isLoading already tracks confirm in progress
     if (!pendingResult || isLoading) return;
 
@@ -235,7 +245,7 @@ export default function TailorPage() {
     setDiffConfirmError(null);
 
     try {
-      await confirmAndNavigate(pendingResult);
+      await confirmAndNavigate(pendingResult, decisions);
       setShowDiffModal(false);
       setPendingResult(null);
     } catch (err) {

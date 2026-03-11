@@ -5,6 +5,7 @@ import copy
 import hashlib
 import json
 import logging
+import re
 import unicodedata
 from collections.abc import Awaitable
 from pathlib import Path
@@ -250,6 +251,210 @@ def _validate_confirm_payload(
     ]
     if mismatches:
         raise ValueError(f"personalInfo fields changed: {', '.join(mismatches)}")
+
+
+_CHANGE_PATH_RE = re.compile(r"^(?P<key>\w+)\[(?P<index>\d+)\](?:\.(?P<subfield>\w+))?$")
+
+
+def _parse_change_path(field_path: str) -> tuple[str | None, int | None, str | None]:
+    match = _CHANGE_PATH_RE.match(field_path)
+    if not match:
+        return None, None, None
+    return match.group("key"), int(match.group("index")), match.group("subfield")
+
+
+def _remove_string_item(
+    items: list[Any],
+    target: str | None,
+    *,
+    case_insensitive: bool = False,
+) -> bool:
+    if not target or not isinstance(items, list):
+        return False
+    for idx, item in enumerate(items):
+        if not isinstance(item, str):
+            continue
+        if case_insensitive:
+            if item.casefold() == target.casefold():
+                del items[idx]
+                return True
+        elif item == target:
+            del items[idx]
+            return True
+    return False
+
+
+def _append_string_item(
+    items: list[Any],
+    target: str | None,
+    *,
+    case_insensitive: bool = False,
+) -> bool:
+    if not target or not isinstance(items, list):
+        return False
+    for item in items:
+        if not isinstance(item, str):
+            continue
+        if case_insensitive:
+            if item.casefold() == target.casefold():
+                return False
+        elif item == target:
+            return False
+    items.append(target)
+    return True
+
+
+def _apply_change_decisions(
+    original_data: dict[str, Any] | None,
+    improved_data: dict[str, Any],
+    detailed_changes: list[ResumeFieldDiff] | None,
+    change_decisions: dict[int, str] | None,
+) -> tuple[dict[str, Any], list[str]]:
+    if not change_decisions:
+        return improved_data, []
+    if not detailed_changes:
+        return improved_data, ["No detailed changes available to apply decisions."]
+
+    normalized_decisions: dict[int, str] = {}
+    for key, value in change_decisions.items():
+        try:
+            normalized_decisions[int(key)] = value
+        except (TypeError, ValueError):
+            continue
+
+    result = copy.deepcopy(improved_data)
+    warnings: list[str] = []
+
+    for idx, change in enumerate(detailed_changes):
+        decision = normalized_decisions.get(idx)
+        if decision != "rejected":
+            continue
+
+        field_type = change.field_type
+        if field_type == "summary":
+            original_summary = None
+            if isinstance(original_data, dict):
+                original_summary = original_data.get("summary")
+            if original_summary is None:
+                original_summary = change.original_value
+            if original_summary:
+                result["summary"] = original_summary
+            else:
+                result.pop("summary", None)
+            continue
+
+        if field_type == "title":
+            original_title = None
+            if isinstance(original_data, dict):
+                original_title = (
+                    original_data.get("personalInfo", {}) if original_data else {}
+                ).get("title")
+            if original_title is None:
+                original_title = change.original_value
+            personal_info = result.setdefault("personalInfo", {})
+            if original_title:
+                personal_info["title"] = original_title
+            else:
+                personal_info.pop("title", None)
+            continue
+
+        if field_type in {"skill", "certification"}:
+            additional = result.setdefault("additional", {})
+            key = (
+                "technicalSkills"
+                if field_type == "skill"
+                else "certificationsTraining"
+            )
+            items = additional.get(key)
+            if items is None:
+                items = []
+                additional[key] = items
+            if not isinstance(items, list):
+                warnings.append(f"Unable to update {key}; expected list.")
+                continue
+
+            if change.change_type == "added":
+                _remove_string_item(items, change.new_value, case_insensitive=True)
+            elif change.change_type == "removed":
+                _append_string_item(items, change.original_value, case_insensitive=True)
+            elif change.change_type == "modified":
+                if _remove_string_item(items, change.new_value, case_insensitive=True):
+                    _append_string_item(items, change.original_value, case_insensitive=True)
+            continue
+
+        if field_type == "description":
+            list_key, index, subfield = _parse_change_path(change.field_path)
+            if list_key != "workExperience" or subfield != "description" or index is None:
+                warnings.append(f"Unable to parse description path: {change.field_path}")
+                continue
+            experiences = result.get("workExperience")
+            if not isinstance(experiences, list) or index >= len(experiences):
+                warnings.append("Work experience entry missing for description revert.")
+                continue
+            entry = experiences[index]
+            if not isinstance(entry, dict):
+                warnings.append("Work experience entry invalid for description revert.")
+                continue
+            descriptions = entry.get("description")
+            if descriptions is None:
+                descriptions = []
+                entry["description"] = descriptions
+            if not isinstance(descriptions, list):
+                warnings.append("Work experience description is not a list.")
+                continue
+
+            if change.change_type == "added":
+                _remove_string_item(descriptions, change.new_value)
+            elif change.change_type == "removed":
+                _append_string_item(descriptions, change.original_value)
+            elif change.change_type == "modified":
+                if _remove_string_item(descriptions, change.new_value):
+                    _append_string_item(descriptions, change.original_value)
+            continue
+
+        if field_type in {"experience", "education", "project"}:
+            list_key_map = {
+                "experience": "workExperience",
+                "education": "education",
+                "project": "personalProjects",
+            }
+            list_key = list_key_map[field_type]
+            _, index, _ = _parse_change_path(change.field_path)
+            if index is None:
+                warnings.append(f"Unable to parse entry path: {change.field_path}")
+                continue
+
+            entries = result.get(list_key)
+            if not isinstance(entries, list):
+                warnings.append(f"Unable to update {list_key}; expected list.")
+                continue
+
+            original_entries = (
+                original_data.get(list_key) if isinstance(original_data, dict) else None
+            )
+
+            if change.change_type == "added":
+                if index < len(entries):
+                    entries.pop(index)
+                else:
+                    warnings.append(f"Unable to remove added {list_key}[{index}].")
+                continue
+
+            if not isinstance(original_entries, list) or index >= len(original_entries):
+                warnings.append(f"Original {list_key} data missing for revert.")
+                continue
+
+            original_entry = copy.deepcopy(original_entries[index])
+            if change.change_type == "removed":
+                entries.insert(min(index, len(entries)), original_entry)
+            elif change.change_type == "modified":
+                if index < len(entries):
+                    entries[index] = original_entry
+                else:
+                    warnings.append(f"Unable to replace {list_key}[{index}] during revert.")
+            continue
+
+    return result, warnings
 
 
 async def _generate_auxiliary_messages(
@@ -677,11 +882,11 @@ async def improve_resume_confirm_endpoint(
     detail = "Failed to confirm resume. Please try again."
     try:
         improved_data = request.improved_data.model_dump()
-        improved_text = json.dumps(improved_data, indent=2)
+        original_data = _get_original_resume_data(resume)
         # NOTE: This endpoint relies on preview-hash validation to ensure the payload matches a prior preview.
         # Stronger guarantees would require server-side preview storage or re-running the improvement.
         try:
-            _validate_confirm_payload(_get_original_resume_data(resume), improved_data)
+            _validate_confirm_payload(original_data, improved_data)
         except ValueError as e:
             logger.warning("Resume confirm rejected: %s", e)
             raise HTTPException(
@@ -728,6 +933,38 @@ async def improve_resume_confirm_endpoint(
         if diff_error:
             response_warnings.append(f"Could not calculate changes: {diff_error}")
 
+        final_data = improved_data
+        if request.change_decisions:
+            final_data, decision_warnings = _apply_change_decisions(
+                original_data,
+                improved_data,
+                detailed_changes,
+                request.change_decisions,
+            )
+            response_warnings.extend(decision_warnings)
+
+            # Recalculate diff after applying decisions
+            final_summary, final_changes, final_error = _calculate_diff_from_resume(
+                resume,
+                final_data,
+            )
+            if final_error:
+                response_warnings.append(f"Could not calculate changes: {final_error}")
+            else:
+                diff_summary = final_summary
+                detailed_changes = final_changes
+
+            try:
+                _validate_confirm_payload(original_data, final_data)
+            except ValueError as e:
+                logger.warning("Resume confirm rejected after decisions: %s", e)
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid improved resume data. Please retry preview.",
+                )
+
+        final_text = json.dumps(final_data, indent=2)
+
         stage = "generate_auxiliary_messages"
         (
             cover_letter,
@@ -735,7 +972,7 @@ async def improve_resume_confirm_endpoint(
             title,
             aux_warnings,
         ) = await _generate_auxiliary_messages(
-            improved_data,
+            final_data,
             job["content"],
             language,
             enable_cover_letter,
@@ -745,12 +982,12 @@ async def improve_resume_confirm_endpoint(
 
         stage = "create_resume"
         tailored_resume = db.create_resume(
-            content=improved_text,
+            content=final_text,
             content_type="json",
             filename=f"tailored_{resume.get('filename', 'resume')}",
             is_master=False,
             parent_id=request.resume_id,
-            processed_data=improved_data,
+            processed_data=final_data,
             processing_status="ready",
             cover_letter=cover_letter,
             outreach_message=outreach_message,
@@ -773,10 +1010,10 @@ async def improve_resume_confirm_endpoint(
                 request_id=request_id,
                 resume_id=tailored_resume["resume_id"],
                 job_id=request.job_id,
-                resume_preview=request.improved_data,
+                resume_preview=ResumeData.model_validate(final_data),
                 improvements=request.improvements,
                 markdownOriginal=resume["content"],
-                markdownImproved=improved_text,
+                markdownImproved=final_text,
                 cover_letter=cover_letter,
                 outreach_message=outreach_message,
                 diff_summary=diff_summary,

@@ -1,4 +1,4 @@
-import { ImprovedResult } from '@/components/common/resume_previewer_context';
+import { ChangeDecision, ImprovedResult } from '@/components/common/resume_previewer_context';
 import type { ResumeData } from '@/components/dashboard/resume-component';
 import { type TemplateSettings } from '@/lib/types/template-settings';
 import { type Locale } from '@/i18n/config';
@@ -85,6 +85,7 @@ interface ImproveResumeConfirmRequest {
     suggestion: string;
     lineNumber?: number | null;
   }>;
+  change_decisions?: Record<number, ChangeDecision>;
 }
 
 function normalizeResumeId(resumeId: string): string {

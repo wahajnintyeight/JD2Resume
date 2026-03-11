@@ -536,6 +536,7 @@ class ImproveResumeConfirmRequest(BaseModel):
     job_id: str
     improved_data: ResumeData
     improvements: list[ImprovementSuggestion]
+    change_decisions: dict[int, Literal["accepted", "rejected", "pending"]] | None = None
 
 
 # Config Models

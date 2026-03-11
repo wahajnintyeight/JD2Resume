@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useTranslations } from '@/lib/i18n';
 import type {
+  ChangeDecision,
   ResumeDiffSummary,
   ResumeFieldDiff,
 } from '@/components/common/resume_previewer_context';
@@ -14,14 +15,12 @@ interface DiffPreviewModalProps {
   isOpen: boolean;
   onClose: () => void;
   onReject: () => void;
-  onConfirm: () => void;
+  onConfirm: (decisions?: Record<number, ChangeDecision>) => void;
   diffSummary?: ResumeDiffSummary;
   detailedChanges?: ResumeFieldDiff[];
   errorMessage?: string;
   isSaving?: boolean;
 }
-
-type ChangeDecision = 'accepted' | 'rejected' | 'pending';
 
 export function DiffPreviewModal({
   isOpen,
@@ -476,7 +475,7 @@ export function DiffPreviewModal({
             {t('tailor.diffModal.rejectButton')}
           </Button>
           <Button 
-            onClick={onConfirm} 
+            onClick={() => onConfirm(changeDecisions)}
             disabled={isSaving}
             className="gap-2 bg-[#15803D] hover:bg-[#166534] w-full sm:w-auto justify-center"
           >
