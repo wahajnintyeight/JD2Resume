@@ -10,6 +10,8 @@ import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Card, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
 import { useTranslations } from '@/lib/i18n';
+import { fetchAuthMe, type AuthUser } from '@/lib/api/auth';
+import { API_BASE } from '@/lib/api/client';
 
 // Optimized Imports for Performance (No Barrel Imports)
 import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
@@ -33,6 +35,7 @@ type ProcessingStatus = 'pending' | 'processing' | 'ready' | 'failed' | 'loading
 
 export default function DashboardPage() {
   const { t, locale } = useTranslations();
+  const [authUser, setAuthUser] = useState<AuthUser | null | 'loading'>('loading');
   const [masterResumeId, setMasterResumeId] = useState<string | null>(null);
   const [processingStatus, setProcessingStatus] = useState<ProcessingStatus>('loading');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -102,6 +105,24 @@ export default function DashboardPage() {
       checkResumeStatus(storedId);
     }
   }, [checkResumeStatus]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      try {
+        const user = await fetchAuthMe();
+        if (!cancelled) setAuthUser(user);
+      } catch {
+        if (!cancelled) setAuthUser(null);
+      }
+    };
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const loadTailoredResumes = useCallback(async () => {
     try {
@@ -294,6 +315,34 @@ export default function DashboardPage() {
   // Use Tailwind classes for fillers now that we have them in config or use specific hex if needed
   // Using the hex values from before to maintain exact look, or we could map them to variants
   const fillerPalette = ['bg-[#E5E5E0]', 'bg-[#D8D8D2]', 'bg-[#CFCFC7]', 'bg-[#E0E0D8]'];
+
+  const loginUrl = `${API_BASE}/auth/google/login`;
+
+  if (authUser === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <p className="font-mono text-sm text-gray-600">Checking session...</p>
+      </div>
+    );
+  }
+
+  if (!authUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <Card className="w-full max-w-md border-2 border-black bg-[#F0F0E8]">
+          <div className="p-6 space-y-3">
+            <CardTitle className="font-mono uppercase text-lg text-blue-700">Sign in required</CardTitle>
+            <CardDescription className="text-sm">{t('errors.unauthorized')}</CardDescription>
+            <a href={loginUrl}>
+              <Button className="w-full bg-blue-700 text-white border-2 border-black shadow-sw-default hover:bg-blue-800 hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all rounded-none">
+                Sign in with Google
+              </Button>
+            </a>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

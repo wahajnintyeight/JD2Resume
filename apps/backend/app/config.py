@@ -175,6 +175,32 @@ class Settings(BaseSettings):
     # Paths
     data_dir: Path = Path(__file__).parent.parent / "data"
 
+    # ---------------------------------------------------------------------
+    # Auth (Google OAuth)
+    # ---------------------------------------------------------------------
+    google_client_id: str = ""
+    google_client_secret: str = ""
+    # Must be an absolute URL that Google can redirect back to.
+    # Example: http://localhost:8000/api/v1/auth/google/callback
+    google_redirect_uri: str = ""
+
+    auth_jwt_secret: str = "dev-change-me"  # Use env var in production.
+    auth_jwt_algorithm: str = "HS256"
+    auth_session_ttl_seconds: int = 60 * 60 * 24 * 7  # 7 days
+
+    auth_cookie_name: str = "rm_session"
+    auth_cookie_secure: bool = False
+
+    auth_oauth_state_cookie_name: str = "rm_oauth_state"
+    auth_oauth_state_ttl_seconds: int = 60 * 10  # 10 minutes
+
+    # ---------------------------------------------------------------------
+    # MongoDB (used for user persistence)
+    # ---------------------------------------------------------------------
+    mongodb_uri: str = "mongodb://localhost:27017"
+    mongodb_db: str = "resume_matcher"
+    mongodb_users_collection: str = "users"
+
     @property
     def db_path(self) -> Path:
         """Path to TinyDB database file."""

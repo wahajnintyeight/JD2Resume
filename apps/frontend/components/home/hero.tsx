@@ -1,11 +1,34 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useTranslations } from '@/lib/i18n';
+import { fetchAuthMe, type AuthUser } from '@/lib/api/auth';
+import { API_BASE } from '@/lib/api/client';
 
 export default function Hero() {
   const { t } = useTranslations();
+  const [authUser, setAuthUser] = useState<AuthUser | null | 'loading'>('loading');
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const load = async () => {
+      try {
+        const user = await fetchAuthMe();
+        if (!cancelled) setAuthUser(user);
+      } catch {
+        if (!cancelled) setAuthUser(null);
+      }
+    };
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const loginUrl = `${API_BASE}/auth/google/login`;
 
   const buttonClass =
     'group relative border border-black bg-transparent px-8 py-3 font-mono text-sm font-bold uppercase text-blue-700 transition-all duration-200 ease-in-out hover:bg-blue-700 hover:text-[#F0F0E8] hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[4px_4px_0px_0px_#000000] active:translate-x-0 active:translate-y-0 active:shadow-none cursor-pointer';
@@ -43,9 +66,15 @@ export default function Hero() {
           >
             {t('home.docs')}
           </a>
-          <Link href="/dashboard" className={buttonClass}>
-            {t('home.launchApp')}
-          </Link>
+          {authUser && authUser !== 'loading' ? (
+            <Link href="/dashboard" className={buttonClass}>
+              {t('home.launchApp')}
+            </Link>
+          ) : (
+            <a href={loginUrl} className={buttonClass} aria-label="Sign in with Google">
+              Sign in with Google
+            </a>
+          )}
         </div>
       </div>
     </section>
