@@ -104,6 +104,8 @@ export default function SettingsPage() {
 
   // LLM Config state
   const [provider, setProvider] = useState<LLMProvider>('openai');
+  const [llmConfigMode, setLlmConfigMode] = useState<'preset' | 'custom'>('preset');
+  const [lastPresetProvider, setLastPresetProvider] = useState<LLMProvider>('openai');
   const [model, setModel] = useState('');
   const [apiKey, setApiKey] = useState('');
   const [apiBase, setApiBase] = useState('');
@@ -259,11 +261,18 @@ export default function SettingsPage() {
             ? (providerFromBackend as LLMProvider)
             : 'openai';
           setProvider(safeProvider);
+          setLastPresetProvider(safeProvider);
           setModel(llmConfig.model || PROVIDER_INFO[safeProvider].defaultModel);
           const isMaskedKey = Boolean(llmConfig.api_key) && llmConfig.api_key.includes('*');
           setHasStoredApiKey(Boolean(llmConfig.api_key));
           setApiKey(isMaskedKey ? '' : llmConfig.api_key || '');
           setApiBase(llmConfig.api_base || '');
+
+          const inferredMode =
+            safeProvider === 'openai' && Boolean((llmConfig.api_base || '').trim())
+              ? 'custom'
+              : 'preset';
+          setLlmConfigMode(inferredMode);
 
           // If provider is openrouter and we have a stored key (masked), fetch the full key
           if (safeProvider === 'openrouter' && isMaskedKey) {
@@ -317,6 +326,7 @@ export default function SettingsPage() {
   // Handle provider change
   const handleProviderChange = async (newProvider: LLMProvider) => {
     setProvider(newProvider);
+    setLastPresetProvider(newProvider);
     setModel(PROVIDER_INFO[newProvider].defaultModel);
 
     if (newProvider === 'ollama' && !apiBase.trim()) {
@@ -347,6 +357,25 @@ export default function SettingsPage() {
       } finally {
         setIsLoadingApiKey(false);
       }
+    }
+  };
+
+  const handleLlmConfigModeChange = async (mode: 'preset' | 'custom') => {
+    setLlmConfigMode(mode);
+    if (mode === 'custom') {
+      if (provider !== 'openai') {
+        // Switch to an OpenAI-compatible config without clearing any currently typed key.
+        setOpenRouterModels([]);
+        setOpenRouterModelsError(null);
+        setIsLoadingApiKey(false);
+        setProvider('openai');
+        setModel(PROVIDER_INFO['openai'].defaultModel);
+      }
+      if (!model.trim()) {
+        setModel(PROVIDER_INFO['openai'].defaultModel);
+      }
+    } else {
+      await handleProviderChange(lastPresetProvider);
     }
   };
 
@@ -825,28 +854,68 @@ export default function SettingsPage() {
             </div>
 
             <div className="grid gap-6">
-              {/* Provider Selection */}
               <div className="space-y-2">
-                <Label>{t('settings.providerLabel')}</Label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
-                  {PROVIDERS.map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => handleProviderChange(p)}
-                      className={`px-2 sm:px-3 py-2 text-xs uppercase ${SEGMENTED_BUTTON_BASE} ${
-                        provider === p ? SEGMENTED_BUTTON_ACTIVE : SEGMENTED_BUTTON_INACTIVE
-                      }`}
-                    >
-                      {PROVIDER_INFO[p].name.split(' ')[0]}
-                    </button>
-                  ))}
+                <Label>Mode</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleLlmConfigModeChange('preset')}
+                    className={`px-2 sm:px-3 py-2 text-xs uppercase ${SEGMENTED_BUTTON_BASE} ${
+                      llmConfigMode === 'preset'
+                        ? SEGMENTED_BUTTON_ACTIVE
+                        : SEGMENTED_BUTTON_INACTIVE
+                    }`}
+                  >
+                    Providers
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleLlmConfigModeChange('custom')}
+                    className={`px-2 sm:px-3 py-2 text-xs uppercase ${SEGMENTED_BUTTON_BASE} ${
+                      llmConfigMode === 'custom'
+                        ? SEGMENTED_BUTTON_ACTIVE
+                        : SEGMENTED_BUTTON_INACTIVE
+                    }`}
+                  >
+                    Custom Provider
+                  </button>
                 </div>
-                <p className="text-xs text-gray-500 font-mono">
-                  {t('settings.llmConfiguration.selectedProvider', {
-                    provider: providerInfo.name,
-                  })}
-                </p>
               </div>
+
+              {/* Provider Selection */}
+              {llmConfigMode === 'preset' ? (
+                <div className="space-y-2">
+                  <Label>{t('settings.providerLabel')}</Label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+                    {PROVIDERS.map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => handleProviderChange(p)}
+                        className={`px-2 sm:px-3 py-2 text-xs uppercase ${SEGMENTED_BUTTON_BASE} ${
+                          provider === p ? SEGMENTED_BUTTON_ACTIVE : SEGMENTED_BUTTON_INACTIVE
+                        }`}
+                      >
+                        {PROVIDER_INFO[p].name.split(' ')[0]}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-500 font-mono">
+                    {t('settings.llmConfiguration.selectedProvider', {
+                      provider: providerInfo.name,
+                    })}
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label>{t('settings.providerLabel')}</Label>
+                  <div className="border border-black bg-white p-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+                    <p className="font-mono text-xs text-gray-700">
+                      OpenAI-compatible
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {/* Model Input */}
               <div className="space-y-2">
