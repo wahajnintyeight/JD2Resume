@@ -1,7 +1,7 @@
 import { type ATSScanResult } from '@/lib/api/resume';
 import { API_BASE } from '@/lib/api/client';
 
-async function fetchATSScanData(id: string): Promise<ATSScanResult | null> {
+async function fetchATSScanData(id: string, authToken?: string): Promise<ATSScanResult | null> {
   try {
     // Use 127.0.0.1 instead of localhost to avoid IPv6 issues on Windows
     const apiBase = API_BASE.replace('localhost', '127.0.0.1');
@@ -11,6 +11,7 @@ async function fetchATSScanData(id: string): Promise<ATSScanResult | null> {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
       },
       cache: 'no-store',
     });
@@ -29,11 +30,14 @@ async function fetchATSScanData(id: string): Promise<ATSScanResult | null> {
 
 export default async function ATSScanPrintPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams?: Promise<{ authToken?: string }>;
 }) {
   const resolvedParams = await params;
-  const results = await fetchATSScanData(resolvedParams.id);
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const results = await fetchATSScanData(resolvedParams.id, resolvedSearchParams?.authToken);
   
   // Generate date once on server to avoid hydration mismatch
   const generatedDate = new Date().toLocaleDateString('en-US', {

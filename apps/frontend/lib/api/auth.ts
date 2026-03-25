@@ -23,3 +23,15 @@ export async function fetchAuthMe(): Promise<AuthUser | null> {
   return payload.user ?? null;
 }
 
+export async function logout(): Promise<void> {
+  const res = await apiFetch('/auth/logout', {
+    method: 'POST',
+    credentials: 'include',
+  });
+
+  if (!res.ok) {
+    // Ignore logout errors; session cookie may already be gone.
+    return;
+  }
+}
+

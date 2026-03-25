@@ -10,10 +10,20 @@ export const API_BASE = `${API_URL}/api/v1`;
 /**
  * Standard fetch wrapper with common error handling.
  * Returns the Response object for flexibility.
+ * Includes credentials for auth cookie support.
  */
 export async function apiFetch(endpoint: string, options?: RequestInit): Promise<Response> {
   const url = endpoint.startsWith('http') ? endpoint : `${API_BASE}${endpoint}`;
-  return fetch(url, options);
+  try {
+    return await fetch(url, {
+      ...options,
+      credentials: 'include', // Include cookies for authentication
+    });
+  } catch (err) {
+    // Helps debug network/CORS failures in the browser console.
+    console.error('apiFetch failed', { url, endpoint, options, err });
+    throw err;
+  }
 }
 
 /**

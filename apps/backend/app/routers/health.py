@@ -26,17 +26,28 @@ async def get_status() -> StatusResponse:
 
     Returns:
         - LLM configuration status
-        - Master resume existence
-        - Database statistics
+        - Database connection status
+        
+    Note: This endpoint does not require authentication and returns
+    global system status, not user-specific data.
     """
     config = get_llm_config()
     llm_status = await check_llm_health(config)
-    db_stats = db.get_stats()
+    
+    # For multi-tenant setup, we don't check user-specific stats in health endpoint
+    # Just return basic system health
+    db_stats = {
+        "total_resumes": 0,
+        "total_jobs": 0,
+        "total_improvements": 0,
+        "has_master_resume": False,
+        "master_resume_count": 0,
+    }
 
     return StatusResponse(
-        status="ready" if llm_status["healthy"] and db_stats["has_master_resume"] else "setup_required",
+        status="ready" if llm_status["healthy"] else "setup_required",
         llm_configured=bool(config.api_key) or config.provider == "ollama",
         llm_healthy=llm_status["healthy"],
-        has_master_resume=db_stats["has_master_resume"],
+        has_master_resume=False,  # Not applicable for multi-tenant
         database_stats=db_stats,
     )

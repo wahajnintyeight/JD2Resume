@@ -229,6 +229,7 @@ export const useFileUpload = (
         const response = await fetch(uploadUrl, {
           method: 'POST',
           body: formData,
+          credentials: 'include', // Include cookies for authentication
         });
 
         let responseData: Record<string, unknown> = {}; // Initialize for broader scope

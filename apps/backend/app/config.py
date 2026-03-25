@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Any, Literal
 
-from pydantic import field_validator
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -200,6 +200,25 @@ class Settings(BaseSettings):
     mongodb_uri: str = "mongodb://localhost:27017"
     mongodb_db: str = "resume_matcher"
     mongodb_users_collection: str = "users"
+    mongodb_resumes_collection: str = "resumes"
+    mongodb_jobs_collection: str = "jds"
+    mongodb_improvements_collection: str = "improvements"
+    mongodb_ats_scans_collection: str = "ats_scans"
+
+    # ---------------------------------------------------------------------
+    # AWS S3 (for resume file storage)
+    # ---------------------------------------------------------------------
+    # S3 env var naming in this repo varies (some examples use AWS_*,
+    # while your current .env uses S3_*). We accept both.
+    aws_access_key_id: str = Field("", validation_alias="S3_ACCESS_KEY_ID")
+    aws_secret_access_key: str = Field("", validation_alias="S3_SECRET_ACCESS_KEY")
+    aws_s3_bucket: str = Field("", validation_alias="S3_BUCKET_NAME")
+    aws_s3_region: str = Field("us-east-1", validation_alias="S3_REGION")
+    aws_s3_resume_prefix: str = Field("resumes/", validation_alias="S3_FOLDER_NAME")
+    aws_s3_endpoint_url: str | None = Field(None, validation_alias="S3_ENDPOINT_URL")
+    aws_s3_presign_ttl_seconds: int = Field(
+        60 * 60, validation_alias="S3_PRESIGN_TTL_SECONDS"
+    )  # 1 hour
 
     @property
     def db_path(self) -> Path:

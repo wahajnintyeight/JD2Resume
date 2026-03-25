@@ -12,13 +12,17 @@ from pathlib import Path
 from typing import Any, NoReturn
 from uuid import uuid4
 
-from fastapi import APIRouter, File, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile
 from fastapi.responses import Response
 
 from app.database import db
 from app.pdf import render_resume_pdf, PDFRenderError
 from app.config import settings
 from app.services.docx_generator import generate_resume_docx
+from app.auth.context import get_current_user_id
+from app.auth.dependencies import require_authenticated_user
+from app.storage.s3 import build_resume_s3_key, upload_bytes_to_s3
+from urllib.parse import quote
 
 logger = logging.getLogger(__name__)
 from app.schemas import (
@@ -523,7 +527,10 @@ MAX_FILE_SIZE = 4 * 1024 * 1024  # 4MB
 
 
 @router.post("/upload", response_model=ResumeUploadResponse)
-async def upload_resume(file: UploadFile = File(...)) -> ResumeUploadResponse:
+async def upload_resume(
+    file: UploadFile = File(...),
+    user: dict = Depends(require_authenticated_user)
+) -> ResumeUploadResponse:
     """Upload and process a resume file (PDF/DOCX).
 
     Converts the file to Markdown and stores it in the database.
@@ -564,7 +571,28 @@ async def upload_resume(file: UploadFile = File(...)) -> ResumeUploadResponse:
         filename=file.filename,
         processed_data=None,
         processing_status="processing",
+        user_id=user["user_id"],
     )
+
+    # Upload the original resume file to S3 and store only the object key in Mongo.
+    # This keeps the DB small and avoids persisting presigned URLs.
+    try:
+        user_id = user["user_id"]
+        original_filename = file.filename or f"{resume['resume_id']}.resume"
+        s3_key = build_resume_s3_key(
+            user_id=user_id,
+            resume_id=resume["resume_id"],
+            filename=original_filename,
+        )
+        upload_bytes_to_s3(
+            key=s3_key,
+            data=content,
+            content_type=file.content_type,
+        )
+        db.update_resume(resume["resume_id"], {"s3_key": s3_key}, user["user_id"])
+    except Exception as e:
+        # Don't fail the whole upload if S3 is temporarily unavailable.
+        logger.error("Failed to upload resume to S3: %s", e)
 
     # Try to parse to structured JSON (optional, may fail if LLM not configured)
     try:
@@ -575,13 +603,14 @@ async def upload_resume(file: UploadFile = File(...)) -> ResumeUploadResponse:
                 "processed_data": processed_data,
                 "processing_status": "ready",
             },
+            user["user_id"],
         )
         resume["processed_data"] = processed_data
         resume["processing_status"] = "ready"
     except Exception as e:
         # LLM parsing failed, update status to failed
         logger.warning(f"Resume parsing to JSON failed for {file.filename}: {e}")
-        db.update_resume(resume["resume_id"], {"processing_status": "failed"})
+        db.update_resume(resume["resume_id"], {"processing_status": "failed"}, user["user_id"])
         resume["processing_status"] = "failed"
 
     # Return accurate status to client (API-001 fix)
@@ -599,14 +628,17 @@ async def upload_resume(file: UploadFile = File(...)) -> ResumeUploadResponse:
 
 
 @router.get("", response_model=ResumeFetchResponse)
-async def get_resume(resume_id: str = Query(...)) -> ResumeFetchResponse:
+async def get_resume(
+    resume_id: str = Query(...),
+    user: dict = Depends(require_authenticated_user)
+) -> ResumeFetchResponse:
     """Fetch resume details by ID.
 
     Returns both raw markdown and structured data (if available),
     plus cover letter and outreach message if they exist.
     Applies lazy migration for section metadata if needed.
     """
-    resume = db.get_resume(resume_id)
+    resume = db.get_resume(resume_id, user["user_id"])
 
     if not resume:
         raise HTTPException(status_code=404, detail="Resume not found")
@@ -649,9 +681,12 @@ async def get_resume(resume_id: str = Query(...)) -> ResumeFetchResponse:
 
 
 @router.get("/list", response_model=ResumeListResponse)
-async def list_resumes(include_master: bool = Query(False)) -> ResumeListResponse:
+async def list_resumes(
+    include_master: bool = Query(False),
+    user: dict = Depends(require_authenticated_user)
+) -> ResumeListResponse:
     """List resumes, optionally including the master resume."""
-    resumes = db.list_resumes()
+    resumes = db.list_resumes(user["user_id"])
     if not include_master:
         resumes = [resume for resume in resumes if not resume.get("is_master", False)]
 
@@ -678,16 +713,17 @@ async def list_resumes(include_master: bool = Query(False)) -> ResumeListRespons
 @router.post("/improve/preview", response_model=ImproveResumeResponse)
 async def improve_resume_preview_endpoint(
     request: ImproveResumeRequest,
+    user: dict = Depends(require_authenticated_user)
 ) -> ImproveResumeResponse:
     """Preview a tailored resume without persisting it.
 
     The response includes resume_preview data but leaves resume_id null.
     """
-    resume = db.get_resume(request.resume_id)
+    resume = db.get_resume(request.resume_id, user["user_id"])
     if not resume:
         raise HTTPException(status_code=404, detail="Resume not found")
 
-    job = db.get_job(request.job_id)
+    job = db.get_job(request.job_id, user["user_id"])
     if not job:
         raise HTTPException(status_code=404, detail="Job description not found")
 
@@ -863,13 +899,14 @@ async def improve_resume_preview_endpoint(
 @router.post("/improve/confirm", response_model=ImproveResumeResponse)
 async def improve_resume_confirm_endpoint(
     request: ImproveResumeConfirmRequest,
+    user: dict = Depends(require_authenticated_user)
 ) -> ImproveResumeResponse:
     """Confirm and persist a tailored resume."""
-    resume = db.get_resume(request.resume_id)
+    resume = db.get_resume(request.resume_id, user["user_id"])
     if not resume:
         raise HTTPException(status_code=404, detail="Resume not found")
 
-    job = db.get_job(request.job_id)
+    job = db.get_job(request.job_id, user["user_id"])
     if not job:
         raise HTTPException(status_code=404, detail="Job description not found")
 
@@ -1030,6 +1067,7 @@ async def improve_resume_confirm_endpoint(
 @router.post("/improve", response_model=ImproveResumeResponse)
 async def improve_resume_endpoint(
     request: ImproveResumeRequest,
+    user: dict = Depends(require_authenticated_user)
 ) -> ImproveResumeResponse:
     """Improve/tailor a resume for a specific job description.
 
@@ -1039,12 +1077,12 @@ async def improve_resume_endpoint(
     Persists the tailored resume and returns a non-null resume_id.
     """
     # Fetch resume
-    resume = db.get_resume(request.resume_id)
+    resume = db.get_resume(request.resume_id, user["user_id"])
     if not resume:
         raise HTTPException(status_code=404, detail="Resume not found")
 
     # Fetch job description
-    job = db.get_job(request.job_id)
+    job = db.get_job(request.job_id, user["user_id"])
     if not job:
         raise HTTPException(status_code=404, detail="Job description not found")
 
@@ -1223,10 +1261,12 @@ async def improve_resume_endpoint(
 
 @router.patch("/{resume_id}", response_model=ResumeFetchResponse)
 async def update_resume_endpoint(
-    resume_id: str, resume_data: ResumeData
+    resume_id: str,
+    resume_data: ResumeData,
+    user: dict = Depends(require_authenticated_user)
 ) -> ResumeFetchResponse:
     """Update a resume with new structured data."""
-    existing = db.get_resume(resume_id)
+    existing = db.get_resume(resume_id, user["user_id"])
     if not existing:
         raise HTTPException(status_code=404, detail="Resume not found")
 
@@ -1273,6 +1313,8 @@ async def update_resume_endpoint(
 @router.get("/{resume_id}/pdf")
 async def download_resume_pdf(
     resume_id: str,
+    request: Request,
+    user: dict = Depends(require_authenticated_user),
     template: str = Query("swiss-single"),
     pageSize: str = Query("A4", pattern="^(A4|LETTER)$"),
     marginTop: int = Query(10, ge=5, le=25),
@@ -1308,7 +1350,7 @@ async def download_resume_pdf(
     - showContactIcons: show icons in contact info
     - lang: locale used for print page translations
     """
-    resume = db.get_resume(resume_id)
+    resume = db.get_resume(resume_id, user["user_id"])
     if not resume:
         raise HTTPException(status_code=404, detail="Resume not found")
 
@@ -1333,6 +1375,16 @@ async def download_resume_pdf(
     )
     if lang:
         params = f"{params}&lang={lang}"
+
+    token = request.cookies.get(settings.auth_cookie_name)
+    if not token:
+        auth_header = request.headers.get("Authorization") or ""
+        if auth_header.lower().startswith("bearer "):
+            token = auth_header.split(" ", 1)[1].strip()
+    if not token:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    params = f"{params}&authToken={quote(token)}"
     url = f"{settings.frontend_base_url}/print/resumes/{resume_id}?{params}"
 
     # Use the exact margins provided; compact mode only affects spacing.
@@ -1373,6 +1425,8 @@ async def download_resume_pdf(
 @router.post("/{resume_id}/pdf/save")
 async def save_resume_pdf(
     resume_id: str,
+    request: Request,
+    _: dict = Depends(require_authenticated_user),
     template: str = Query("swiss-single"),
     pageSize: str = Query("A4", pattern="^(A4|LETTER)$"),
     marginTop: int = Query(10, ge=5, le=25),
@@ -1421,6 +1475,16 @@ async def save_resume_pdf(
     )
     if lang:
         params = f"{params}&lang={lang}"
+
+    token = request.cookies.get(settings.auth_cookie_name)
+    if not token:
+        auth_header = request.headers.get("Authorization") or ""
+        if auth_header.lower().startswith("bearer "):
+            token = auth_header.split(" ", 1)[1].strip()
+    if not token:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    params = f"{params}&authToken={quote(token)}"
     url = f"{settings.frontend_base_url}/print/resumes/{resume_id}?{params}"
 
     # Use the exact margins provided
@@ -1470,6 +1534,7 @@ async def save_resume_pdf(
 @router.get("/{resume_id}/docx")
 async def download_resume_docx(
     resume_id: str,
+    _: dict = Depends(require_authenticated_user)
 ) -> Response:
     """Generate a DOCX file for a resume.
     
@@ -1514,16 +1579,22 @@ async def download_resume_docx(
 
 
 @router.delete("/{resume_id}")
-async def delete_resume(resume_id: str) -> dict:
+async def delete_resume(
+    resume_id: str,
+    user: dict = Depends(require_authenticated_user)
+) -> dict:
     """Delete a resume by ID."""
-    if not db.delete_resume(resume_id):
+    if not db.delete_resume(resume_id, user["user_id"]):
         raise HTTPException(status_code=404, detail="Resume not found")
 
     return {"message": "Resume deleted successfully"}
 
 
 @router.post("/{resume_id}/retry-processing", response_model=ResumeUploadResponse)
-async def retry_processing(resume_id: str) -> ResumeUploadResponse:
+async def retry_processing(
+    resume_id: str,
+    _: dict = Depends(require_authenticated_user)
+) -> ResumeUploadResponse:
     """Retry AI processing for a failed resume.
 
     Re-runs parse_resume_to_json() on the stored markdown content.
@@ -1576,7 +1647,9 @@ async def retry_processing(resume_id: str) -> ResumeUploadResponse:
 
 @router.patch("/{resume_id}/cover-letter")
 async def update_cover_letter(
-    resume_id: str, request: UpdateCoverLetterRequest
+    resume_id: str,
+    request: UpdateCoverLetterRequest,
+    _: dict = Depends(require_authenticated_user)
 ) -> dict:
     """Update the cover letter for a resume."""
     resume = db.get_resume(resume_id)
@@ -1589,7 +1662,9 @@ async def update_cover_letter(
 
 @router.patch("/{resume_id}/outreach-message")
 async def update_outreach_message(
-    resume_id: str, request: UpdateOutreachMessageRequest
+    resume_id: str,
+    request: UpdateOutreachMessageRequest,
+    _: dict = Depends(require_authenticated_user)
 ) -> dict:
     """Update the outreach message for a resume."""
     resume = db.get_resume(resume_id)
@@ -1601,7 +1676,11 @@ async def update_outreach_message(
 
 
 @router.patch("/{resume_id}/title")
-async def update_title(resume_id: str, request: UpdateTitleRequest) -> dict:
+async def update_title(
+    resume_id: str,
+    request: UpdateTitleRequest,
+    _: dict = Depends(require_authenticated_user)
+) -> dict:
     """Update the title for a resume."""
     resume = db.get_resume(resume_id)
     if not resume:
@@ -1615,7 +1694,10 @@ async def update_title(resume_id: str, request: UpdateTitleRequest) -> dict:
 @router.post(
     "/{resume_id}/generate-cover-letter", response_model=GenerateContentResponse
 )
-async def generate_cover_letter_endpoint(resume_id: str) -> GenerateContentResponse:
+async def generate_cover_letter_endpoint(
+    resume_id: str,
+    _: dict = Depends(require_authenticated_user)
+) -> GenerateContentResponse:
     """Generate a cover letter on-demand for an existing tailored resume.
 
     This endpoint allows users to generate a cover letter after a resume has been
@@ -1686,7 +1768,10 @@ async def generate_cover_letter_endpoint(resume_id: str) -> GenerateContentRespo
 
 
 @router.post("/{resume_id}/generate-outreach", response_model=GenerateContentResponse)
-async def generate_outreach_endpoint(resume_id: str) -> GenerateContentResponse:
+async def generate_outreach_endpoint(
+    resume_id: str,
+    _: dict = Depends(require_authenticated_user)
+) -> GenerateContentResponse:
     """Generate an outreach message on-demand for an existing tailored resume.
 
     This endpoint allows users to generate a cold outreach message after a resume
@@ -1757,7 +1842,10 @@ async def generate_outreach_endpoint(resume_id: str) -> GenerateContentResponse:
 
 
 @router.get("/{resume_id}/job-description")
-async def get_job_description_for_resume(resume_id: str) -> dict:
+async def get_job_description_for_resume(
+    resume_id: str,
+    _: dict = Depends(require_authenticated_user)
+) -> dict:
     """Get the job description used to tailor this resume.
 
     This endpoint retrieves the original job description that was used
@@ -1801,6 +1889,8 @@ async def get_job_description_for_resume(resume_id: str) -> dict:
 @router.get("/{resume_id}/cover-letter/pdf")
 async def download_cover_letter_pdf(
     resume_id: str,
+    request: Request,
+    _: dict = Depends(require_authenticated_user),
     pageSize: str = Query("A4", pattern="^(A4|LETTER)$"),
     lang: str | None = Query(None, pattern="^[a-z]{2}(-[A-Z]{2})?$"),
 ) -> Response:
@@ -1821,10 +1911,19 @@ async def download_cover_letter_pdf(
             status_code=404, detail="No cover letter found for this resume"
         )
 
+    token = request.cookies.get(settings.auth_cookie_name)
+    if not token:
+        auth_header = request.headers.get("Authorization") or ""
+        if auth_header.lower().startswith("bearer "):
+            token = auth_header.split(" ", 1)[1].strip()
+    if not token:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
     # Build print URL (same pattern as resume PDF)
     url = f"{settings.frontend_base_url}/print/cover-letter/{resume_id}?pageSize={pageSize}"
     if lang:
         url = f"{url}&lang={lang}"
+    url = f"{url}&authToken={quote(token)}"
 
     # Render PDF with cover letter selector
     try:
@@ -1845,7 +1944,9 @@ async def download_cover_letter_pdf(
 # ============================================================================
 
 @router.get("/masters")
-async def list_master_resumes() -> dict[str, Any]:
+async def list_master_resumes(
+    user: dict = Depends(require_authenticated_user)
+) -> dict[str, Any]:
     """List all master resumes with their categories.
     
     Returns:
@@ -1857,7 +1958,7 @@ async def list_master_resumes() -> dict[str, Any]:
         - created_at: Creation timestamp
         - processed_data: Resume data (personalInfo for display)
     """
-    masters = db.list_master_resumes()
+    masters = db.list_master_resumes(user["user_id"])
     
     # Format response with relevant fields
     formatted_masters = []
@@ -1881,6 +1982,7 @@ async def list_master_resumes() -> dict[str, Any]:
 async def set_resume_as_master(
     resume_id: str,
     category: str | None = Query(None, description="Master category name (e.g., 'Software Engineer', 'Data Scientist'). Leave empty for default master."),
+    user: dict = Depends(require_authenticated_user)
 ) -> dict[str, Any]:
     """Set a resume as master for a specific category.
     
@@ -1895,7 +1997,7 @@ async def set_resume_as_master(
         This will unset any existing master for the same category.
     """
     # Validate resume exists
-    resume = db.get_resume(resume_id)
+    resume = db.get_resume(resume_id, user["user_id"])
     if not resume:
         raise HTTPException(status_code=404, detail="Resume not found")
     
@@ -1908,7 +2010,7 @@ async def set_resume_as_master(
             category = None
     
     # Set as master
-    success = db.set_master_resume(resume_id, category)
+    success = db.set_master_resume(resume_id, category, user["user_id"])
     if not success:
         raise HTTPException(status_code=500, detail="Failed to set master resume")
     
@@ -1923,6 +2025,7 @@ async def set_resume_as_master(
 @router.delete("/{resume_id}/master")
 async def unset_resume_as_master(
     resume_id: str,
+    user: dict = Depends(require_authenticated_user)
 ) -> dict[str, Any]:
     """Remove master status from a resume.
     
@@ -1933,7 +2036,7 @@ async def unset_resume_as_master(
         Success message
     """
     # Validate resume exists and is a master
-    resume = db.get_resume(resume_id)
+    resume = db.get_resume(resume_id, user["user_id"])
     if not resume:
         raise HTTPException(status_code=404, detail="Resume not found")
     
@@ -1942,7 +2045,7 @@ async def unset_resume_as_master(
     
     # Unset master status
     category = resume.get("master_category")
-    success = db.unset_master_resume(category)
+    success = db.unset_master_resume(category, user["user_id"])
     
     if not success:
         raise HTTPException(status_code=500, detail="Failed to unset master resume")
@@ -1956,6 +2059,7 @@ async def unset_resume_as_master(
 @router.get("/master")
 async def get_master_resume(
     category: str | None = Query(None, description="Master category name. Leave empty for default master."),
+    user: dict = Depends(require_authenticated_user)
 ) -> dict[str, Any]:
     """Get the master resume for a specific category.
     
@@ -1965,7 +2069,7 @@ async def get_master_resume(
     Returns:
         Master resume data or 404 if not found
     """
-    master = db.get_master_resume(category)
+    master = db.get_master_resume(category, user["user_id"])
     
     if not master:
         category_display = category if category else "default"

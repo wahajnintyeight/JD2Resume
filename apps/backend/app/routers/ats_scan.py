@@ -1,10 +1,12 @@
 """ATS Scan API endpoints."""
 
 import logging
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
+from urllib.parse import quote
 from app.database import db
+from app.auth.dependencies import require_authenticated_user
 from app.services.ats_scanner import scan_resume_ats
 from app.services.ats_applier import apply_ats_suggestions, calculate_ats_diff
 from app.pdf import render_resume_pdf
@@ -56,7 +58,10 @@ class ATSApplyConfirmRequest(BaseModel):
 
 
 @router.post("/scan", response_model=ATSScanResponse)
-async def scan_resume(request: ATSScanRequest):
+async def scan_resume(
+    request: ATSScanRequest,
+    _: dict = Depends(require_authenticated_user)
+):
     """
     Perform deep ATS scan of a resume against its job description.
     
@@ -135,7 +140,10 @@ async def scan_resume(request: ATSScanRequest):
 
 
 @router.get("/scan/{resume_id}/cached", response_model=ATSScanResponse)
-async def get_cached_ats_scan(resume_id: str):
+async def get_cached_ats_scan(
+    resume_id: str,
+    _: dict = Depends(require_authenticated_user)
+):
     """
     Get cached ATS scan results for PDF generation.
     
@@ -163,7 +171,9 @@ async def get_cached_ats_scan(resume_id: str):
 @router.get("/scan/{resume_id}/pdf")
 async def download_ats_scan_pdf(
     resume_id: str,
-    page_size: str = "A4"
+    request: Request,
+    _: dict = Depends(require_authenticated_user),
+    page_size: str = "A4",
 ):
     """
     Download ATS scan report as PDF.
@@ -183,8 +193,21 @@ async def download_ats_scan_pdf(
                 detail="No job description found for this resume. ATS scan is only available for tailored resumes."
             )
         
-        # Construct frontend URL for the ATS scan report print view
-        frontend_url = f"{settings.frontend_base_url}/print/ats-scan/{resume_id}"
+        token = request.cookies.get(settings.auth_cookie_name)
+        if not token:
+            auth_header = request.headers.get("Authorization") or ""
+            if auth_header.lower().startswith("bearer "):
+                token = auth_header.split(" ", 1)[1].strip()
+
+        if not token:
+            raise HTTPException(status_code=401, detail="Unauthorized")
+
+        # Construct frontend URL for the ATS scan report print view.
+        # We pass the session token so the print page can authorize API calls.
+        frontend_url = (
+            f"{settings.frontend_base_url}/print/ats-scan/{resume_id}"
+            f"?authToken={quote(token)}"
+        )
         
         # Render to PDF
         pdf_bytes = await render_resume_pdf(
@@ -215,7 +238,10 @@ async def download_ats_scan_pdf(
 
 
 @router.post("/apply/preview", response_model=ATSApplyPreviewResponse)
-async def preview_ats_apply(request: ATSApplyPreviewRequest):
+async def preview_ats_apply(
+    request: ATSApplyPreviewRequest,
+    _: dict = Depends(require_authenticated_user)
+):
     """
     Preview ATS suggestions application to a resume.
     
@@ -262,7 +288,10 @@ async def preview_ats_apply(request: ATSApplyPreviewRequest):
 
 
 @router.post("/apply/confirm")
-async def confirm_ats_apply(request: ATSApplyConfirmRequest):
+async def confirm_ats_apply(
+    request: ATSApplyConfirmRequest,
+    _: dict = Depends(require_authenticated_user)
+):
     """
     Confirm and apply ATS suggestions to a resume.
     

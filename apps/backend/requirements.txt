@@ -7,6 +7,8 @@ httpx==0.28.1
 tinydb==4.8.2
 motor==3.6.0
 python-jose[cryptography]==3.3.0
+boto3
+pymongo==4.9.2
 litellm==1.81.8
 markitdown[docx]==0.1.4
 pdfminer.six==20260107

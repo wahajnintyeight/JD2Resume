@@ -481,5 +481,7 @@ class Database:
         return result.get("scan_results") if result else None
 
 
-# Global database instance
-db = Database()
+# Global database instance (MongoDB multi-user storage)
+from app.mongo_database import MongoDatabase
+
+db = MongoDatabase()
