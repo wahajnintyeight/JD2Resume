@@ -255,8 +255,59 @@ def _apply_change_decisions(
     decisions: dict[str, bool],
 ) -> tuple[dict[str, Any], list[str]]:
     """Apply selective changes based on user decisions."""
-    from app.services.improver import apply_resume_decisions
-    return apply_resume_decisions(original_data, improved_data, current_changes, decisions)
+    import copy
+    
+    warnings = []
+    result_data = copy.deepcopy(improved_data)
+    
+    # Build a map of rejected changes by field_path
+    rejected_paths = {path for path, accepted in decisions.items() if not accepted}
+    
+    if not rejected_paths:
+        return result_data, warnings
+    
+    # Apply rejections by reverting to original values
+    for change in current_changes:
+        if change.field_path in rejected_paths:
+            try:
+                # Parse the field path (e.g., "workExperience[0].description[2]")
+                _set_nested_value(result_data, change.field_path, change.original_value, original_data)
+            except Exception as e:
+                warnings.append(f"Failed to revert change at {change.field_path}: {str(e)}")
+    
+    return result_data, warnings
+
+
+def _set_nested_value(data: dict[str, Any], path: str, value: Any, original_data: dict[str, Any]) -> None:
+    """Set a nested value in data based on a field path, reverting to original if needed."""
+    import re
+    
+    # Parse path like "workExperience[0].description[2]" or "summary"
+    parts = re.findall(r'(\w+)|\[(\d+)\]', path)
+    current = data
+    original_current = original_data
+    
+    for i, (key, index) in enumerate(parts[:-1]):
+        field = key or index
+        if key:
+            current = current.setdefault(key, {} if i + 1 < len(parts) - 1 and parts[i + 1][0] else [])
+            original_current = original_current.get(key, {})
+        else:
+            idx = int(index)
+            current = current[idx]
+            original_current = original_current[idx] if isinstance(original_current, list) and idx < len(original_current) else {}
+    
+    # Set the final value
+    last_key, last_index = parts[-1]
+    if last_key:
+        # Get original value from original_data
+        original_value = original_current.get(last_key) if isinstance(original_current, dict) else value
+        current[last_key] = original_value if original_value is not None else value
+    else:
+        idx = int(last_index)
+        if isinstance(current, list) and idx < len(current):
+            original_value = original_current[idx] if isinstance(original_current, list) and idx < len(original_current) else value
+            current[idx] = original_value if original_value is not None else value
 
 @router.post("/improve/preview", response_model=ImproveResumeResponse)
 async def improve_resume_preview_endpoint(
