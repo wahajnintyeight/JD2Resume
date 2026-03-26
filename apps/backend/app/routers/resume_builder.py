@@ -214,7 +214,7 @@ async def _generate_auxiliary_messages(
         tasks.append(generate_cover_letter(improved_data, job_content, language))
     if enable_outreach:
         tasks.append(generate_outreach_message(improved_data, job_content, language))
-    tasks.append(generate_resume_title(improved_data, job_content, language))
+    tasks.append(generate_resume_title(job_content, language))
     
     try:
         results = await asyncio.gather(*tasks, return_exceptions=True)
