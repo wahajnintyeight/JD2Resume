@@ -5,7 +5,9 @@ import logging
 from pathlib import Path
 
 import httpx
-from fastapi import APIRouter, BackgroundTasks, HTTPException
+from fastapi import APIRouter, BackgroundTasks, HTTPException, Depends
+from app.auth.dependencies import require_admin_user, require_authenticated_user
+from app.repositories.llm_config import LLMConfigRepository
 
 from app.config import settings
 from app.llm import check_llm_health, LLMConfig
@@ -139,6 +141,18 @@ async def update_llm_config(
 
     # Save config regardless of health check outcome (see docstring).
     _save_config(stored)
+
+    # Sync to MongoDB global config
+    mongo_updates = {
+        "provider": test_config.provider,
+        "model": test_config.model,
+        "apiKey": test_config.api_key,
+        "apiBase": test_config.api_base
+    }
+    try:
+        db.update_global_llm_config(mongo_updates)
+    except Exception as e:
+        logger.error(f"Failed to sync LLM config to MongoDB: {e}")
 
     # Best-effort health check for server-side logs/diagnostics (do not block response).
     background_tasks.add_task(_log_llm_health_check, test_config)
@@ -493,7 +507,10 @@ async def get_api_key(provider: str) -> dict:
 
 
 @router.post("/reset")
-async def reset_database_endpoint(request: ResetDatabaseRequest) -> dict:
+async def reset_database_endpoint(
+    request: ResetDatabaseRequest,
+    user: dict = Depends(require_admin_user),
+) -> dict:
     """Reset the database and clear all data.
 
     WARNING: This action is irreversible. It will:

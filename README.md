@@ -106,7 +106,11 @@ You can follow me on:
 
 ### Core Features
 
-**Master Resume**: Create a comprehensive master resume to draw from your existing one.
+**Multi-Resume Management**: Upload and manage multiple master resumes, selecting the most relevant one for different job applications.
+
+**AI-Powered Suggestions**: After processing, review granular, field-level AI suggestions. Use the interactive "Diff Preview" to accept or reject specific improvements for your summary, experience, and skills.
+
+**Advanced Tailoring**: Create multiple tailored versions of your resumes for different target roles, keeping all versions organized.
 
 ![Job Description Input](assets/step_2.png)
 
@@ -190,7 +194,11 @@ cd Resume-Matcher
 cd apps/backend
 cp .env.example .env        # Configure your AI provider
 uv sync                      # Install dependencies
-uv run uvicorn app.main:app --reload --port 8000
+# Using uv (Recommended)
+uv run python -m uvicorn app.main:app --reload --port 8888
+
+# Using standard Python
+python -m uvicorn app.main:app --reload --port 8888
 
 # Frontend (Terminal 2)
 cd apps/frontend
@@ -229,7 +237,7 @@ docker run srbhr/resume-matcher:latest
 |-----------|------------|
 | Backend | FastAPI, Python 3.13+, LiteLLM |
 | Frontend | Next.js 15, React 19, TypeScript |
-| Database | TinyDB (JSON file storage) |
+| Database | MongoDB (User-scoped document storage) |
 | Styling | Tailwind CSS 4, Swiss International Style |
 | PDF | Headless Chromium via Playwright |
 

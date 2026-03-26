@@ -13,6 +13,7 @@ import { useTranslations } from '@/lib/i18n';
 interface PaginatedPreviewProps {
   resumeData: ResumeData;
   settings: TemplateSettings;
+  isFullscreen?: boolean;
 }
 
 const MIN_ZOOM = 0.4;
@@ -23,13 +24,24 @@ const ZOOM_STEP = 0.1;
  * PaginatedPreview shows a WYSIWYG preview of the resume with actual page dimensions,
  * margin guides, and automatic pagination.
  */
-export function PaginatedPreview({ resumeData, settings }: PaginatedPreviewProps) {
+export function PaginatedPreview({ resumeData, settings, isFullscreen }: PaginatedPreviewProps) {
   const { t } = useTranslations();
   const measurementRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [zoom, setZoom] = useState(0.6);
   const [showMargins, setShowMargins] = useState(false);
   const [autoZoom, setAutoZoom] = useState(true);
+
+  // Jump to 1.4 zoom when entering fullscreen
+  useEffect(() => {
+    if (isFullscreen) {
+      setAutoZoom(false);
+      setZoom(1.4);
+    } else {
+      setAutoZoom(true);
+      // calculateAutoZoom will be triggered by other effect
+    }
+  }, [isFullscreen]);
   const resumeSettings: TemplateSettings = {
     ...settings,
     margins: { top: 0, bottom: 0, left: 0, right: 0 },

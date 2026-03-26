@@ -11,7 +11,7 @@ export const SwissGrid = ({ children }: { children: React.ReactNode }) => {
   return (
     // 1. Outer Wrapper: Fixed height with grid background
     <div
-      className="h-screen w-full flex justify-center items-start py-12 px-4 md:px-8 overflow-hidden bg-[#F0F0E8]"
+      className="flex h-full w-full items-start justify-center overflow-hidden bg-[#F0F0E8]"
       style={{
         backgroundImage:
           'linear-gradient(rgba(29, 78, 216, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(29, 78, 216, 0.1) 1px, transparent 1px)',
@@ -19,7 +19,7 @@ export const SwissGrid = ({ children }: { children: React.ReactNode }) => {
       }}
     >
       {/* 2. The Main Container: Sharp black borders, creating the "Canvas" */}
-      <div className="w-full max-w-[86rem] max-h-full border border-black bg-[#F0F0E8] shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)] flex flex-col overflow-hidden">
+      <div className="flex h-full w-full flex-col overflow-hidden border-black bg-[#F0F0E8] md:border-l">
         {/* Header Section - stays above hovered cards */}
         <div className="border-b border-black p-8 md:p-12 shrink-0 bg-[#F0F0E8] relative z-30">
           <h1 className="font-serif text-5xl md:text-7xl text-black tracking-tight leading-[0.95] uppercase">

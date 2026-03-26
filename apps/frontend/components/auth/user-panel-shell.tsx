@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
-import { fetchAuthMe, logout, type AuthUser } from '@/lib/api/auth';
+import { useAuth } from '@/lib/context/auth-context';
 import { API_BASE } from '@/lib/api/client';
 
 import { Button } from '@/components/ui/button';
@@ -32,38 +32,26 @@ function NavLink({
 
 export default function UserPanelShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const [user, setUser] = useState<AuthUser | null | 'loading'>('loading');
+  const pathname = usePathname();
+  const { user, status, logout } = useAuth();
   const loginUrl = `${API_BASE}/auth/google/login`;
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const load = async () => {
-      try {
-        const me = await fetchAuthMe();
-        if (!cancelled) setUser(me);
-      } catch {
-        if (!cancelled) setUser(null);
-      }
-    };
-
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const handleLogout = async () => {
     await logout();
     router.replace('/');
   };
 
-  if (user === 'loading') {
+  if (status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center p-6">
+      <div className="min-h-screen flex items-center justify-center p-6 bg-[#F0F0E8]">
         <p className="font-mono text-sm text-gray-600">Checking session...</p>
       </div>
     );
+  }
+
+  // Allow public access to landing page
+  if (!user && pathname === '/') {
+    return <div className="min-h-screen w-full bg-[#F0F0E8]">{children}</div>;
   }
 
   if (!user) {
@@ -87,24 +75,24 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
   }
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-[#F0F0E8] overflow-x-hidden">
-      <aside className="w-full md:w-72 shrink-0 border-r-0 md:border-r border-black bg-[#F0F0E8] border-b md:border-b-0">
-        <div className="p-4 space-y-4 w-full overflow-hidden">
-          <div className="border-2 border-black bg-white p-4 shadow-sw-default rounded-none">
-            <div className="font-mono uppercase text-xs font-bold text-blue-700">User</div>
-            <div className="mt-2 font-serif font-bold text-lg text-gray-900 line-clamp-1">
+    <div className="flex h-screen w-full flex-col overflow-hidden bg-[#F0F0E8] md:flex-row">
+      <aside className="w-full shrink-0 border-b border-black bg-[#F0F0E8] md:w-72 md:border-b-0 md:border-r">
+        <div className="flex flex-col gap-4 p-4">
+          <div className="rounded-none border-2 border-black bg-white p-4 shadow-sw-default">
+            <div className="font-mono text-xs font-bold uppercase text-blue-700">User</div>
+            <div className="mt-2 line-clamp-1 font-serif text-lg font-bold text-gray-900">
               {user.name || user.email || 'Signed in'}
             </div>
             {user.picture ? (
               <img
                 src={user.picture}
                 alt="avatar"
-                className="mt-3 w-10 h-10 rounded-none border border-black object-cover"
+                className="mt-3 h-10 w-10 border border-black object-cover rounded-none"
               />
             ) : null}
           </div>
 
-          <div className="space-y-2 w-full overflow-hidden">
+          <div className="flex flex-col gap-2">
             <NavLink href="/dashboard">Dashboard</NavLink>
             <NavLink href="/settings">Settings</NavLink>
             <NavLink href="/builder">Builder</NavLink>
@@ -114,14 +102,14 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
           <Button
             onClick={handleLogout}
             variant="outline"
-            className="w-full border-2 border-black hover:bg-white bg-white shadow-sw-default rounded-none"
+            className="w-full rounded-none border-2 border-black bg-white shadow-sw-default hover:bg-white"
           >
             Log out
           </Button>
         </div>
       </aside>
 
-      <main className="flex-1 min-w-0 p-4 md:p-8">{children}</main>
+      <main className="min-w-0 flex-1 overflow-y-auto">{children}</main>
     </div>
   );
 }

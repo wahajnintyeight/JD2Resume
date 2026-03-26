@@ -280,8 +280,8 @@ export default function ResumeViewerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F0F0E8] py-12 px-4 md:px-8 overflow-y-auto">
-      <div className="max-w-7xl mx-auto">
+    <div className="flex min-h-full w-full flex-col bg-[#F0F0E8] md:border-l border-black p-6 md:p-8">
+      <div className="w-full">
         {/* Header Actions */}
         <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 no-print">
           <Button variant="outline" onClick={() => router.push('/dashboard')}>
@@ -351,7 +351,7 @@ export default function ResumeViewerPage() {
 
         {/* Resume Viewer */}
         <div className="flex justify-center pb-4">
-          <div className="resume-print w-full max-w-[250mm] shadow-[8px_8px_0px_0px_#000000] border-2 border-black bg-white">
+          <div className="resume-print w-full max-w-[210mm] border-2 border-black bg-white shadow-[8px_8px_0px_0px_#000000]">
             <Resume
               resumeData={localizedResumeData || resumeData}
               additionalSectionLabels={{

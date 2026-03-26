@@ -4,6 +4,7 @@ import React, { useState, useEffect, Suspense, useCallback, useMemo } from 'reac
 import Image from 'next/image';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { type ResumeData } from '@/components/dashboard/resume-component';
+import { cn } from '@/lib/utils';
 import { ResumeForm } from './resume-form';
 import { FormattingControls } from './formatting-controls';
 import { CoverLetterEditor } from './cover-letter-editor';
@@ -26,6 +27,8 @@ import {
   Loader2,
   FileText,
   HardDrive,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react';
 import { useResumePreview } from '@/components/common/resume_previewer_context';
 import { PaginatedPreview } from '@/components/preview';
@@ -162,6 +165,9 @@ const ResumeBuilderContent = () => {
   // JD comparison state
   const [jobDescription, setJobDescription] = useState<string | null>(null);
 
+  // Fullscreen preview state
+  const [isFullscreenPreview, setIsFullscreenPreview] = useState(false);
+
   // AI Regenerate wizard
   const regenerateWizard = useRegenerateWizard({
     resumeId: resumeId || '',
@@ -283,6 +289,18 @@ const ResumeBuilderContent = () => {
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [hasUnsavedChanges]);
+
+  // Handle body scroll locking in fullscreen
+  useEffect(() => {
+    if (isFullscreenPreview) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isFullscreenPreview]);
 
   useEffect(() => {
     const loadResumeData = async () => {
@@ -642,16 +660,9 @@ const ResumeBuilderContent = () => {
   };
 
   return (
-    <div
-      className="h-screen w-full bg-[#F0F0E8] flex justify-center items-center p-4 md:p-8"
-      style={{
-        backgroundImage:
-          'linear-gradient(rgba(29, 78, 216, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(29, 78, 216, 0.1) 1px, transparent 1px)',
-        backgroundSize: '40px 40px',
-      }}
-    >
+    <div className="flex h-screen w-full justify-center items-center bg-[#F0F0E8]">
       {/* Main Container */}
-      <div className="w-full h-full max-w-[90%] md:max-w-[95%] xl:max-w-[1800px] border border-black bg-[#F0F0E8] shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)] flex flex-col">
+      <div className="flex h-full w-full flex-col bg-[#F0F0E8] md:border-l border-black">
         {/* Header Section */}
         <div className="border-b border-black p-6 md:p-8 bg-[#F0F0E8] no-print">
           {/* Top Row: Back button and Actions */}
@@ -804,7 +815,12 @@ const ResumeBuilderContent = () => {
         {/* Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 bg-black gap-[1px] flex-1 min-h-0">
           {/* Left Panel: Editor */}
-          <div className="bg-[#F0F0E8] p-6 md:p-8 overflow-y-auto no-print">
+          <div
+            className={cn(
+              'bg-[#F0F0E8] p-6 md:p-8 overflow-y-auto no-print transition-all duration-300',
+              isFullscreenPreview && 'hidden lg:block lg:opacity-50 lg:pointer-events-none'
+            )}
+          >
             <div className="max-w-3xl mx-auto space-y-6">
               <div className="flex items-center gap-2 border-b-2 border-black pb-2">
                 <div className="w-3 h-3 bg-blue-700"></div>
@@ -878,9 +894,7 @@ const ResumeBuilderContent = () => {
                     </h3>
                     <p className="text-sm text-gray-600 leading-relaxed">
                       {(() => {
-                        const template = t(
-                          'builder.jdMatch.highlightedKeywordsDescriptionTemplate'
-                        );
+                        const template = t('builder.jdMatch.highlightedKeywordsDescriptionTemplate');
                         const parts = template.split('__COLOR__');
                         if (parts.length < 2) return template;
                         return (
@@ -912,9 +926,16 @@ const ResumeBuilderContent = () => {
           </div>
 
           {/* Right Panel: Preview with Tabs */}
-          <div className="bg-[#E5E5E0] overflow-hidden flex flex-col no-print">
+          <div
+            className={cn(
+              'bg-[#E5E5E0] overflow-hidden flex flex-col no-print transition-all duration-300 ease-in-out',
+              isFullscreenPreview
+                ? 'fixed inset-0 z-50'
+                : 'relative col-span-1'
+            )}
+          >
             {/* Tabs Header */}
-            <div className="px-6 pt-3 shrink-0 bg-[#E5E5E0]">
+            <div className="px-6 pt-3 shrink-0 bg-[#E5E5E0] flex items-end justify-between border-b border-black">
               <RetroTabs
                 tabs={[
                   { id: 'resume', label: t('builder.previewTabs.resume') },
@@ -936,63 +957,96 @@ const ResumeBuilderContent = () => {
                 ]}
                 activeTab={activeTab}
                 onTabChange={(id) => setActiveTab(id as TabId)}
+                className="border-b-0"
               />
+              <div className="pb-2 flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsFullscreenPreview(!isFullscreenPreview)}
+                  className="h-8 w-8 hover:bg-black/5"
+                  title={isFullscreenPreview ? 'Exit Full Screen' : 'Full Screen'}
+                >
+                  {isFullscreenPreview ? (
+                    <Minimize2 className="w-4 h-4" />
+                  ) : (
+                    <Maximize2 className="w-4 h-4" />
+                  )}
+                </Button>
+              </div>
             </div>
 
             {/* Preview Content */}
-            <div className="flex-1 overflow-y-auto">
-              {/* Resume Preview */}
-              {activeTab === 'resume' && (
-                <PaginatedPreview
-                  resumeData={localizedResumeDataForPreview}
-                  settings={templateSettings}
-                />
-              )}
-
-              {/* Cover Letter Preview */}
-              {activeTab === 'cover-letter' &&
-                (coverLetter && resumeData.personalInfo ? (
-                  <div className="p-6">
-                    <CoverLetterPreview
-                      content={coverLetter}
-                      personalInfo={resumeData.personalInfo}
-                      pageSize={templateSettings.pageSize}
+            <div className={cn('flex-1 min-h-0', isFullscreenPreview ? 'bg-[#D5D5D0]/50' : '')}>
+              <div className={cn('h-full w-full', isFullscreenPreview ? 'p-4 md:p-8' : '')}>
+                <div
+                  className={cn(
+                    'h-full w-full',
+                    isFullscreenPreview && ' mx-auto border-x border-black/10 shadow-2xl bg-white'
+                  )}
+                >
+                  {/* Resume Preview */}
+                  {activeTab === 'resume' && (
+                    <PaginatedPreview
+                      resumeData={localizedResumeDataForPreview}
+                      settings={templateSettings}
+                      isFullscreen={isFullscreenPreview}
                     />
-                  </div>
-                ) : (
-                  <GeneratePrompt
-                    type="cover-letter"
-                    isGenerating={isGeneratingCoverLetter}
-                    onGenerate={handleGenerateCoverLetter}
-                    isTailoredResume={isTailoredResume}
-                  />
-                ))}
+                  )}
 
-              {/* Outreach Preview */}
-              {activeTab === 'outreach' &&
-                (outreachMessage ? (
-                  <div className="p-6">
-                    <OutreachPreview content={outreachMessage} />
-                  </div>
-                ) : (
-                  <GeneratePrompt
-                    type="outreach"
-                    isGenerating={isGeneratingOutreach}
-                    onGenerate={handleGenerateOutreach}
-                    isTailoredResume={isTailoredResume}
-                  />
-                ))}
+                  {/* Cover Letter Preview */}
+                  {activeTab === 'cover-letter' &&
+                    (coverLetter && resumeData.personalInfo ? (
+                      <div className="p-6 h-full overflow-y-auto">
+                        <CoverLetterPreview
+                          content={coverLetter}
+                          personalInfo={resumeData.personalInfo}
+                          pageSize={templateSettings.pageSize}
+                        />
+                      </div>
+                    ) : (
+                      <GeneratePrompt
+                        type="cover-letter"
+                        isGenerating={isGeneratingCoverLetter}
+                        onGenerate={handleGenerateCoverLetter}
+                        isTailoredResume={isTailoredResume}
+                      />
+                    ))}
 
-              {/* JD Match Comparison */}
-              {activeTab === 'jd-match' && jobDescription && (
-                <JDComparisonView jobDescription={jobDescription} resumeData={resumeData} />
-              )}
+                  {/* Outreach Preview */}
+                  {activeTab === 'outreach' &&
+                    (outreachMessage ? (
+                      <div className="p-6 h-full overflow-y-auto">
+                        <OutreachPreview content={outreachMessage} />
+                      </div>
+                    ) : (
+                      <GeneratePrompt
+                        type="outreach"
+                        isGenerating={isGeneratingOutreach}
+                        onGenerate={handleGenerateOutreach}
+                        isTailoredResume={isTailoredResume}
+                      />
+                    ))}
+
+                  {/* JD Match Comparison */}
+                  {activeTab === 'jd-match' && jobDescription && (
+                    <div className="h-full overflow-y-auto">
+                      <JDComparisonView jobDescription={jobDescription} resumeData={resumeData} />
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="p-4 bg-[#F0F0E8] flex justify-between items-center font-mono text-xs text-blue-700 border-t border-black no-print">
+        <div
+          className={cn(
+            'p-4 bg-[#F0F0E8] flex justify-between items-center font-mono text-xs text-blue-700 border-t border-black no-print',
+            isFullscreenPreview && 'hidden'
+          )}
+        >
           <span className="uppercase font-bold flex items-center gap-2">
             <Image
               src="/logo.svg"

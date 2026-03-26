@@ -59,7 +59,7 @@ export default function MasterResumeManager({ onClose, onMasterChanged }: Master
   if (loading) {
     return (
       <div className="min-h-screen bg-[#F6F5EE] p-8">
-        <div className="max-w-6xl mx-auto">
+        <div className=" mx-auto">
           <div className="flex items-center justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-blue-700" />
             <p className="ml-3 font-mono text-sm uppercase text-gray-600">Loading master resumes...</p>
@@ -71,7 +71,7 @@ export default function MasterResumeManager({ onClose, onMasterChanged }: Master
 
   return (
     <div className="min-h-screen bg-[#F6F5EE] p-8">
-      <div className="max-w-6xl mx-auto">
+      <div className=" mx-auto">
         {/* Header */}
         <div className="mb-8 flex items-start justify-between">
           <div>

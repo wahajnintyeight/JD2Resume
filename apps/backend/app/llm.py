@@ -228,7 +228,7 @@ def _load_stored_config() -> dict:
     return {}
 
 
-def get_llm_config() -> LLMConfig:
+def get_llm_config() -> LLMConfig: # updated
     """Get current LLM configuration.
 
     Priority: config.json file > environment variables/settings

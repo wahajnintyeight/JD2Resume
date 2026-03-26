@@ -1,3 +1,4 @@
+import { AuthProvider } from '@/lib/context/auth-context';
 import type { Metadata } from 'next';
 import { Geist, Space_Grotesk } from 'next/font/google';
 import './(default)/css/globals.css';
@@ -27,7 +28,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body
         className={`${geist.variable} ${spaceGrotesk.variable} antialiased bg-[#F0F0E8] text-gray-900 min-h-full`}
       >
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

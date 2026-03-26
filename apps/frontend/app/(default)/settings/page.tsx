@@ -51,11 +51,15 @@ import {
   Globe,
   Trash2,
   AlertTriangle,
+  Lock as LockIcon,
 } from 'lucide-react';
 import { useLanguage } from '@/lib/context/language-context';
 import { useTranslations } from '@/lib/i18n';
+import { useAuth } from '@/lib/context/auth-context';
 import type { SupportedLanguage } from '@/lib/api/config';
 import type { Locale } from '@/i18n/config';
+
+const ADMIN_EMAILS = ['miksmth502@gmail.com', 'wahaj.dkz@gmail.com'];
 
 type Status = 'idle' | 'loading' | 'saving' | 'saved' | 'error' | 'testing';
 
@@ -99,8 +103,14 @@ const getHealthCheckMessage = (
 };
 
 export default function SettingsPage() {
+  const { t } = useTranslations();
+  const { user } = useAuth();
   const [status, setStatus] = useState<Status>('loading');
   const [error, setError] = useState<string | null>(null);
+
+  const isAdmin = useMemo(() => {
+    return user?.email && ADMIN_EMAILS.includes(user.email);
+  }, [user]);
 
   // LLM Config state
   const [provider, setProvider] = useState<LLMProvider>('openai');
@@ -155,7 +165,7 @@ export default function SettingsPage() {
   } = useLanguage();
 
   // Translations
-  const { t } = useTranslations();
+  // const { t } = useTranslations(); // Remove duplicate
   const providerInfo = PROVIDER_INFO[provider] ?? PROVIDER_INFO['openai'];
   const fallbackPromptOptions = useMemo<PromptOption[]>(
     () => [
@@ -636,15 +646,8 @@ export default function SettingsPage() {
   const requiresApiKey = providerInfo.requiresKey ?? true;
 
   return (
-    <div
-      className="flex flex-col items-center justify-start p-6 md:p-12 min-h-screen overflow-y-auto"
-      style={{
-        backgroundImage:
-          'linear-gradient(rgba(29, 78, 216, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(29, 78, 216, 0.05) 1px, transparent 1px)',
-        backgroundSize: '40px 40px',
-      }}
-    >
-      <div className="w-full max-w-4xl mx-2 sm:mx-4 lg:mx-auto border border-black bg-[#F0F0E8] shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)]">
+    <div className="flex h-full w-full flex-col bg-[#F0F0E8] font-sans">
+      <div className="flex h-full w-full flex-1 flex-col border-black bg-[#F0F0E8] md:border-l">
         {/* Header */}
         <div className="border-b border-black p-4 sm:p-6 lg:p-8 bg-white flex flex-col sm:flex-row justify-between items-start gap-4">
           <div>
@@ -860,22 +863,24 @@ export default function SettingsPage() {
                   <button
                     type="button"
                     onClick={() => handleLlmConfigModeChange('preset')}
+                    disabled={!isAdmin}
                     className={`px-2 sm:px-3 py-2 text-xs uppercase ${SEGMENTED_BUTTON_BASE} ${
                       llmConfigMode === 'preset'
                         ? SEGMENTED_BUTTON_ACTIVE
                         : SEGMENTED_BUTTON_INACTIVE
-                    }`}
+                    } ${!isAdmin ? 'cursor-not-allowed opacity-50' : ''}`}
                   >
                     Providers
                   </button>
                   <button
                     type="button"
                     onClick={() => handleLlmConfigModeChange('custom')}
+                    disabled={!isAdmin}
                     className={`px-2 sm:px-3 py-2 text-xs uppercase ${SEGMENTED_BUTTON_BASE} ${
                       llmConfigMode === 'custom'
                         ? SEGMENTED_BUTTON_ACTIVE
                         : SEGMENTED_BUTTON_INACTIVE
-                    }`}
+                    } ${!isAdmin ? 'cursor-not-allowed opacity-50' : ''}`}
                   >
                     Custom Provider
                   </button>
@@ -892,9 +897,10 @@ export default function SettingsPage() {
                         key={p}
                         type="button"
                         onClick={() => handleProviderChange(p)}
+                        disabled={!isAdmin}
                         className={`px-2 sm:px-3 py-2 text-xs uppercase ${SEGMENTED_BUTTON_BASE} ${
                           provider === p ? SEGMENTED_BUTTON_ACTIVE : SEGMENTED_BUTTON_INACTIVE
-                        }`}
+                        } ${!isAdmin ? 'cursor-not-allowed opacity-50' : ''}`}
                       >
                         {PROVIDER_INFO[p].name.split(' ')[0]}
                       </button>
@@ -972,6 +978,7 @@ export default function SettingsPage() {
                       onChange={(e) => setModel(e.target.value)}
                       placeholder={providerInfo.defaultModel}
                       className="font-mono"
+                      disabled={!isAdmin}
                     />
                     <p className="text-xs text-gray-500 font-mono">
                       {t('settings.llmConfiguration.defaultModel', {
@@ -1003,7 +1010,7 @@ export default function SettingsPage() {
                       : t('settings.llmConfiguration.apiKeyNotRequiredPlaceholder')
                   }
                   className="font-mono"
-                  disabled={!requiresApiKey}
+                  disabled={!requiresApiKey || !isAdmin}
                 />
                 {requiresApiKey && hasStoredApiKey && !apiKey && (
                   <p className="text-xs text-gray-500 font-mono">
@@ -1021,6 +1028,7 @@ export default function SettingsPage() {
                   onChange={(e) => setApiBase(e.target.value)}
                   placeholder={t('settings.llmConfiguration.baseUrlPlaceholder')}
                   className="font-mono"
+                  disabled={!isAdmin}
                 />
                 <p className="text-xs text-gray-500 font-mono">
                   {t('settings.llmConfiguration.baseUrlDescription')}
@@ -1031,7 +1039,7 @@ export default function SettingsPage() {
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <Button
                   onClick={handleSave}
-                  disabled={status === 'saving' || status === 'loading'}
+                  disabled={status === 'saving' || status === 'loading' || !isAdmin}
                   className="w-full sm:flex-1"
                 >
                   {status === 'saving' ? (
@@ -1051,7 +1059,7 @@ export default function SettingsPage() {
                 <Button
                   variant="outline"
                   onClick={handleTestConnection}
-                  disabled={status === 'testing' || status === 'saving'}
+                  disabled={status === 'testing' || status === 'saving' || !isAdmin}
                   className="w-full sm:w-auto"
                 >
                   {status === 'testing' ? (
@@ -1260,10 +1268,11 @@ export default function SettingsPage() {
                   variant="outline"
                   className="w-full border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800 hover:border-red-300"
                   onClick={() => setShowClearApiKeysDialog(true)}
-                  disabled={isResetting}
+                  disabled={isResetting || !isAdmin}
                 >
                   <Key className="w-4 h-4 mr-2" />
                   {t('settings.clearApiKeys')}
+                  {!isAdmin && <LockIcon className="ml-2 w-3 h-3" />}
                 </Button>
               </div>
 
@@ -1279,10 +1288,11 @@ export default function SettingsPage() {
                   variant="destructive"
                   className="w-full"
                   onClick={() => setShowResetDatabaseDialog(true)}
-                  disabled={isResetting}
+                  disabled={isResetting || !isAdmin}
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
                   {t('settings.resetDatabase')}
+                  {!isAdmin && <LockIcon className="ml-2 w-3 h-3" />}
                 </Button>
               </div>
             </div>

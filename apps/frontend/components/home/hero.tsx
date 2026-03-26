@@ -1,32 +1,14 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { useTranslations } from '@/lib/i18n';
-import { fetchAuthMe, type AuthUser } from '@/lib/api/auth';
+import { useAuth } from '@/lib/context/auth-context';
 import { API_BASE } from '@/lib/api/client';
 
 export default function Hero() {
   const { t } = useTranslations();
-  const [authUser, setAuthUser] = useState<AuthUser | null | 'loading'>('loading');
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const load = async () => {
-      try {
-        const user = await fetchAuthMe();
-        if (!cancelled) setAuthUser(user);
-      } catch {
-        if (!cancelled) setAuthUser(null);
-      }
-    };
-
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const { user: authUser, status } = useAuth();
 
   const loginUrl = `${API_BASE}/auth/google/login`;
 
@@ -66,7 +48,7 @@ export default function Hero() {
           >
             {t('home.docs')}
           </a>
-          {authUser && authUser !== 'loading' ? (
+          {authUser && status !== 'loading' ? (
             <Link href="/dashboard" className={buttonClass}>
               {t('home.launchApp')}
             </Link>

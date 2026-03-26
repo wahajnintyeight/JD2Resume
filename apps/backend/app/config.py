@@ -119,6 +119,9 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
+    # Admin Configuration
+    admin_emails: list[str] = ["miksmth502@gmail.com", "wahaj.dkz@gmail.com"]
+
     # LLM Configuration
     llm_provider: Literal[
         "openai", "anthropic", "openrouter", "gemini", "deepseek", "ollama"
@@ -204,6 +207,7 @@ class Settings(BaseSettings):
     mongodb_jobs_collection: str = "jds"
     mongodb_improvements_collection: str = "improvements"
     mongodb_ats_scans_collection: str = "ats_scans"
+    mongodb_llm_api_configs_collection: str = "llm_api_configs"
 
     # ---------------------------------------------------------------------
     # AWS S3 (for resume file storage)

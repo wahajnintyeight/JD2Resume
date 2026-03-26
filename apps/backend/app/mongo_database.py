@@ -32,6 +32,7 @@ class MongoDatabase:
         self._jobs: Collection = db[settings.mongodb_jobs_collection]
         self._improvements: Collection = db[settings.mongodb_improvements_collection]
         self._ats_scans: Collection = db[settings.mongodb_ats_scans_collection]
+        self._llm_configs: Collection = db[settings.mongodb_llm_api_configs_collection]
 
         # Best-effort indexes (won't fail startup).
         try:
@@ -41,8 +42,44 @@ class MongoDatabase:
                 [("user_id", 1), ("tailored_resume_id", 1)], unique=False
             )
             self._ats_scans.create_index([("user_id", 1), ("resume_id", 1)], unique=True)
+            self._llm_configs.create_index([("isActive", 1)])
         except Exception:
             logger.debug("Index creation skipped/failed", exc_info=True)
+
+    def get_global_llm_config(self) -> dict[str, Any] | None:
+        """Fetch the active global LLM configuration from MongoDB."""
+        return self._llm_configs.find_one({"isActive": True})
+
+    def update_global_llm_config(self, updates: dict[str, Any]) -> dict[str, Any]:
+        """Update or create the active global LLM configuration in MongoDB."""
+        now = datetime.now(timezone.utc)
+        
+        # Ensure we are updating the active one, or creating a new default active one
+        query = {"isActive": True}
+        
+        existing = self._llm_configs.find_one(query)
+        
+        if existing:
+            # Update existing
+            update_doc = {**updates, "updatedAt": now}
+            self._llm_configs.update_one(query, {"$set": update_doc})
+            return {**existing, **update_doc}
+        else:
+            # Create new active config
+            new_doc = {
+                "name": "system",
+                "provider": "openai",
+                "model": "gpt-4o",
+                "apiKey": "",
+                "isActive": True,
+                "createdBy": "system",
+                "createdAt": now,
+                "updatedAt": now,
+                **updates
+            }
+            result = self._llm_configs.insert_one(new_doc)
+            new_doc["_id"] = result.inserted_id
+            return new_doc
 
     def _get_user_id(self, user_id: str | None = None) -> str:
         """Helper to get user_id from parameter or context."""
@@ -255,7 +292,7 @@ class MongoDatabase:
         )
         if res.matched_count == 0:
             return None
-        return self.get_job(job_id)
+        return self.get_job(job_id, user_id)
 
     # ---------------------------------------------------------------------
     # Improvements
