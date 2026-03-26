@@ -242,7 +242,7 @@ export function DiffPreviewModal({
                       key={index}
                       change={change}
                       decision={changeDecisions[index] ?? 'pending'}
-                      onDecisionChange={(d) => updateDecision(index, d)}
+                      onDecisionChange={(d: ChangeDecision) => updateDecision(index, d)}
                       labels={decisionLabels}
                     />
                   ))}
