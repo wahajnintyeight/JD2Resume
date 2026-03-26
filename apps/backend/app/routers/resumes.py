@@ -398,7 +398,7 @@ async def download_resume_pdf(
 async def save_resume_pdf(
     resume_id: str,
     request: Request,
-    _: dict = Depends(require_authenticated_user),
+    user: dict = Depends(require_authenticated_user),
     template: str = Query("swiss-single"),
     pageSize: str = Query("A4", pattern="^(A4|LETTER)$"),
     marginTop: int = Query(10, ge=5, le=25),
@@ -422,7 +422,7 @@ async def save_resume_pdf(
     Accepts the same template settings as the download endpoint.
     Saves the PDF to the backend's outputs directory and returns the file path.
     """
-    resume = db.get_resume(resume_id)
+    resume = db.get_resume(resume_id, user["user_id"])
     if not resume:
         raise HTTPException(status_code=404, detail="Resume not found")
 
@@ -506,14 +506,14 @@ async def save_resume_pdf(
 @router.get("/{resume_id}/docx")
 async def download_resume_docx(
     resume_id: str,
-    _: dict = Depends(require_authenticated_user)
+    user: dict = Depends(require_authenticated_user)
 ) -> Response:
     """Generate a DOCX file for a resume.
     
     Returns an editable Microsoft Word document (.docx) containing
     the resume data. Users can download and edit this file directly.
     """
-    resume = db.get_resume(resume_id)
+    resume = db.get_resume(resume_id, user["user_id"])
     if not resume:
         raise HTTPException(status_code=404, detail="Resume not found")
     
@@ -565,14 +565,14 @@ async def delete_resume(
 @router.post("/{resume_id}/retry-processing", response_model=ResumeUploadResponse)
 async def retry_processing(
     resume_id: str,
-    _: dict = Depends(require_authenticated_user)
+    user: dict = Depends(require_authenticated_user)
 ) -> ResumeUploadResponse:
     """Retry AI processing for a failed resume.
 
     Re-runs parse_resume_to_json() on the stored markdown content.
     Only works for resumes with processing_status == "failed".
     """
-    resume = db.get_resume(resume_id)
+    resume = db.get_resume(resume_id, user["user_id"])
     if not resume:
         raise HTTPException(status_code=404, detail="Resume not found")
 
@@ -621,10 +621,10 @@ async def retry_processing(
 async def update_cover_letter(
     resume_id: str,
     request: UpdateCoverLetterRequest,
-    _: dict = Depends(require_authenticated_user)
+    user: dict = Depends(require_authenticated_user)
 ) -> dict:
     """Update the cover letter for a resume."""
-    resume = db.get_resume(resume_id)
+    resume = db.get_resume(resume_id, user["user_id"])
     if not resume:
         raise HTTPException(status_code=404, detail="Resume not found")
 
@@ -636,10 +636,10 @@ async def update_cover_letter(
 async def update_outreach_message(
     resume_id: str,
     request: UpdateOutreachMessageRequest,
-    _: dict = Depends(require_authenticated_user)
+    user: dict = Depends(require_authenticated_user)
 ) -> dict:
     """Update the outreach message for a resume."""
-    resume = db.get_resume(resume_id)
+    resume = db.get_resume(resume_id, user["user_id"])
     if not resume:
         raise HTTPException(status_code=404, detail="Resume not found")
 
@@ -651,10 +651,10 @@ async def update_outreach_message(
 async def update_title(
     resume_id: str,
     request: UpdateTitleRequest,
-    _: dict = Depends(require_authenticated_user)
+    user: dict = Depends(require_authenticated_user)
 ) -> dict:
     """Update the title for a resume."""
-    resume = db.get_resume(resume_id)
+    resume = db.get_resume(resume_id, user["user_id"])
     if not resume:
         raise HTTPException(status_code=404, detail="Resume not found")
 

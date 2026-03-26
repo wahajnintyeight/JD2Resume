@@ -60,7 +60,7 @@ class ATSApplyConfirmRequest(BaseModel):
 @router.post("/scan", response_model=ATSScanResponse)
 async def scan_resume(
     request: ATSScanRequest,
-    _: dict = Depends(require_authenticated_user)
+    user: dict = Depends(require_authenticated_user)
 ):
     """
     Perform deep ATS scan of a resume against its job description.
@@ -70,7 +70,7 @@ async def scan_resume(
     """
     try:
         # Get resume data
-        resume = db.get_resume(request.resume_id)
+        resume = db.get_resume(request.resume_id, user["user_id"])
         if not resume:
             raise HTTPException(status_code=404, detail="Resume not found")
         
@@ -172,7 +172,7 @@ async def get_cached_ats_scan(
 async def download_ats_scan_pdf(
     resume_id: str,
     request: Request,
-    _: dict = Depends(require_authenticated_user),
+    user: dict = Depends(require_authenticated_user),
     page_size: str = "A4",
 ):
     """
@@ -182,7 +182,7 @@ async def download_ats_scan_pdf(
     """
     try:
         # Verify resume exists and has scan data
-        resume = db.get_resume(resume_id)
+        resume = db.get_resume(resume_id, user["user_id"])
         if not resume:
             raise HTTPException(status_code=404, detail="Resume not found")
         
@@ -240,7 +240,7 @@ async def download_ats_scan_pdf(
 @router.post("/apply/preview", response_model=ATSApplyPreviewResponse)
 async def preview_ats_apply(
     request: ATSApplyPreviewRequest,
-    _: dict = Depends(require_authenticated_user)
+    user: dict = Depends(require_authenticated_user)
 ):
     """
     Preview ATS suggestions application to a resume.
@@ -250,7 +250,7 @@ async def preview_ats_apply(
     """
     try:
         # Get resume data
-        resume = db.get_resume(request.resume_id)
+        resume = db.get_resume(request.resume_id, user["user_id"])
         if not resume:
             raise HTTPException(status_code=404, detail="Resume not found")
         
@@ -290,7 +290,7 @@ async def preview_ats_apply(
 @router.post("/apply/confirm")
 async def confirm_ats_apply(
     request: ATSApplyConfirmRequest,
-    _: dict = Depends(require_authenticated_user)
+    user: dict = Depends(require_authenticated_user)
 ):
     """
     Confirm and apply ATS suggestions to a resume.
@@ -299,7 +299,7 @@ async def confirm_ats_apply(
     """
     try:
         # Get original resume
-        resume = db.get_resume(request.resume_id)
+        resume = db.get_resume(request.resume_id, user["user_id"])
         if not resume:
             raise HTTPException(status_code=404, detail="Resume not found")
         
