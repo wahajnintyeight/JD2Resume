@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
 import { useResumePreview } from '@/components/common/resume_previewer_context';
 import type {
   ChangeDecision,
@@ -19,7 +20,7 @@ import {
 import { fetchPromptConfig, type PromptOption } from '@/lib/api/config';
 import { Dropdown } from '@/components/ui/dropdown';
 import { useStatusCache } from '@/lib/context/status-cache';
-import { Loader2, ArrowLeft, AlertTriangle, Settings } from 'lucide-react';
+import { Loader2, ArrowLeft, AlertTriangle, Settings, Sparkles } from 'lucide-react';
 import { useTranslations } from '@/lib/i18n';
 import { DiffPreviewModal } from '@/components/tailor/diff-preview-modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
@@ -320,41 +321,49 @@ export default function TailorPage() {
 
   return (
     <div className="flex h-full w-full flex-col bg-[#F0F0E8] font-sans">
-      <div className="relative h-full w-full flex-1 border-black bg-white p-8 md:border-l md:p-12 lg:p-14">
+      <div className="relative mx-auto w-full max-w-5xl flex-1 border-x-2 border-black bg-white p-6 md:p-12 lg:p-16 shadow-[20px_0px_60px_-15px_rgba(0,0,0,0.05)]">
         {/* Back Button */}
-        <Button variant="link" className="absolute top-4 left-4" onClick={() => router.back()}>
-          <ArrowLeft className="w-4 h-4" />
+        <Button 
+          variant="ghost" 
+          className="absolute top-6 left-6 md:top-8 md:left-8 font-mono text-xs font-bold uppercase tracking-widest hover:bg-gray-100 rounded-none border-2 border-transparent hover:border-black transition-all" 
+          onClick={() => router.back()}
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
           {t('common.back')}
         </Button>
 
-        <div className="mb-8 mt-4 text-center">
-          <h1 className="font-serif text-4xl font-bold uppercase tracking-tight mb-2">
+        <div className="mb-12 mt-8 text-center">
+          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter mb-4 text-black">
             {t('tailor.heroTitle')}
           </h1>
-          <p className="font-mono text-sm text-blue-700 font-bold uppercase">
-            {'// '}
-            {t('tailor.pasteJobDescriptionBelow')}
-          </p>
+          <div className="inline-block border-2 border-black bg-blue-700 px-4 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <p className="font-mono text-xs md:text-sm text-white font-bold uppercase tracking-widest">
+              {'// '}
+              {t('tailor.pasteJobDescriptionBelow')}
+            </p>
+          </div>
         </div>
 
         {/* LLM Not Configured Warning */}
         {!statusLoading && !isLlmConfigured && (
-          <div className="mb-6 border-2 border-amber-500 bg-amber-50 p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="mb-10 border-4 border-black bg-amber-50 p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 border-2 border-black bg-amber-400 flex items-center justify-center shrink-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+                <AlertTriangle className="w-6 h-6 text-black" />
+              </div>
               <div className="flex-1">
-                <p className="font-mono text-sm font-bold uppercase tracking-wider text-amber-800">
+                <p className="font-mono text-sm font-black uppercase tracking-tight text-black">
                   {t('tailor.setupRequiredTitle')}
                 </p>
-                <p className="font-mono text-xs text-amber-700 mt-1">
+                <p className="font-mono text-xs text-amber-900 mt-2 font-bold leading-relaxed">
                   {t('tailor.noApiKeyMessage')}
                 </p>
                 <Link
                   href="/settings"
-                  className="inline-flex items-center gap-2 mt-3 text-amber-700 hover:text-amber-900 transition-colors"
+                  className="inline-flex items-center gap-2 mt-4 text-black hover:text-blue-700 transition-colors group"
                 >
-                  <Settings className="w-4 h-4" />
-                  <span className="font-mono text-xs font-bold uppercase underline">
+                  <Settings className="w-4 h-4 group-hover:rotate-90 transition-transform duration-500" />
+                  <span className="font-mono text-xs font-black uppercase underline decoration-2 underline-offset-4">
                     {t('tailor.configureApiKey')}
                   </span>
                 </Link>
@@ -363,108 +372,148 @@ export default function TailorPage() {
           </div>
         )}
 
-        <div className="space-y-6">
-          {/* Master Resume Selector */}
-          <MasterResumeSelector
-            selectedResumeId={masterResumeId}
-            onSelect={(resumeId, category) => {
-              setMasterResumeId(resumeId);
-              setMasterCategory(category);
-              // Save for next time
-              localStorage.setItem('last_used_master_resume_id', resumeId);
-            }}
-            label="Select Master Resume to Tailor"
-            required={true}
-          />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+          {/* Left Column: Selectors */}
+          <div className="lg:col-span-5 space-y-8">
+            <div className="space-y-8 sticky top-8">
+              <MasterResumeSelector
+                selectedResumeId={masterResumeId}
+                onSelect={(resumeId, category) => {
+                  setMasterResumeId(resumeId);
+                  setMasterCategory(category);
+                  localStorage.setItem('last_used_master_resume_id', resumeId);
+                }}
+                label={t('tailor.selectMasterLabel') || "Select Master Resume"}
+                required={true}
+              />
 
-          <Dropdown
-            options={
-              promptOptions.length > 0
-                ? promptOptions.map((opt) => ({
-                    id: opt.id,
-                    label: t(`tailor.promptOptions.${opt.id}.label`),
-                    description: t(`tailor.promptOptions.${opt.id}.description`),
-                  }))
-                : [
-                    {
-                      id: 'nudge',
-                      label: t('tailor.promptOptions.nudge.label'),
-                      description: t('tailor.promptOptions.nudge.description'),
-                    },
-                    {
-                      id: 'keywords',
-                      label: t('tailor.promptOptions.keywords.label'),
-                      description: t('tailor.promptOptions.keywords.description'),
-                    },
-                    {
-                      id: 'full',
-                      label: t('tailor.promptOptions.full.label'),
-                      description: t('tailor.promptOptions.full.description'),
-                    },
-                  ]
-            }
-            value={selectedPromptId}
-            onChange={(value) => {
-              hasUserSelectedPrompt.current = true;
-              setSelectedPromptId(value);
-            }}
-            label={t('tailor.promptLabel')}
-            description={t('tailor.promptDescription')}
-            disabled={isLoading || promptLoading}
-          />
+              <Dropdown
+                options={
+                  promptOptions.length > 0
+                    ? promptOptions.map((opt) => ({
+                        id: opt.id,
+                        label: t(`tailor.promptOptions.${opt.id}.label`),
+                        description: t(`tailor.promptOptions.${opt.id}.description`),
+                      }))
+                    : [
+                        {
+                          id: 'keywords',
+                          label: t('tailor.promptOptions.keywords.label'),
+                          description: t('tailor.promptOptions.keywords.description'),
+                        },
+                        {
+                          id: 'full',
+                          label: t('tailor.promptOptions.full.label'),
+                          description: t('tailor.promptOptions.full.description'),
+                        },
+                      ]
+                }
+                value={selectedPromptId}
+                onChange={(value) => {
+                  hasUserSelectedPrompt.current = true;
+                  setSelectedPromptId(value);
+                }}
+                label={t('tailor.promptLabel')}
+                description={t('tailor.promptDescription')}
+                disabled={isLoading || promptLoading}
+              />
 
-          <div className="relative">
-            <Textarea
-              placeholder={t('tailor.jobDescriptionPlaceholder')}
-              className="min-h-[300px] font-mono text-sm bg-[#F0F0E8] border-2 border-black focus:ring-0 focus:border-blue-700 resize-none p-4 rounded-none"
-              value={jobDescription}
-              onChange={(e) => setJobDescription(e.target.value)}
-              onKeyDown={handleTextareaKeyDown}
-              disabled={isLoading}
-            />
-            <div
-              className={`absolute bottom-2 right-2 text-xs font-mono pointer-events-none ${
-                mounted && jobDescription.length > MAX_JD_LENGTH
-                  ? 'text-red-600 font-bold'
-                  : mounted && jobDescription.length > JD_LENGTH_WARNING_THRESHOLD
-                    ? 'text-amber-600'
-                    : 'text-gray-400'
-              }`}
-              suppressHydrationWarning
-            >
-              {t('tailor.charactersCount', { count: jobDescription.length })}
-              {mounted && jobDescription.length > MAX_JD_LENGTH && ` / ${MAX_JD_LENGTH} max`}
+              <div className="pt-4 hidden lg:block">
+                <Button
+                  size="lg"
+                  onClick={handleGenerate}
+                  disabled={isLoading || statusLoading || !jobDescription.trim() || !isLlmConfigured}
+                  className={cn(
+                    "w-full h-20 border-2 border-black font-serif text-xl font-black uppercase tracking-widest transition-all active:translate-x-1 active:translate-y-1 active:shadow-none shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]",
+                    isLoading || statusLoading || !jobDescription.trim() || !isLlmConfigured
+                      ? "bg-gray-100 text-gray-400 border-gray-300 shadow-none cursor-not-allowed"
+                      : "bg-blue-700 text-white hover:bg-blue-800"
+                  )}
+                >
+                  {isLoading ? (
+                    <div className="flex items-center justify-center gap-3">
+                      <Loader2 className="w-6 h-6 animate-spin" />
+                      <span>{t('common.processing')}</span>
+                    </div>
+                  ) : statusLoading ? (
+                    <div className="flex items-center justify-center gap-3">
+                      <Loader2 className="w-6 h-6 animate-spin" />
+                      <span>{t('common.checking')}</span>
+                    </div>
+                  ) : !isLlmConfigured ? (
+                    <span className="text-lg">{t('tailor.configureApiKeyFirst')}</span>
+                  ) : (
+                    <div className="flex items-center justify-center gap-3">
+                      <Sparkles className="w-6 h-6" />
+                      <span>{t('tailor.generateTailored')}</span>
+                    </div>
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
 
-          {error && (
-            <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-sm font-mono flex items-center gap-2">
-              <span>!</span> {error}
+          {/* Right Column: Textarea */}
+          <div className="lg:col-span-7 space-y-4">
+            <div className="relative group">
+              <div className="absolute -inset-1 bg-black rounded-3xl opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none" />
+              <Textarea
+                placeholder={t('tailor.jobDescriptionPlaceholder')}
+                className="min-h-[400px] lg:min-h-[500px] font-sans text-base bg-white border-2 border-black focus:ring-4 focus:ring-blue-700/5 focus:border-blue-700 resize-none p-8 rounded-3xl shadow-[12px_12px_0px_0px_rgba(0,0,0,0.05)] transition-all"
+                value={jobDescription}
+                onChange={(e) => setJobDescription(e.target.value)}
+                onKeyDown={handleTextareaKeyDown}
+                disabled={isLoading}
+              />
+              <div
+                className={cn(
+                  "absolute bottom-6 right-6 px-4 py-2 bg-black border-2 border-black font-mono text-xs font-black uppercase pointer-events-none shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]",
+                  mounted && jobDescription.length > MAX_JD_LENGTH
+                    ? "text-red-500"
+                    : mounted && jobDescription.length > JD_LENGTH_WARNING_THRESHOLD
+                      ? "text-amber-500"
+                      : "text-white"
+                )}
+                suppressHydrationWarning
+              >
+                {t('tailor.charactersCount', { count: jobDescription.length })}
+                {mounted && jobDescription.length > MAX_JD_LENGTH && ` / ${MAX_JD_LENGTH} MAX`}
+              </div>
             </div>
-          )}
 
-          <Button
-            size="lg"
-            onClick={handleGenerate}
-            disabled={isLoading || statusLoading || !jobDescription.trim() || !isLlmConfigured}
-            className="w-full"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                {t('common.processing')}
-              </>
-            ) : statusLoading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                {t('common.checking')}
-              </>
-            ) : !isLlmConfigured ? (
-              t('tailor.configureApiKeyFirst')
-            ) : (
-              t('tailor.generateTailored')
+            {error && (
+              <div className="p-6 border-2 border-black bg-red-50 text-red-700 font-sans text-sm font-bold uppercase tracking-tight flex items-center gap-4 animate-in shake-1 duration-500 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-2xl">
+                <div className="w-8 h-8 border-2 border-black bg-red-600 text-white flex items-center justify-center shrink-0 rounded-lg">!</div>
+                <span>{error}</span>
+              </div>
             )}
-          </Button>
+
+            <div className="lg:hidden">
+              <Button
+                size="lg"
+                onClick={handleGenerate}
+                disabled={isLoading || statusLoading || !jobDescription.trim() || !isLlmConfigured}
+                className={cn(
+                  "w-full h-20 border-2 border-black font-serif text-xl font-black uppercase tracking-widest transition-all active:translate-x-1 active:translate-y-1 active:shadow-none shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]",
+                  isLoading || statusLoading || !jobDescription.trim() || !isLlmConfigured
+                    ? "bg-gray-100 text-gray-400 border-gray-300 shadow-none cursor-not-allowed"
+                    : "bg-blue-700 text-white hover:bg-blue-800"
+                )}
+              >
+                {isLoading ? (
+                  <div className="flex items-center justify-center gap-3">
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                    <span>{t('common.processing')}</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center gap-3">
+                    <Sparkles className="w-6 h-6" />
+                    <span>{t('tailor.generateTailored')}</span>
+                  </div>
+                )}
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 

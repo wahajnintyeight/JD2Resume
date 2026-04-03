@@ -4,13 +4,12 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 /**
- * Swiss International Style Tabs Component
+ * Modern Design Tabs Component
  *
  * Design Principles:
- * - Square corners (rounded-none) - Brutalist aesthetic
- * - Hard shadows on active tab
- * - Black borders for high contrast
- * - Monospace uppercase text
+ * - Soft rounded containers
+ * - Subtle background highlights for active states
+ * - Clean sans-serif typography
  */
 
 export interface Tab {
@@ -33,7 +32,7 @@ export const RetroTabs: React.FC<RetroTabsProps> = ({
   className,
 }) => {
   return (
-    <div className={cn('flex gap-0 border-b border-black', className)}>
+    <div className={cn('flex items-center gap-1 p-1 bg-accent/30 rounded-2xl border border-border/20 backdrop-blur-sm', className)}>
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
         const isDisabled = tab.disabled;
@@ -44,17 +43,17 @@ export const RetroTabs: React.FC<RetroTabsProps> = ({
             onClick={() => !isDisabled && onTabChange(tab.id)}
             disabled={isDisabled}
             className={cn(
-              'px-4 py-2 font-mono text-xs uppercase tracking-wider transition-all',
-              'border border-b-0 border-black -mb-px',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2',
+              'relative px-5 py-2.5 text-sm font-semibold font-sans transition-all duration-300 rounded-xl select-none',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20',
               isActive && [
-                'bg-white text-black font-bold',
-                'shadow-[2px_-2px_0px_0px_rgba(0,0,0,0.1)]',
-                'border-b-white',
+                'bg-white text-primary shadow-[0_4px_12px_rgba(0,0,0,0.05)] border border-border/10',
+                'scale-[1.02]',
               ],
               !isActive &&
-                !isDisabled && ['bg-[#E5E5E0] text-gray-600 hover:bg-[#D8D8D2] hover:text-black'],
-              isDisabled && ['bg-gray-100 text-gray-300 cursor-not-allowed opacity-50']
+                !isDisabled && [
+                  'text-muted-foreground hover:text-foreground hover:bg-white/50',
+                ],
+              isDisabled && ['text-muted-foreground/30 cursor-not-allowed opacity-50']
             )}
           >
             {tab.label}

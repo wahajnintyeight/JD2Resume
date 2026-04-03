@@ -504,6 +504,8 @@
     "subtitle": "Optimize your resume for a specific job",
     "heroTitle": "Tailor Your Resume",
     "selectResume": "Select Resume",
+    "selectMasterLabel": "Select Master Resume",
+    "selectMasterPlaceholder": "-- Select a master resume --",
     "pasteJobDescription": "Paste Job Description",
     "pasteJobDescriptionBelow": "Paste Job Description Below",
     "jobDescriptionPlaceholder": "Paste the job description here...",

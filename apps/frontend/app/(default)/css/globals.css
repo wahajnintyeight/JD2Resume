@@ -67,42 +67,42 @@
 :root {
   --font-mono: 'Geist Mono', monospace;
   --font-sans: 'Geist', sans-serif;
-  --radius: 0.625rem;
+  --radius: 1rem;
 
-  /* Swiss International Style Palette */
-  --background: #f0f0e8; /* Canvas */
-  --foreground: #000000; /* Ink */
+  /* Modern Professional Palette */
+  --background: #f8fafc; /* Very light slate */
+  --foreground: #0f172a; /* Slate 900 */
 
-  --card: #f0f0e8;
-  --card-foreground: #000000;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
 
-  --popover: #f0f0e8;
-  --popover-foreground: #000000;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
 
-  --primary: #1d4ed8; /* Hyper Blue */
+  --primary: #2563eb; /* Modern Blue */
   --primary-foreground: #ffffff;
 
-  --secondary: #e5e5e0; /* Panel Grey */
-  --secondary-foreground: #000000;
+  --secondary: #f1f5f9; /* Slate 100 */
+  --secondary-foreground: #0f172a;
 
-  --muted: #e5e5e0;
-  --muted-foreground: #6b7280;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
 
-  --accent: #e5e5e0;
-  --accent-foreground: #000000;
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
 
-  --destructive: #dc2626; /* Alert Red */
+  --destructive: #ef4444; /* Modern Red */
   --destructive-foreground: #ffffff;
 
-  --border: #000000;
-  --input: #f0f0e8;
-  --ring: #1d4ed8;
+  --border: #e2e8f0;
+  --input: #ffffff;
+  --ring: #3b82f6;
 
-  --chart-1: #1d4ed8;
-  --chart-2: #15803d;
-  --chart-3: #f97316;
-  --chart-4: #dc2626;
-  --chart-5: #000000;
+  --chart-1: #3b82f6;
+  --chart-2: #10b981;
+  --chart-3: #f59e0b;
+  --chart-4: #ef4444;
+  --chart-5: #6366f1;
 
   --sidebar: #e5e5e0;
   --sidebar-foreground: #000000;

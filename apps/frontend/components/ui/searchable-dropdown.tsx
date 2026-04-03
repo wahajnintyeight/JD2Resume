@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { ChevronDown, X } from 'lucide-react';
+import { ChevronDown, X, Search, Check } from 'lucide-react';
 import { useTranslations } from '@/lib/i18n';
+import { cn } from '@/lib/utils';
 import { ModelInfoCard } from './model-info-card';
 
 export interface SearchableDropdownOption {
@@ -26,19 +27,22 @@ interface SearchableDropdownProps {
   loading?: boolean;
   loadingText?: string;
   emptyText?: string;
-  /**
-   * When true, allows entering values not in the options list.
-   * When false (default), only allows selecting from the options.
-   */
   allowFreeform?: boolean;
-  /**
-   * Number of items to show initially and load on scroll
-   */
   pageSize?: number;
 }
 
 const DEFAULT_PAGE_SIZE = 15;
 
+/**
+ * Modern Searchable Dropdown Component
+ * 
+ * Design Principles:
+ * - Soft rounded corners (rounded-2xl)
+ * - Subtle layered shadows
+ * - Sans-serif typography (font-sans)
+ * - Glassmorphism effects (backdrop-blur)
+ * - Clean, modern, non-retro look
+ */
 export function SearchableDropdown({
   options,
   value,
@@ -137,7 +141,6 @@ export function SearchableDropdown({
 
   const handleInputFocus = () => {
     setIsOpen(true);
-    // Pre-populate search with current value for easy filtering
     if (value && !selectedOption) {
       setSearchQuery(value);
     }
@@ -145,7 +148,6 @@ export function SearchableDropdown({
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && allowFreeform && searchQuery.trim()) {
-      // Allow Enter to confirm the typed value when in freeform mode
       onChange(searchQuery.trim());
       setIsOpen(false);
     } else if (e.key === 'Escape') {
@@ -154,60 +156,55 @@ export function SearchableDropdown({
     }
   };
 
-  // Handle scroll to load more
   const handleScroll = useCallback(() => {
     if (!listRef.current || !hasMore) return;
-    
     const { scrollTop, scrollHeight, clientHeight } = listRef.current;
-    // Load more when user scrolls to within 50px of the bottom
     if (scrollTop + clientHeight >= scrollHeight - 50) {
       setDisplayCount((prev) => Math.min(prev + pageSize, filteredOptions.length));
     }
   }, [hasMore, filteredOptions.length, pageSize]);
 
-  // Format token count for display
   const formatTokens = (tokens: number | null | undefined): string => {
     if (!tokens) return '';
-    if (tokens >= 1000000) {
-      return `${(tokens / 1000000).toFixed(1)}M`;
-    }
-    if (tokens >= 1000) {
-      return `${(tokens / 1000).toFixed(0)}K`;
-    }
+    if (tokens >= 1000000) return `${(tokens / 1000000).toFixed(1)}M`;
+    if (tokens >= 1000) return `${(tokens / 1000).toFixed(0)}K`;
     return tokens.toString();
   };
 
-  // Build token info string
   const getTokenInfo = (option: SearchableDropdownOption): string => {
     const parts: string[] = [];
-    if (option.contextLength) {
-      parts.push(`Context: ${formatTokens(option.contextLength)}`);
-    }
-    if (option.maxCompletionTokens) {
-      parts.push(`Max: ${formatTokens(option.maxCompletionTokens)}`);
-    }
-    return parts.join(' | ');
+    if (option.contextLength) parts.push(`${formatTokens(option.contextLength)} ctx`);
+    if (option.maxCompletionTokens) parts.push(`${formatTokens(option.maxCompletionTokens)} max`);
+    return parts.join(' • ');
   };
 
-  // Determine what to display in the input
-  const inputValue = isOpen ? searchQuery : value;
+  const inputValue = isOpen ? searchQuery : (selectedOption?.label || value);
   const displayPlaceholder = isOpen
     ? searchPlaceholder || t('common.search')
     : placeholder || t('settings.llmConfiguration.modelLabel');
 
   return (
-    <div className={`space-y-1 ${className}`} ref={containerRef}>
+    <div className={cn('space-y-2', className)} ref={containerRef}>
       {label && (
-        <label className="font-mono text-xs font-bold uppercase tracking-wider text-gray-700 block">
+        <label className="font-sans text-sm font-semibold tracking-tight text-slate-900 block px-1">
           {label}
         </label>
       )}
 
-      {description && <p className="text-sm text-gray-600">{description}</p>}
+      {description && (
+        <p className="text-xs text-slate-500 font-medium px-1 leading-relaxed">
+          {description}
+        </p>
+      )}
 
       <div className="relative">
-        {/* Input Field */}
-        <div className="relative">
+        <div className="relative group">
+          <div className={cn(
+            'absolute left-4 top-1/2 -translate-y-1/2 transition-colors duration-300',
+            isOpen ? 'text-primary' : 'text-slate-400 group-hover:text-slate-500'
+          )}>
+            <Search className="w-4 h-4" />
+          </div>
           <input
             ref={inputRef}
             type="text"
@@ -217,130 +214,140 @@ export function SearchableDropdown({
             onKeyDown={handleKeyDown}
             placeholder={displayPlaceholder}
             disabled={disabled}
-            className="w-full border-2 border-black bg-white px-4 py-3 pr-20 font-mono text-sm transition-all duration-150 ease-out shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-y-[2px] hover:translate-x-[2px] focus:shadow-none focus:translate-y-[2px] focus:translate-x-[2px] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] disabled:hover:translate-none rounded-none"
+            className={cn(
+              'w-full bg-white pl-11 pr-24 py-3.5 font-sans text-sm transition-all duration-300 ease-in-out border border-slate-200 rounded-2xl shadow-sm hover:border-primary/30 hover:shadow-md focus:shadow-md focus:border-primary/40 focus:ring-4 focus:ring-primary/5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-sm outline-none',
+              isOpen && 'border-primary/40 ring-4 ring-primary/5 shadow-md'
+            )}
             autoComplete="off"
           />
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
             {value && (
               <button
                 type="button"
                 onClick={handleClear}
-                className="p-1 hover:bg-gray-100 rounded-none transition-colors"
+                className="p-1.5 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-xl transition-all"
                 aria-label="Clear selection"
               >
-                <X className="w-4 h-4 text-gray-400" />
+                <X className="w-4 h-4" />
               </button>
             )}
+            <div className="w-px h-4 bg-slate-200 mx-0.5" />
             <button
               type="button"
               onClick={() => setIsOpen(!isOpen)}
-              className="p-1 hover:bg-gray-100 rounded-none transition-colors"
+              className={cn(
+                'p-1.5 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-xl transition-all',
+                isOpen && 'bg-primary/10 text-primary hover:bg-primary/20'
+              )}
               aria-label={isOpen ? 'Close dropdown' : 'Open dropdown'}
             >
-              <ChevronDown
-                className={`w-4 h-4 transition-transform duration-200 ${
-                  isOpen ? 'rotate-180' : ''
-                }`}
-              />
+              <ChevronDown className={cn('w-4 h-4 transition-transform duration-300', isOpen && 'rotate-180')} />
             </button>
           </div>
         </div>
 
-        {/* Dropdown Menu */}
         {isOpen && (
-          <div className="absolute top-full left-0 right-0 mt-1 z-50 border-2 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-none">
-            {/* Options List */}
+          <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white/90 backdrop-blur-xl border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-3xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top">
             <div 
               ref={listRef}
-              className="max-h-64 overflow-y-auto"
+              className="p-2 max-h-[320px] overflow-y-auto custom-scrollbar"
               onScroll={handleScroll}
             >
               {loading ? (
-                <div className="px-4 py-6 text-center text-gray-500 font-mono text-sm">
-                  {loadingText || t('common.loading')}
+                <div className="px-4 py-12 text-center flex flex-col items-center gap-3">
+                  <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  <span className="text-slate-400 font-sans text-sm font-medium italic">
+                    {loadingText || t('common.loading')}
+                  </span>
                 </div>
               ) : filteredOptions.length === 0 ? (
                 allowFreeform && searchQuery.trim() ? (
                   <button
                     onClick={() => handleSelect(searchQuery.trim())}
-                    className="w-full px-4 py-3 text-left font-mono transition-colors duration-150 border-b border-black last:border-b-0 bg-white text-black hover:bg-[#F0F0E8] active:bg-gray-100"
+                    className="w-full text-left px-4 py-4 rounded-2xl transition-all duration-200 hover:bg-slate-50 flex items-center gap-3 group"
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-400">{t('common.useCustomValue')}:</span>
-                      <span className="font-bold">{searchQuery.trim()}</span>
+                    <div className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Search className="w-4 h-4" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">{t('common.useCustomValue')}</span>
+                      <span className="font-bold text-slate-900 text-sm">{searchQuery.trim()}</span>
                     </div>
                   </button>
                 ) : (
-                  <div className="px-4 py-6 text-center text-gray-500 font-mono text-sm">
+                  <div className="px-4 py-12 text-center text-slate-400 font-sans text-sm italic">
                     {emptyText || t('common.noResults')}
                   </div>
                 )
               ) : (
-                <>
-                  {allowFreeform && searchQuery.trim() && !filteredOptions.some(opt => opt.id === searchQuery.trim()) && (
-                    <button
-                      onClick={() => handleSelect(searchQuery.trim())}
-                      className="w-full px-4 py-3 text-left font-mono transition-colors duration-150 border-b-2 border-black bg-[#F0F0E8] text-black hover:bg-gray-100 active:bg-gray-100"
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-gray-500">{t('common.useCustomValue')}:</span>
-                        <span className="font-bold">{searchQuery.trim()}</span>
-                      </div>
-                    </button>
-                  )}
+                <div className="space-y-1">
                   {displayedOptions.map((option) => (
                     <button
                       key={option.id}
                       onClick={() => handleSelect(option.id)}
-                      className={`w-full px-4 py-3 text-left font-mono transition-colors duration-150 border-b border-black last:border-b-0 ${
-                        option.id === value
-                          ? 'bg-blue-700 text-white'
-                          : 'bg-white text-black hover:bg-[#F0F0E8]'
-                      } active:bg-gray-100`}
+                      className={cn(
+                        'w-full text-left px-4 py-3 rounded-2xl transition-all duration-200 group relative flex items-center justify-between',
+                        option.id === value 
+                          ? 'bg-primary text-white shadow-lg shadow-primary/20' 
+                          : 'hover:bg-slate-50 text-slate-700 hover:text-primary'
+                      )}
                     >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <div className="font-bold text-sm truncate">{option.label}</div>
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-xs opacity-80 font-mono truncate">{option.id}</span>
-                          </div>
-                          {/* Token info */}
+                      <div className="flex-1 min-w-0 pr-4">
+                        <div className={cn(
+                          'font-bold text-sm truncate tracking-tight',
+                          option.id === value ? 'text-white' : 'text-slate-900 group-hover:text-primary'
+                        )}>
+                          {option.label}
+                        </div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          <span className={cn(
+                            'text-[10px] font-bold uppercase tracking-wider',
+                            option.id === value ? 'text-white/60' : 'text-slate-400'
+                          )}>
+                            {option.id}
+                          </span>
                           {getTokenInfo(option) && (
-                            <div className={`text-xs mt-1 font-mono ${
-                              option.id === value ? 'opacity-80' : 'text-gray-500'
-                            }`}>
-                              {getTokenInfo(option)}
-                            </div>
+                            <>
+                              <span className={cn('w-1 h-1 rounded-full', option.id === value ? 'bg-white/20' : 'bg-slate-200')} />
+                              <span className={cn(
+                                'text-[10px] font-medium',
+                                option.id === value ? 'text-white/80' : 'text-slate-500'
+                              )}>
+                                {getTokenInfo(option)}
+                              </span>
+                            </>
                           )}
                         </div>
-                        {option.id === value && (
-                          <div className="text-lg font-bold mt-0.5 shrink-0">✓</div>
-                        )}
                       </div>
+                      {option.id === value && (
+                        <Check className="w-4 h-4 text-white shrink-0" />
+                      )}
                     </button>
                   ))}
-                  {/* Loading indicator for more items */}
                   {hasMore && (
-                    <div className="px-4 py-2 text-center text-gray-500 font-mono text-xs border-b border-black">
-                      Scroll for more... ({displayedOptions.length} / {filteredOptions.length})
+                    <div className="px-4 py-3 text-center">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                        {t('common.scrollMore')} ({displayedOptions.length} / {filteredOptions.length})
+                      </span>
                     </div>
                   )}
-                </>
+                </div>
               )}
             </div>
           </div>
         )}
       </div>
 
-      {/* Show selected option details if available */}
       {selectedOption && (
-        <ModelInfoCard
-          label="Selected Model"
-          value={selectedOption.id}
-          description={selectedOption.description}
-          contextLength={selectedOption.contextLength}
-          maxCompletionTokens={selectedOption.maxCompletionTokens}
-        />
+        <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-500">
+          <ModelInfoCard
+            label="Selected Model"
+            value={selectedOption.id}
+            description={selectedOption.description}
+            contextLength={selectedOption.contextLength}
+            maxCompletionTokens={selectedOption.maxCompletionTokens}
+          />
+        </div>
       )}
     </div>
   );

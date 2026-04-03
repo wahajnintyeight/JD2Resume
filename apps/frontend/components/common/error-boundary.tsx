@@ -5,6 +5,8 @@ import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from '@/lib/i18n';
 
+import { cn } from '@/lib/utils';
+
 interface ErrorBoundaryStrings {
   title: string;
   description: string;
@@ -25,7 +27,7 @@ interface State {
 }
 
 /**
- * Error Boundary component to catch React errors and display a fallback UI.
+ * Modern Error Boundary component to catch React errors and display a fallback UI.
  * Prevents entire app from crashing when a component throws an error.
  */
 export class ErrorBoundary extends Component<Props, State> {
@@ -66,36 +68,39 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-[400px] flex flex-col items-center justify-center p-8 bg-[#F0F0E8]">
-          <div className="max-w-md w-full bg-white border border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] p-8">
-            <div className="flex items-center gap-3 mb-4">
-              <AlertTriangle className="w-8 h-8 text-red-600" />
-              <h2 className="font-serif text-2xl font-bold uppercase">{strings.title}</h2>
+        <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-[#F0F0E8]">
+          <div className="max-w-md w-full bg-white border-4 border-black p-10 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] animate-in fade-in zoom-in-95 duration-300">
+            <div className="flex flex-col items-center text-center gap-6 mb-8">
+              <div className="w-24 h-24 border-4 border-black bg-red-600 flex items-center justify-center text-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
+                <AlertTriangle className="w-12 h-12" />
+              </div>
+              <div className="space-y-3">
+                <h2 className="font-serif text-4xl font-black uppercase tracking-tight text-black">{strings.title}</h2>
+                <p className="text-gray-700 font-mono font-bold text-sm uppercase leading-relaxed px-4">{strings.description}</p>
+              </div>
             </div>
 
-            <p className="text-gray-600 mb-4 font-mono text-sm">{strings.description}</p>
-
             {process.env.NODE_ENV === 'development' && this.state.error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-none">
-                <p className="font-mono text-xs text-red-700 break-all">
-                  {this.state.error.message}
+              <div className="mb-8 p-6 bg-red-50 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
+                <p className="font-mono text-xs text-red-700 break-all leading-relaxed font-bold uppercase">
+                  {'// ERROR: '}{this.state.error.message}
                 </p>
               </div>
             )}
 
-            <div className="flex gap-3">
+            <div className="flex flex-col gap-4">
               <Button
                 onClick={this.handleReset}
                 variant="outline"
-                className="flex-1 border-black rounded-none shadow-[2px_2px_0px_0px_#000000] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all"
+                className="w-full h-14 border-2 border-black bg-white text-black font-bold uppercase tracking-widest hover:bg-gray-100 transition-all active:translate-x-1 active:translate-y-1 active:shadow-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
               >
                 {strings.tryAgain}
               </Button>
               <Button
                 onClick={this.handleReload}
-                className="flex-1 bg-blue-700 hover:bg-blue-800 text-white rounded-none border border-black shadow-[2px_2px_0px_0px_#000000] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all"
+                className="w-full h-14 border-2 border-black bg-blue-700 text-white font-bold uppercase tracking-widest hover:bg-blue-800 transition-all active:translate-x-1 active:translate-y-1 active:shadow-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
               >
-                <RefreshCw className="w-4 h-4 mr-2" />
+                <RefreshCw className="w-5 h-5 mr-3" />
                 {strings.reloadPage}
               </Button>
             </div>

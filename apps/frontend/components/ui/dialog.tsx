@@ -7,12 +7,12 @@ import { cn } from '@/lib/utils';
 import { useTranslations } from '@/lib/i18n';
 
 /**
- * Swiss International Style Dialog Component
+ * Modern Design Dialog Component
  *
  * Native implementation without external dependencies.
- * - Square corners (rounded-none) - Brutalist aesthetic
- * - Black borders and hard shadows
- * - Canvas background (#F0F0E8)
+ * - Soft rounded corners (rounded-2xl)
+ * - Subtle borders and layered shadows
+ * - Glassy/Modern aesthetic
  */
 
 interface DialogContextValue {
@@ -135,9 +135,9 @@ const DialogContent: React.FC<DialogContentProps> = ({ children, className }) =>
       <div className="fixed inset-0 flex items-center justify-center p-4">
         <div
           className={cn(
-            'relative w-full max-w-lg',
-            'border border-black bg-[#F0F0E8] shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)]',
-            'rounded-none',
+            'relative w-full max-w-lg overflow-hidden',
+            'border border-border/50 bg-card shadow-[0_20px_50px_rgba(0,0,0,0.15)]',
+            'rounded-3xl p-8',
             'animate-in fade-in-0 zoom-in-95 duration-200',
             className
           )}
@@ -146,7 +146,7 @@ const DialogContent: React.FC<DialogContentProps> = ({ children, className }) =>
           {children}
           <button
             onClick={() => onOpenChange(false)}
-            className="absolute right-4 top-4 opacity-70 transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:ring-offset-2"
+            className="absolute right-6 top-6 h-10 w-10 flex items-center justify-center rounded-full bg-accent/50 text-foreground/70 transition-all hover:bg-accent hover:text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
           >
             <X className="h-5 w-5" />
             <span className="sr-only">{t('common.close')}</span>
@@ -190,7 +190,7 @@ interface DialogTitleProps {
 
 const DialogTitle: React.FC<DialogTitleProps> = ({ className, children, ...props }) => (
   <h2
-    className={cn('font-serif text-lg font-bold leading-none tracking-tight', className)}
+    className={cn('font-sans text-2xl font-bold leading-tight tracking-tight text-foreground', className)}
     {...props}
   >
     {children}

@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Check } from 'lucide-react';
 import { useTranslations } from '@/lib/i18n';
+import { cn } from '@/lib/utils';
 
 export interface DropdownOption {
   id: string;
@@ -18,8 +19,19 @@ interface DropdownProps {
   description?: string;
   disabled?: boolean;
   className?: string;
+  placeholder?: string;
 }
 
+/**
+ * Modern Dropdown Component
+ * 
+ * Design Principles:
+ * - Soft rounded corners (rounded-2xl)
+ * - Subtle layered shadows
+ * - Sans-serif typography (font-sans)
+ * - Animated transitions
+ * - Clean, non-retro aesthetic
+ */
 export function Dropdown({
   options,
   value,
@@ -28,6 +40,7 @@ export function Dropdown({
   description,
   disabled = false,
   className = '',
+  placeholder,
 }: DropdownProps) {
   const { t } = useTranslations();
   const [isOpen, setIsOpen] = useState(false);
@@ -56,14 +69,18 @@ export function Dropdown({
   };
 
   return (
-    <div className={`space-y-1 ${className}`} ref={containerRef}>
+    <div className={cn('space-y-3', className)} ref={containerRef}>
       {label && (
-        <label className="font-mono text-xs font-bold uppercase tracking-wider text-gray-700 block">
+        <label className="font-serif text-lg font-black uppercase tracking-tight text-slate-900 block px-1">
           {label}
         </label>
       )}
 
-      {description && <p className="text-sm text-gray-600">{description}</p>}
+      {description && (
+        <p className="text-sm text-slate-500 font-medium px-1 leading-relaxed italic">
+          {'// '}{description}
+        </p>
+      )}
 
       <div className="relative">
         {/* Trigger Button */}
@@ -72,55 +89,82 @@ export function Dropdown({
           type="button"
           onClick={() => setIsOpen(!isOpen)}
           disabled={disabled}
-          className="w-full flex items-center justify-between border border-black bg-white px-4 py-3 font-mono text-sm transition-all duration-150 ease-out shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] hover:shadow-none hover:translate-y-[2px] hover:translate-x-[2px] disabled:opacity-50 disabled:cursor-not-allowed rounded-none"
+          className={cn(
+            'w-full flex items-center justify-between bg-white px-5 py-3.5 font-sans text-sm transition-all duration-300 ease-in-out border border-slate-200 rounded-2xl shadow-sm hover:border-primary/30 hover:shadow-md active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-sm',
+            isOpen && 'ring-2 ring-primary/10 border-primary/40 shadow-md'
+          )}
         >
           <div className="flex-1 text-left min-w-0">
             {selectedOption ? (
-              <div>
-                <div className="font-bold text-black truncate">{selectedOption.label}</div>
+              <div className="flex flex-col">
+                <span className="font-bold text-slate-900 truncate">
+                  {selectedOption.label}
+                </span>
                 {selectedOption.description && (
-                  <div className="text-xs text-gray-500 mt-1 font-normal truncate">
+                  <span className="text-[11px] text-slate-500 mt-0.5 font-medium truncate">
                     {selectedOption.description}
-                  </div>
+                  </span>
                 )}
               </div>
             ) : (
-              <span className="text-gray-400">{t('common.selectOption')}</span>
+              <span className="text-slate-400 font-medium italic">
+                {placeholder || t('common.selectOption')}
+              </span>
             )}
           </div>
           <ChevronDown
-            className={`w-4 h-4 transition-transform duration-200 ml-2 shrink-0 ${
-              isOpen ? 'rotate-180' : ''
-            }`}
+            className={cn(
+              'w-5 h-5 transition-transform duration-300 ml-3 shrink-0 text-slate-400',
+              isOpen && 'rotate-180 text-primary'
+            )}
           />
         </button>
 
         {/* Dropdown Menu */}
         {isOpen && (
-          <div className="absolute top-full left-0 right-0 mt-1 z-50 border border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] rounded-none">
-            <div className="max-h-64 overflow-y-auto">
-              {options.map((option, index) => (
-                <React.Fragment key={option.id}>
-                  <button
-                    onClick={() => handleSelect(option.id)}
-                    className={`w-full px-4 py-3 text-left font-mono transition-colors duration-150 border border-black ${
-                      option.id === value
-                        ? 'bg-green-700 text-white'
-                        : 'bg-white text-black hover:bg-gray-50'
-                    } ${index > 0 ? '-mt-[1px]' : ''} active:bg-gray-100`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">
-                        <div className="font-bold text-sm">{option.label}</div>
+          <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white/90 backdrop-blur-xl border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-3xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top">
+            <div className="p-2 max-h-[320px] overflow-y-auto custom-scrollbar">
+              {options.length === 0 ? (
+                <div className="px-4 py-8 text-center text-slate-400 font-sans text-sm italic">
+                  {t('common.noOptions')}
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {options.map((option) => (
+                    <button
+                      key={option.id}
+                      type="button"
+                      className={cn(
+                        'w-full text-left px-4 py-3 rounded-2xl transition-all duration-200 group relative flex items-center justify-between',
+                        option.id === value 
+                          ? 'bg-primary text-white shadow-lg shadow-primary/20' 
+                          : 'hover:bg-slate-50 text-slate-700 hover:text-primary'
+                      )}
+                      onClick={() => handleSelect(option.id)}
+                    >
+                      <div className="flex-1 min-w-0 pr-4">
+                        <div className={cn(
+                          'font-bold text-sm truncate tracking-tight',
+                          option.id === value ? 'text-white' : 'text-slate-900 group-hover:text-primary'
+                        )}>
+                          {option.label}
+                        </div>
                         {option.description && (
-                          <div className="text-xs mt-1 opacity-80">{option.description}</div>
+                          <div className={cn(
+                            'text-[11px] mt-0.5 font-medium truncate',
+                            option.id === value ? 'text-white/80' : 'text-slate-500'
+                          )}>
+                            {option.description}
+                          </div>
                         )}
                       </div>
-                      {option.id === value && <div className="text-lg font-bold mt-0.5">✓</div>}
-                    </div>
-                  </button>
-                </React.Fragment>
-              ))}
+                      {option.id === value && (
+                        <Check className="w-4 h-4 text-white shrink-0" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}

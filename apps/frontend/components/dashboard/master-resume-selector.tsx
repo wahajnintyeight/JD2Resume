@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { listMasterResumes, type MasterResume } from '@/lib/api/resume';
+import { Dropdown } from '@/components/ui/dropdown';
 import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
 import AlertTriangle from 'lucide-react/dist/esm/icons/alert-triangle';
+import { useTranslations } from '@/lib/i18n';
 
 interface MasterResumeSelectorProps {
   selectedResumeId: string | null;
@@ -15,12 +17,15 @@ interface MasterResumeSelectorProps {
 export default function MasterResumeSelector({
   selectedResumeId,
   onSelect,
-  label = 'Select Master Resume',
+  label,
   required = false,
 }: MasterResumeSelectorProps) {
+  const { t } = useTranslations();
   const [masters, setMasters] = useState<MasterResume[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const displayLabel = label || t('tailor.selectMasterLabel') || 'Select Master Resume';
 
   useEffect(() => {
     const loadMasters = async () => {
@@ -48,27 +53,28 @@ export default function MasterResumeSelector({
     return category || 'Default';
   };
 
-  const getResumeDisplay = (master: MasterResume) => {
+  const getResumeLabel = (master: MasterResume) => {
+    return master.personal_info?.name || master.filename || 'Unnamed Resume';
+  };
+
+  const getResumeDescription = (master: MasterResume) => {
     const category = getCategoryDisplay(master.master_category);
-    const name = master.personal_info?.name || 'Unnamed Resume';
     const title = master.personal_info?.title;
-    
-    if (title) {
-      return `${category}: ${name} - ${title}`;
-    }
-    return `${category}: ${name}`;
+    return title ? `${category} • ${title}` : category;
   };
 
   if (loading) {
     return (
-      <div className="space-y-2">
-        <label className="block font-mono text-sm font-bold uppercase text-black">
-          {label}
+      <div className="space-y-3">
+        <label className="font-serif text-lg font-black uppercase tracking-tight text-slate-900 block px-1">
+          {displayLabel}
           {required && <span className="ml-1 text-red-600">*</span>}
         </label>
-        <div className="flex items-center gap-3 border-2 border-black bg-[#E5E5E0] px-4 py-3">
-          <Loader2 className="h-4 w-4 animate-spin text-blue-700" />
-          <span className="font-mono text-sm text-gray-700">Loading master resumes...</span>
+        <div className="flex items-center gap-4 bg-white border border-slate-200 rounded-2xl px-5 py-4 shadow-sm">
+          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          <span className="font-sans text-sm text-slate-500 font-medium italic">
+            {t('common.loading') || 'Loading master resumes...'}
+          </span>
         </div>
       </div>
     );
@@ -76,13 +82,14 @@ export default function MasterResumeSelector({
 
   if (error) {
     return (
-      <div className="space-y-2">
-        <label className="block font-mono text-sm font-bold uppercase text-black">
-          {label}
+      <div className="space-y-3">
+        <label className="font-serif text-lg font-black uppercase tracking-tight text-slate-900 block px-1">
+          {displayLabel}
           {required && <span className="ml-1 text-red-600">*</span>}
         </label>
-        <div className="border-2 border-red-600 bg-red-50 p-4 shadow-[2px_2px_0px_0px_#000000]">
-          <p className="font-mono text-sm text-red-800">{error}</p>
+        <div className="border border-red-200 bg-red-50 p-6 rounded-2xl flex items-center gap-4">
+          <AlertTriangle className="h-6 w-6 text-red-600 shrink-0" />
+          <p className="font-sans text-sm text-red-800 font-medium">{error}</p>
         </div>
       </div>
     );
@@ -90,20 +97,20 @@ export default function MasterResumeSelector({
 
   if (masters.length === 0) {
     return (
-      <div className="space-y-2">
-        <label className="block font-mono text-sm font-bold uppercase text-black">
-          {label}
+      <div className="space-y-3">
+        <label className="font-serif text-lg font-black uppercase tracking-tight text-slate-900 block px-1">
+          {displayLabel}
           {required && <span className="ml-1 text-red-600">*</span>}
         </label>
-        <div className="border-2 border-amber-500 bg-amber-50 p-4 shadow-[2px_2px_0px_0px_#000000]">
-          <div className="flex items-start gap-3">
-            <AlertTriangle className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600" />
+        <div className="border-2 border-amber-200 bg-amber-50 p-6 rounded-2xl shadow-sm">
+          <div className="flex items-start gap-4">
+            <AlertTriangle className="mt-1 h-6 w-6 flex-shrink-0 text-amber-600" />
             <div>
-              <h4 className="font-mono text-sm font-bold uppercase text-amber-800">
+              <h4 className="font-serif text-lg font-black uppercase tracking-tight text-amber-900">
                 No master resume found
               </h4>
-              <p className="mt-1 font-mono text-sm text-amber-700">
-                Please set at least one resume as master before tailoring. Go to the dashboard and
+              <p className="mt-2 font-sans text-sm text-amber-800/80 font-medium leading-relaxed italic">
+                {'// '}Please set at least one resume as master before tailoring. Go to the dashboard and
                 click "Set as Master" on a resume.
               </p>
             </div>
@@ -113,37 +120,25 @@ export default function MasterResumeSelector({
     );
   }
 
+  const dropdownOptions = masters.map((m) => ({
+    id: m.resume_id,
+    label: getResumeLabel(m),
+    description: getResumeDescription(m),
+  }));
+
   return (
-    <div className="space-y-2">
-      <label htmlFor="master-resume-select" className="block font-mono text-sm font-bold uppercase text-black">
-        {label}
-        {required && <span className="ml-1 text-red-600">*</span>}
-      </label>
-      <select
-        id="master-resume-select"
-        value={selectedResumeId || ''}
-        onChange={(e) => {
-          const selected = masters.find((m) => m.resume_id === e.target.value);
-          if (selected) {
-            onSelect(selected.resume_id, selected.master_category);
-          }
-        }}
-        className="block w-full border-2 border-black bg-white px-4 py-3 font-mono text-sm text-black shadow-[2px_2px_0px_0px_#000000] focus:outline-none focus:ring-2 focus:ring-blue-700"
-        required={required}
-      >
-        <option value="">-- Select a master resume --</option>
-        {masters.map((master) => (
-          <option key={master.resume_id} value={master.resume_id}>
-            {getResumeDisplay(master)}
-          </option>
-        ))}
-      </select>
-      
-      {masters.length > 1 && (
-        <p className="font-mono text-xs text-gray-600">
-          💡 Choose which master resume to use as the base for tailoring
-        </p>
-      )}
-    </div>
+    <Dropdown
+      label={displayLabel}
+      options={dropdownOptions}
+      value={selectedResumeId || ''}
+      onChange={(id) => {
+        const selected = masters.find((m) => m.resume_id === id);
+        if (selected) {
+          onSelect(selected.resume_id, selected.master_category);
+        }
+      }}
+      placeholder={t('tailor.selectMasterPlaceholder') || '-- Select a master resume --'}
+      className="w-full"
+    />
   );
 }

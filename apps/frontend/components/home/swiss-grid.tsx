@@ -9,56 +9,38 @@ export const SwissGrid = ({ children }: { children: React.ReactNode }) => {
   const { t } = useTranslations();
 
   return (
-    // 1. Outer Wrapper: Fixed height with grid background
-    <div
-      className="flex h-full w-full items-start justify-center overflow-hidden bg-[#F0F0E8]"
-      style={{
-        backgroundImage:
-          'linear-gradient(rgba(29, 78, 216, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(29, 78, 216, 0.1) 1px, transparent 1px)',
-        backgroundSize: '40px 40px',
-      }}
-    >
-      {/* 2. The Main Container: Sharp black borders, creating the "Canvas" */}
-      <div className="flex h-full w-full flex-col overflow-hidden border-black bg-[#F0F0E8] md:border-l">
-        {/* Header Section - stays above hovered cards */}
-        <div className="border-b border-black p-8 md:p-12 shrink-0 bg-[#F0F0E8] relative z-30">
-          <h1 className="font-serif text-5xl md:text-7xl text-black tracking-tight leading-[0.95] uppercase">
+    // 1. Outer Wrapper: Clean modern background
+    <div className="flex h-full w-full items-start justify-center overflow-hidden bg-background">
+      {/* 2. The Main Container: Modern layout */}
+      <div className="flex h-full w-full flex-col overflow-hidden bg-background">
+        {/* Header Section */}
+        <div className="p-8 md:p-12 shrink-0 bg-background relative z-30">
+          <h1 className="font-sans text-4xl md:text-5xl font-bold text-foreground tracking-tight leading-tight">
             {t('nav.dashboard')}
           </h1>
-          <p className="mt-6 text-sm font-mono text-blue-700 uppercase tracking-wide max-w-md font-bold">
-            {'// '}
+          <p className="mt-2 text-sm font-sans text-muted-foreground max-w-md font-medium">
             {t('dashboard.selectModule')}
           </p>
         </div>
 
-        {/* Content Grid - Scrollable area with NO padding */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden relative z-10">
-          <div className="p-[1.5px]">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 bg-black gap-[1px] border-b border-black">
-              {children}
-            </div>
+        {/* Content Grid - Scrollable area with modern spacing */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden relative z-10 px-8 md:px-12 pb-12">
+          <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            {children}
           </div>
         </div>
 
-        {/* Footer - stays above hovered cards */}
-        <div className="p-4 bg-[#F0F0E8] flex justify-between items-center font-mono text-xs text-blue-700 border-t border-black shrink-0 relative z-30">
+        {/* Footer - Modern design */}
+        <div className="p-6 bg-card/50 backdrop-blur-sm flex justify-between items-center font-sans text-xs border-t border-border/50 shrink-0 relative z-30">
           <div className="flex items-center gap-2">
             <Image
               src="/logo.svg"
-              alt="Resume Matcher"
+              alt="JD2Resume"
               width={20}
               height={20}
-              className="w-5 h-5"
+              className="w-5 h-5 opacity-80"
             />
-            <span className="uppercase font-bold">Resume Matcher</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <Link
-              href="/settings"
-              className="bg-[#F97316] text-black border border-black px-6 py-2 uppercase font-bold tracking-wide shadow-[2px_2px_0px_0px_#000000] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all min-w-[140px] text-center"
-            >
-              {t('nav.settings')}
-            </Link>
+            <span className="font-semibold text-muted-foreground uppercase tracking-wider">JD2Resume</span>
           </div>
         </div>
       </div>
