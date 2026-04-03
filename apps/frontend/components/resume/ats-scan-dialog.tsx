@@ -249,7 +249,7 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
               <div className="flex flex-col items-center justify-center py-20">
                 <div className="relative mb-8">
                   {/* Animated scanning effect */}
-                  <div className="w-24 h-24 border-4 border-blue-700 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-24 h-24 border-1 rounded-sm border-blue-700 border-t-transparent rounded-full animate-spin" />
                   <div className="absolute inset-0 flex items-center justify-center">
                     <Target className="w-10 h-10 text-blue-700 animate-pulse" />
                   </div>

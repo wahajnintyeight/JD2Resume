@@ -321,7 +321,7 @@ export default function TailorPage() {
 
   return (
     <div className="flex h-full w-full flex-col bg-[#F0F0E8] font-sans">
-      <div className="relative mx-auto w-full max-w-5xl flex-1 border-x-2 border-black bg-white p-6 md:p-12 lg:p-16 shadow-[20px_0px_60px_-15px_rgba(0,0,0,0.05)]">
+      <div className="relative mx-auto w-full flex-1 border-x-2 border-black bg-white p-6 md:p-12 lg:p-16 shadow-[20px_0px_60px_-15px_rgba(0,0,0,0.05)]">
         {/* Back Button */}
         <Button 
           variant="ghost" 
@@ -346,7 +346,7 @@ export default function TailorPage() {
 
         {/* LLM Not Configured Warning */}
         {!statusLoading && !isLlmConfigured && (
-          <div className="mb-10 border-4 border-black bg-amber-50 p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] animate-in fade-in slide-in-from-top-4 duration-500">
+          <div className="mb-10 border-1 rounded-sm border-black bg-amber-50 p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] animate-in fade-in slide-in-from-top-4 duration-500">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 border-2 border-black bg-amber-400 flex items-center justify-center shrink-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
                 <AlertTriangle className="w-6 h-6 text-black" />
@@ -456,29 +456,92 @@ export default function TailorPage() {
           {/* Right Column: Textarea */}
           <div className="lg:col-span-7 space-y-4">
             <div className="relative group">
-              <div className="absolute -inset-1 bg-black rounded-3xl opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none" />
+              {/* Floating Label */}
+              <div className="absolute -top-3 left-6 z-10">
+                <span className="inline-flex items-center gap-2 bg-black text-white px-3 py-1.5 font-mono text-[10px] font-black uppercase tracking-widest">
+                  <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" />
+                  Job Description
+                </span>
+              </div>
+              
+              {/* Decorative Corner Accents */}
+              <div className="absolute top-0 left-0 w-6 h-6 border-l-4 border-t-4 border-black pointer-events-none" />
+              <div className="absolute top-0 right-0 w-6 h-6 border-r-4 border-t-4 border-black pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-6 h-6 border-l-4 border-b-4 border-black pointer-events-none" />
+              <div className="absolute bottom-0 right-0 w-6 h-6 border-r-4 border-b-4 border-black pointer-events-none" />
+              
+              {/* Glow Effect on Focus */}
+              <div className="absolute -inset-0.5 bg-gradient-to-br from-blue-600/20 via-transparent to-blue-600/20 rounded-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 pointer-events-none blur-sm" />
+              
               <Textarea
                 placeholder={t('tailor.jobDescriptionPlaceholder')}
-                className="min-h-[400px] lg:min-h-[500px] font-sans text-base bg-white border-2 border-black focus:ring-4 focus:ring-blue-700/5 focus:border-blue-700 resize-none p-8 rounded-3xl shadow-[12px_12px_0px_0px_rgba(0,0,0,0.05)] transition-all"
+                className={cn(
+                  "min-h-[400px] lg:min-h-[500px] font-sans text-base leading-relaxed",
+                  "bg-gradient-to-br from-white via-white to-gray-50/80",
+                  "border-2 border-black",
+                  "focus:border-blue-700 focus:ring-0 focus:outline-none",
+                  "resize-none p-8 pt-10",
+                  "rounded-xl",
+                  "shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]",
+                  "hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]",
+                  "focus:shadow-[4px_4px_0px_0px_rgba(29,78,216,1)]",
+                  "transition-all duration-300 ease-out",
+                  "placeholder:text-gray-400 placeholder:font-light placeholder:italic",
+                  isLoading && "opacity-60 cursor-not-allowed"
+                )}
                 value={jobDescription}
                 onChange={(e) => setJobDescription(e.target.value)}
                 onKeyDown={handleTextareaKeyDown}
                 disabled={isLoading}
               />
-              <div
-                className={cn(
-                  "absolute bottom-6 right-6 px-4 py-2 bg-black border-2 border-black font-mono text-xs font-black uppercase pointer-events-none shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]",
-                  mounted && jobDescription.length > MAX_JD_LENGTH
-                    ? "text-red-500"
-                    : mounted && jobDescription.length > JD_LENGTH_WARNING_THRESHOLD
-                      ? "text-amber-500"
-                      : "text-white"
-                )}
-                suppressHydrationWarning
-              >
-                {t('tailor.charactersCount', { count: jobDescription.length })}
-                {mounted && jobDescription.length > MAX_JD_LENGTH && ` / ${MAX_JD_LENGTH} MAX`}
+              
+              {/* Character Counter - Modernized */}
+              <div className="absolute bottom-4 right-4 flex items-center gap-3">
+                {/* Progress Bar */}
+                <div className="hidden sm:flex items-center gap-2">
+                  <div className="w-24 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                    <div 
+                      className={cn(
+                        "h-full rounded-full transition-all duration-300",
+                        mounted && jobDescription.length > MAX_JD_LENGTH
+                          ? "bg-red-500"
+                          : mounted && jobDescription.length > JD_LENGTH_WARNING_THRESHOLD
+                            ? "bg-amber-500"
+                            : "bg-blue-600"
+                      )}
+                      style={{ width: `${Math.min((jobDescription.length / MAX_JD_LENGTH) * 100, 100)}%` }}
+                    />
+                  </div>
+                </div>
+                
+                {/* Counter Badge */}
+                <div
+                  className={cn(
+                    "px-3 py-1.5 font-mono text-[10px] font-black uppercase tracking-wider rounded-lg border-2 transition-all duration-300",
+                    mounted && jobDescription.length > MAX_JD_LENGTH
+                      ? "bg-red-500 text-white border-red-600 animate-pulse"
+                      : mounted && jobDescription.length > JD_LENGTH_WARNING_THRESHOLD
+                        ? "bg-amber-500 text-black border-amber-600"
+                        : "bg-black text-white border-black"
+                  )}
+                  suppressHydrationWarning
+                >
+                  {mounted ? jobDescription.length.toLocaleString() : 0}
+                  <span className="text-white/60 ml-1">/ {MAX_JD_LENGTH.toLocaleString()}</span>
+                </div>
               </div>
+              
+              {/* Typing Indicator */}
+              {jobDescription.length > 0 && jobDescription.length < 50 && (
+                <div className="absolute bottom-4 left-4 flex items-center gap-2 text-gray-400">
+                  <span className="font-mono text-[10px] uppercase tracking-wider">Keep typing...</span>
+                  <span className="flex gap-0.5">
+                    <span className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </span>
+                </div>
+              )}
             </div>
 
             {error && (

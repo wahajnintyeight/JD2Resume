@@ -121,14 +121,25 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
         <div className="font-sans text-2xl font-black tracking-tight text-primary">
           JD2Resume
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setIsMobileMenuOpen(true)}
-          className="rounded-2xl bg-slate-50 hover:bg-slate-100"
-        >
-          <Menu className="h-6 w-6 text-slate-600" />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleLogout}
+            className="rounded-2xl bg-slate-50 hover:bg-destructive/10 hover:text-destructive"
+            title="Log out"
+          >
+            <LogOut className="h-5 w-5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="rounded-2xl bg-slate-50 hover:bg-slate-100"
+          >
+            <Menu className="h-6 w-6 text-slate-600" />
+          </Button>
+        </div>
       </header>
 
       {/* Sidebar - Desktop */}
@@ -183,11 +194,22 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
                 </div>
               )}
               {!isCollapsed && (
-                <div className="min-w-0 flex-1">
-                  <div className="truncate font-sans text-base font-bold text-slate-900">
-                    {user.name || user.email?.split('@')[0]}
+                <div className="min-w-0 flex-1 flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="truncate font-sans text-base font-bold text-slate-900">
+                      {user.name || user.email?.split('@')[0]}
+                    </div>
+                    <div className="font-sans text-[10px] font-bold uppercase text-slate-400 tracking-wider">Professional</div>
                   </div>
-                  <div className="font-sans text-[10px] font-bold uppercase text-slate-400 tracking-wider">Professional</div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleLogout}
+                    className="h-8 w-8 rounded-lg text-slate-400 hover:text-destructive hover:bg-destructive/5 transition-colors shrink-0"
+                    title="Log out"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
                 </div>
               )}
             </div>

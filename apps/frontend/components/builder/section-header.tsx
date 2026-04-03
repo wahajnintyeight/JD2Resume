@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
@@ -87,133 +88,94 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
 
   return (
     <div
-      className={`space-y-0 border p-6 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] ${
-        isHidden ? 'border-dashed border-gray-400 opacity-60' : 'border-black'
-      }`}
+      className={cn(
+        "space-y-0 p-8 bg-white border border-slate-200 rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.04)] transition-all duration-300",
+        isHidden && "opacity-50 grayscale bg-slate-50/50 border-dashed"
+      )}
     >
-      {/* Section Header */}
-      <div className="flex justify-between items-center border-b border-black pb-2 mb-4">
+      {/* Section Header - Modern Design */}
+      <div className="flex justify-between items-center border-b border-slate-100 pb-6 mb-8">
         {/* Section Name (editable) */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
+          <div className={cn(
+            "w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm transition-colors",
+            isHidden ? "bg-slate-200 text-slate-400" : "bg-primary/10 text-primary"
+          )}>
+            <span className="font-serif text-xl font-black uppercase">{section.displayName.charAt(0)}</span>
+          </div>
+          
           {isEditing ? (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-2">
               <Input
                 value={editedName}
                 onChange={(e) => setEditedName(e.target.value)}
+                onBlur={handleSaveEdit}
                 onKeyDown={handleKeyDown}
-                className="h-8 w-48 rounded-none border-black font-serif text-lg font-bold"
                 autoFocus
+                className="h-10 px-4 rounded-xl border-primary font-serif text-xl font-black uppercase tracking-tight bg-white min-w-[200px]"
               />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-green-700 hover:text-green-800 hover:bg-green-50"
-                onClick={handleSaveEdit}
-              >
-                <Check className="w-4 h-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-                onClick={handleCancelEdit}
-              >
-                <X className="w-4 h-4" />
+              <Button size="icon" variant="ghost" onClick={handleSaveEdit} className="h-10 w-10 rounded-xl text-green-600 hover:bg-green-50">
+                <Check className="h-5 w-5" />
               </Button>
             </div>
           ) : (
-            <>
-              <h3 className="font-serif text-xl font-bold">{section.displayName}</h3>
-              {!isPersonalInfo && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 text-gray-400 hover:text-gray-600"
-                  onClick={handleStartEdit}
-                  title={t('builder.sectionHeader.renameSection')}
-                >
-                  <Pencil className="w-3 h-3" />
-                </Button>
-              )}
-              {!section.isDefault && (
-                <span className="font-mono text-[10px] uppercase tracking-wider text-gray-400 bg-gray-100 px-1.5 py-0.5 border border-gray-200">
-                  {t('builder.sectionHeader.customTag')}
-                </span>
-              )}
-              {isHidden && (
-                <span className="font-mono text-[10px] uppercase tracking-wider text-orange-600 bg-white px-1.5 py-0.5 border border-orange-500">
-                  {t('builder.sectionHeader.hiddenFromPdfTag')}
-                </span>
-              )}
-            </>
+            <div className="flex items-center gap-3 group/title">
+              <h3 className="font-serif text-2xl font-black uppercase tracking-tight text-slate-900">
+                {section.displayName}
+              </h3>
+              <button
+                onClick={handleStartEdit}
+                className="opacity-0 group-hover/title:opacity-100 p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-primary transition-all"
+              >
+                <Pencil className="h-4 w-4" />
+              </button>
+            </div>
           )}
         </div>
 
-        {/* Section Controls */}
-        <div className="flex items-center gap-1">
-          {/* Visibility Toggle */}
-          {!isPersonalInfo && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className={`h-8 w-8 ${section.isVisible ? 'text-gray-500' : 'text-gray-300'}`}
-              onClick={onToggleVisibility}
-              title={
-                section.isVisible
-                  ? t('builder.sectionHeader.hideSection')
-                  : t('builder.sectionHeader.showSection')
-              }
-            >
-              {section.isVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-            </Button>
-          )}
-
-          {/* Move Up */}
-          {!isPersonalInfo && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-gray-500 hover:text-gray-700 disabled:opacity-30"
-              onClick={onMoveUp}
-              disabled={isFirst}
-              title={t('builder.sectionHeader.moveUp')}
-            >
-              <ChevronUp className="w-4 h-4" />
-            </Button>
-          )}
-
-          {/* Move Down */}
-          {!isPersonalInfo && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-gray-500 hover:text-gray-700 disabled:opacity-30"
-              onClick={onMoveDown}
-              disabled={isLast}
-              title={t('builder.sectionHeader.moveDown')}
-            >
-              <ChevronDown className="w-4 h-4" />
-            </Button>
-          )}
-
-          {/* Delete / Hide */}
-          {canDelete && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-              onClick={handleDeleteClick}
-              title={
-                section.isDefault
-                  ? section.isVisible
-                    ? t('builder.sectionHeader.hideSection')
-                    : t('builder.sectionHeader.showSection')
-                  : t('builder.sectionHeader.deleteSection')
-              }
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
-          )}
+        {/* Section Controls - Clean Icon Row */}
+        <div className="flex items-center gap-1 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={onMoveUp}
+            disabled={isFirst || isPersonalInfo}
+            className="h-9 w-9 rounded-xl text-slate-500 hover:text-primary hover:bg-white hover:shadow-sm disabled:opacity-30"
+          >
+            <ChevronUp className="h-5 w-5" />
+          </Button>
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={onMoveDown}
+            disabled={isLast || isPersonalInfo}
+            className="h-9 w-9 rounded-xl text-slate-500 hover:text-primary hover:bg-white hover:shadow-sm disabled:opacity-30"
+          >
+            <ChevronDown className="h-5 w-5" />
+          </Button>
+          <div className="w-px h-5 bg-slate-200 mx-1" />
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={onToggleVisibility}
+            className={cn(
+              "h-9 w-9 rounded-xl transition-all",
+              isHidden 
+                ? "text-slate-400 hover:text-slate-600 hover:bg-white hover:shadow-sm" 
+                : "text-primary hover:bg-white hover:shadow-sm"
+            )}
+          >
+            {isHidden ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+          </Button>
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={handleDeleteClick}
+            disabled={!canDelete}
+            className="h-9 w-9 rounded-xl text-slate-400 hover:text-red-600 hover:bg-white hover:shadow-sm disabled:opacity-30"
+          >
+            <Trash2 className="h-5 w-5" />
+          </Button>
         </div>
       </div>
 

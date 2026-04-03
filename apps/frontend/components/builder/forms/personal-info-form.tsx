@@ -22,15 +22,21 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ data, onChan
   };
 
   return (
-    <div className="space-y-4 border border-black p-6 bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
-      <h3 className="font-serif text-xl font-bold border-b border-black pb-2 mb-4">
-        {t('builder.personalInfo')}
-      </h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="space-y-8 p-8 bg-white border border-slate-200 rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.04)]">
+      <div className="flex items-center gap-4 border-b border-slate-100 pb-6">
+        <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-sm">
+          <span className="font-serif text-xl font-black">P</span>
+        </div>
+        <h3 className="font-serif text-2xl font-black uppercase tracking-tight text-slate-900">
+          {t('builder.personalInfo')}
+        </h3>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
         <div className="space-y-2">
           <Label
             htmlFor="name"
-            className="font-mono text-xs uppercase tracking-wider text-gray-500"
+            className="font-sans text-[11px] font-black uppercase tracking-widest text-slate-400 px-1"
           >
             {t('resume.personalInfo.name')}
           </Label>
@@ -39,13 +45,13 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ data, onChan
             value={data.name || ''}
             onChange={(e) => handleChange('name', e.target.value)}
             placeholder={t('builder.personalInfoForm.placeholders.name')}
-            className="rounded-none border-black focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-blue-700 bg-transparent"
+            className="h-12 px-5 rounded-2xl border-slate-200 focus-visible:ring-primary/5 focus-visible:border-primary bg-slate-50/30 transition-all"
           />
         </div>
         <div className="space-y-2">
           <Label
             htmlFor="title"
-            className="font-mono text-xs uppercase tracking-wider text-gray-500"
+            className="font-sans text-[11px] font-black uppercase tracking-widest text-slate-400 px-1"
           >
             {t('resume.personalInfo.title')}
           </Label>
@@ -54,13 +60,13 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ data, onChan
             value={data.title || ''}
             onChange={(e) => handleChange('title', e.target.value)}
             placeholder={t('builder.personalInfoForm.placeholders.title')}
-            className="rounded-none border-black focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-blue-700 bg-transparent"
+            className="h-12 px-5 rounded-2xl border-slate-200 focus-visible:ring-primary/5 focus-visible:border-primary bg-slate-50/30 transition-all"
           />
         </div>
         <div className="space-y-2">
           <Label
             htmlFor="email"
-            className="font-mono text-xs uppercase tracking-wider text-gray-500"
+            className="font-sans text-[11px] font-black uppercase tracking-widest text-slate-400 px-1"
           >
             {t('resume.personalInfo.email')}
           </Label>
@@ -70,13 +76,13 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ data, onChan
             value={data.email || ''}
             onChange={(e) => handleChange('email', e.target.value)}
             placeholder={t('builder.personalInfoForm.placeholders.email')}
-            className="rounded-none border-black focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-blue-700 bg-transparent"
+            className="h-12 px-5 rounded-2xl border-slate-200 focus-visible:ring-primary/5 focus-visible:border-primary bg-slate-50/30 transition-all"
           />
         </div>
         <div className="space-y-2">
           <Label
             htmlFor="phone"
-            className="font-mono text-xs uppercase tracking-wider text-gray-500"
+            className="font-sans text-[11px] font-black uppercase tracking-widest text-slate-400 px-1"
           >
             {t('resume.personalInfo.phone')}
           </Label>
@@ -86,13 +92,13 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ data, onChan
             value={data.phone || ''}
             onChange={(e) => handleChange('phone', e.target.value)}
             placeholder={t('builder.personalInfoForm.placeholders.phone')}
-            className="rounded-none border-black focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-blue-700 bg-transparent"
+            className="h-12 px-5 rounded-2xl border-slate-200 focus-visible:ring-primary/5 focus-visible:border-primary bg-slate-50/30 transition-all"
           />
         </div>
         <div className="space-y-2">
           <Label
             htmlFor="location"
-            className="font-mono text-xs uppercase tracking-wider text-gray-500"
+            className="font-sans text-[11px] font-black uppercase tracking-widest text-slate-400 px-1"
           >
             {t('resume.personalInfo.location')}
           </Label>
@@ -101,13 +107,13 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ data, onChan
             value={data.location || ''}
             onChange={(e) => handleChange('location', e.target.value)}
             placeholder={t('builder.personalInfoForm.placeholders.location')}
-            className="rounded-none border-black focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-blue-700 bg-transparent"
+            className="h-12 px-5 rounded-2xl border-slate-200 focus-visible:ring-primary/5 focus-visible:border-primary bg-slate-50/30 transition-all"
           />
         </div>
         <div className="space-y-2">
           <Label
             htmlFor="website"
-            className="font-mono text-xs uppercase tracking-wider text-gray-500"
+            className="font-sans text-[11px] font-black uppercase tracking-widest text-slate-400 px-1"
           >
             {t('resume.personalInfo.website')}
           </Label>
@@ -116,13 +122,13 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ data, onChan
             value={data.website || ''}
             onChange={(e) => handleChange('website', e.target.value)}
             placeholder={t('builder.personalInfoForm.placeholders.website')}
-            className="rounded-none border-black focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-blue-700 bg-transparent"
+            className="h-12 px-5 rounded-2xl border-slate-200 focus-visible:ring-primary/5 focus-visible:border-primary bg-slate-50/30 transition-all"
           />
         </div>
         <div className="space-y-2">
           <Label
             htmlFor="linkedin"
-            className="font-mono text-xs uppercase tracking-wider text-gray-500"
+            className="font-sans text-[11px] font-black uppercase tracking-widest text-slate-400 px-1"
           >
             {t('resume.personalInfo.linkedin')}
           </Label>
@@ -131,13 +137,13 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ data, onChan
             value={data.linkedin || ''}
             onChange={(e) => handleChange('linkedin', e.target.value)}
             placeholder={t('builder.personalInfoForm.placeholders.linkedin')}
-            className="rounded-none border-black focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-blue-700 bg-transparent"
+            className="h-12 px-5 rounded-2xl border-slate-200 focus-visible:ring-primary/5 focus-visible:border-primary bg-slate-50/30 transition-all"
           />
         </div>
         <div className="space-y-2">
           <Label
             htmlFor="github"
-            className="font-mono text-xs uppercase tracking-wider text-gray-500"
+            className="font-sans text-[11px] font-black uppercase tracking-widest text-slate-400 px-1"
           >
             {t('resume.personalInfo.github')}
           </Label>
@@ -146,7 +152,7 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ data, onChan
             value={data.github || ''}
             onChange={(e) => handleChange('github', e.target.value)}
             placeholder={t('builder.personalInfoForm.placeholders.github')}
-            className="rounded-none border-black focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-blue-700 bg-transparent"
+            className="h-12 px-5 rounded-2xl border-slate-200 focus-visible:ring-primary/5 focus-visible:border-primary bg-slate-50/30 transition-all"
           />
         </div>
       </div>

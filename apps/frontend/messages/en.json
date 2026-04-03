@@ -526,7 +526,7 @@
       }
     },
     "analyzeJob": "Analyze Job",
-    "generateTailored": "Generate Tailored Resume",
+    "generateTailored": "Generate Resume",
     "setupRequiredTitle": "[ SETUP REQUIRED ]",
     "noApiKeyMessage": "> No API key configured. Resume tailoring requires an LLM provider.",
     "configureApiKey": "Configure API Key",

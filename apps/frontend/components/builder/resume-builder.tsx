@@ -660,418 +660,196 @@ const ResumeBuilderContent = () => {
   };
 
   return (
-    <div className="flex h-screen w-full justify-center items-center bg-[#F0F0E8]">
-      {/* Main Container */}
-      <div className="flex h-full w-full flex-col bg-[#F0F0E8] md:border-l border-black">
-        {/* Header Section */}
-        <div className="border-b border-black p-6 md:p-8 bg-[#F0F0E8] no-print">
-          {/* Top Row: Back button and Actions */}
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-            <div>
-              <Button
-                variant="link"
-                onClick={() => router.push('/dashboard')}
-                className="mb-2 -ml-1"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                {t('nav.backToDashboard')}
-              </Button>
-              <h1 className="font-serif text-3xl md:text-5xl text-black tracking-tight leading-[0.95] uppercase">
-                {t('nav.builder')}
-              </h1>
-              <div className="mt-3 flex items-center gap-3">
-                <p className="text-sm font-mono text-blue-700 uppercase tracking-wide font-bold">
-                  {'// '}
-                  {resumeId ? t('builder.editMode') : t('builder.createAndPreview')}
-                </p>
-                {hasUnsavedChanges && (
-                  <span className="flex items-center gap-1 text-xs font-mono text-amber-600 bg-amber-50 px-2 py-1 border border-amber-200">
-                    <AlertTriangle className="w-3 h-3" />
-                    {t('builder.unsavedDraft')}
-                  </span>
-                )}
-              </div>
-            </div>
-
-            <div className="flex gap-3 mt-4 md:mt-0">
-              {/* Resume tab actions */}
-              {activeTab === 'resume' && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => regenerateWizard.startRegenerate()}
-                    disabled={!resumeId}
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    {t('builder.regenerate.buttonLabel')}
-                  </Button>
-                  <Button
-                    variant="warning"
-                    size="sm"
-                    onClick={handleReset}
-                    disabled={!hasUnsavedChanges}
-                  >
-                    <RotateCcw className="w-4 h-4" />
-                    {t('common.reset')}
-                  </Button>
-                  <Button size="sm" onClick={handleSave} disabled={!resumeId || isSaving}>
-                    <Save className="w-4 h-4" />
-                    {isSaving ? t('common.saving') : t('common.save')}
-                  </Button>
-                  <Button
-                    variant="success"
-                    size="sm"
-                    onClick={handleDownload}
-                    disabled={!resumeId || isDownloading}
-                  >
-                    <Download className="w-4 h-4" />
-                    {isDownloading ? t('common.generating') : t('common.download')}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleSavePdf}
-                    disabled={!resumeId || isSavingPdf}
-                  >
-                    <HardDrive className="w-4 h-4" />
-                    {isSavingPdf ? 'Saving...' : 'Save PDF'}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleDownloadDocx}
-                    disabled={!resumeId || isDownloadingDocx}
-                  >
-                    <FileText className="w-4 h-4" />
-                    {isDownloadingDocx ? t('common.generating') : 'DOCX'}
-                  </Button>
-                </>
-              )}
-
-              {/* Cover letter tab actions */}
-              {activeTab === 'cover-letter' && coverLetter && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleGenerateCoverLetter}
-                    disabled={isGeneratingCoverLetter}
-                  >
-                    {isGeneratingCoverLetter ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Sparkles className="w-4 h-4" />
-                    )}
-                    {t('coverLetter.regenerate')}
-                  </Button>
-                  <Button
-                    variant="success"
-                    size="sm"
-                    onClick={handleDownloadCoverLetter}
-                    disabled={!resumeId || isDownloading}
-                  >
-                    <Download className="w-4 h-4" />
-                    {isDownloading ? t('common.generating') : t('common.download')}
-                  </Button>
-                </>
-              )}
-
-              {/* Outreach tab actions */}
-              {activeTab === 'outreach' && outreachMessage && (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleGenerateOutreach}
-                    disabled={isGeneratingOutreach}
-                  >
-                    {isGeneratingOutreach ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Sparkles className="w-4 h-4" />
-                    )}
-                    {t('outreach.regenerate')}
-                  </Button>
-                  <Button variant="success" size="sm" onClick={handleCopyOutreach}>
-                    {isCopied ? (
-                      <>
-                        <Check className="w-4 h-4" />
-                        {t('outreach.copied')}
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-4 h-4" />
-                        {t('outreach.copyToClipboard')}
-                      </>
-                    )}
-                  </Button>
-                </>
-              )}
-            </div>
+    <div className="flex h-screen w-full flex-col overflow-hidden bg-[#F8F9FA]">
+      {/* Top Header - Modern Navigation */}
+      <header className="flex h-20 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-8 z-30 shadow-sm">
+        <div className="flex items-center gap-6">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => router.push('/dashboard')}
+            className="rounded-xl hover:bg-slate-50 text-slate-600 font-sans font-bold gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">{t('nav.backToDashboard')}</span>
+          </Button>
+          <div className="h-8 w-px bg-slate-200" />
+          <div className="flex flex-col">
+            <h1 className="font-serif text-xl font-black uppercase tracking-tight text-slate-900 leading-none">
+              {t('nav.builder')}
+            </h1>
+            <p className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+              {resumeId ? `ID: ${resumeId.slice(0, 8)}...` : t('builder.unsavedDraft')}
+            </p>
           </div>
         </div>
 
-        {/* Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 bg-black gap-[1px] flex-1 min-h-0">
-          {/* Left Panel: Editor */}
-          <div
-            className={cn(
-              'bg-[#F0F0E8] p-6 md:p-8 overflow-y-auto no-print transition-all duration-300',
-              isFullscreenPreview && 'hidden lg:block lg:opacity-50 lg:pointer-events-none'
-            )}
-          >
-            <div className="max-w-3xl mx-auto space-y-6">
-              <div className="flex items-center gap-2 border-b-2 border-black pb-2">
-                <div className="w-3 h-3 bg-blue-700"></div>
-                <h2 className="font-mono text-lg font-bold uppercase tracking-wider">
-                  {activeTab === 'resume' && t('builder.leftPanel.editorPanel')}
-                  {activeTab === 'cover-letter' && t('builder.leftPanel.coverLetterEditor')}
-                  {activeTab === 'outreach' && t('builder.leftPanel.outreachEditor')}
-                  {activeTab === 'jd-match' && t('builder.leftPanel.jdMatchAnalysis')}
-                </h2>
-              </div>
-
-              {/* Resume Editor */}
-              {activeTab === 'resume' && (
-                <>
-                  <FormattingControls settings={templateSettings} onChange={handleSettingsChange} />
-                  <ResumeForm resumeData={resumeData} onUpdate={handleUpdate} />
-                </>
-              )}
-
-              {/* Cover Letter Editor */}
-              {activeTab === 'cover-letter' &&
-                (coverLetter ? (
-                  <CoverLetterEditor
-                    content={coverLetter}
-                    onChange={setCoverLetter}
-                    onSave={handleSaveCoverLetter}
-                    isSaving={isCoverLetterSaving}
-                  />
-                ) : (
-                  <GeneratePrompt
-                    type="cover-letter"
-                    isGenerating={isGeneratingCoverLetter}
-                    onGenerate={handleGenerateCoverLetter}
-                    isTailoredResume={isTailoredResume}
-                  />
-                ))}
-
-              {/* Outreach Editor */}
-              {activeTab === 'outreach' &&
-                (outreachMessage ? (
-                  <OutreachEditor
-                    content={outreachMessage}
-                    onChange={setOutreachMessage}
-                    onSave={handleSaveOutreach}
-                    isSaving={isOutreachSaving}
-                  />
-                ) : (
-                  <GeneratePrompt
-                    type="outreach"
-                    isGenerating={isGeneratingOutreach}
-                    onGenerate={handleGenerateOutreach}
-                    isTailoredResume={isTailoredResume}
-                  />
-                ))}
-
-              {/* JD Match Info Panel */}
-              {activeTab === 'jd-match' && (
-                <div className="space-y-4">
-                  <div className="border-2 border-black bg-white p-4">
-                    <h3 className="font-mono text-sm font-bold uppercase mb-2">
-                      {t('builder.jdMatch.aboutTitle')}
-                    </h3>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      {t('builder.jdMatch.aboutDescription')}
-                    </p>
-                  </div>
-
-                  <div className="border-2 border-black bg-[#F0F0E8] p-4">
-                    <h3 className="font-mono text-sm font-bold uppercase mb-2">
-                      {t('builder.jdMatch.highlightedKeywordsTitle')}
-                    </h3>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      {(() => {
-                        const template = t('builder.jdMatch.highlightedKeywordsDescriptionTemplate');
-                        const parts = template.split('__COLOR__');
-                        if (parts.length < 2) return template;
-                        return (
-                          <>
-                            {parts[0]}
-                            <mark className="bg-yellow-200 px-1">
-                              {t('builder.jdMatch.highlightColor')}
-                            </mark>
-                            {parts.slice(1).join('__COLOR__')}
-                          </>
-                        );
-                      })()}
-                    </p>
-                  </div>
-
-                  <div className="border-2 border-black bg-white p-4">
-                    <h3 className="font-mono text-sm font-bold uppercase mb-2">
-                      {t('builder.jdMatch.tipsTitle')}
-                    </h3>
-                    <ul className="text-sm text-gray-600 space-y-1 list-disc list-inside">
-                      <li>{t('builder.jdMatch.tips.items.addMissingKeywords')}</li>
-                      <li>{t('builder.jdMatch.tips.items.focusTechnicalSkills')}</li>
-                      <li>{t('builder.jdMatch.tips.items.matchActionVerbs')}</li>
-                    </ul>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Right Panel: Preview with Tabs */}
-          <div
-            className={cn(
-              'bg-[#E5E5E0] overflow-hidden flex flex-col no-print transition-all duration-300 ease-in-out',
-              isFullscreenPreview
-                ? 'fixed inset-0 z-50'
-                : 'relative col-span-1'
-            )}
-          >
-            {/* Tabs Header */}
-            <div className="px-6 pt-3 shrink-0 bg-[#E5E5E0] flex items-end justify-between border-b border-black">
-              <RetroTabs
-                tabs={[
-                  { id: 'resume', label: t('builder.previewTabs.resume') },
-                  {
-                    id: 'cover-letter',
-                    label: t('builder.previewTabs.coverLetter'),
-                    disabled: !coverLetter,
-                  },
-                  {
-                    id: 'outreach',
-                    label: t('builder.previewTabs.outreach'),
-                    disabled: !outreachMessage,
-                  },
-                  {
-                    id: 'jd-match',
-                    label: t('builder.previewTabs.jdMatch'),
-                    disabled: !jobDescription,
-                  },
-                ]}
-                activeTab={activeTab}
-                onTabChange={(id) => setActiveTab(id as TabId)}
-                className="border-b-0"
-              />
-              <div className="pb-2 flex gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsFullscreenPreview(!isFullscreenPreview)}
-                  className="h-8 w-8 hover:bg-black/5"
-                  title={isFullscreenPreview ? 'Exit Full Screen' : 'Full Screen'}
-                >
-                  {isFullscreenPreview ? (
-                    <Minimize2 className="w-4 h-4" />
-                  ) : (
-                    <Maximize2 className="w-4 h-4" />
-                  )}
-                </Button>
-              </div>
-            </div>
-
-            {/* Preview Content */}
-            <div className={cn('flex-1 min-h-0', isFullscreenPreview ? 'bg-[#D5D5D0]/50' : '')}>
-              <div className={cn('h-full w-full', isFullscreenPreview ? 'p-4 md:p-8' : '')}>
-                <div
-                  className={cn(
-                    'h-full w-full',
-                    isFullscreenPreview && ' mx-auto border-x border-black/10 shadow-2xl bg-white'
-                  )}
-                >
-                  {/* Resume Preview */}
-                  {activeTab === 'resume' && (
-                    <PaginatedPreview
-                      resumeData={localizedResumeDataForPreview}
-                      settings={templateSettings}
-                      isFullscreen={isFullscreenPreview}
-                    />
-                  )}
-
-                  {/* Cover Letter Preview */}
-                  {activeTab === 'cover-letter' &&
-                    (coverLetter && resumeData.personalInfo ? (
-                      <div className="p-6 h-full overflow-y-auto">
-                        <CoverLetterPreview
-                          content={coverLetter}
-                          personalInfo={resumeData.personalInfo}
-                          pageSize={templateSettings.pageSize}
-                        />
-                      </div>
-                    ) : (
-                      <GeneratePrompt
-                        type="cover-letter"
-                        isGenerating={isGeneratingCoverLetter}
-                        onGenerate={handleGenerateCoverLetter}
-                        isTailoredResume={isTailoredResume}
-                      />
-                    ))}
-
-                  {/* Outreach Preview */}
-                  {activeTab === 'outreach' &&
-                    (outreachMessage ? (
-                      <div className="p-6 h-full overflow-y-auto">
-                        <OutreachPreview content={outreachMessage} />
-                      </div>
-                    ) : (
-                      <GeneratePrompt
-                        type="outreach"
-                        isGenerating={isGeneratingOutreach}
-                        onGenerate={handleGenerateOutreach}
-                        isTailoredResume={isTailoredResume}
-                      />
-                    ))}
-
-                  {/* JD Match Comparison */}
-                  {activeTab === 'jd-match' && jobDescription && (
-                    <div className="h-full overflow-y-auto">
-                      <JDComparisonView jobDescription={jobDescription} resumeData={resumeData} />
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div
-          className={cn(
-            'p-4 bg-[#F0F0E8] flex justify-between items-center font-mono text-xs text-blue-700 border-t border-black no-print',
-            isFullscreenPreview && 'hidden'
-          )}
-        >
-          <span className="uppercase font-bold flex items-center gap-2">
-            <Image
-              src="/logo.svg"
-              alt="Resume Matcher"
-              width={20}
-              height={20}
-              className="w-5 h-5"
-            />
-            {t('builder.footer.moduleLabel')}
-          </span>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-700"></div>
-              <span className="uppercase">
-                {templateSettings.template === 'swiss-single' ||
-                templateSettings.template === 'modern'
-                  ? t('builder.footer.singleColumn')
-                  : t('builder.footer.twoColumn')}
+        <div className="flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-2 mr-4">
+            {hasUnsavedChanges && (
+              <span className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-700 text-[10px] font-bold uppercase tracking-wider rounded-full border border-amber-100">
+                <span className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
+                {t('builder.unsavedDraft')}
               </span>
+            )}
+          </div>
+          
+          <Button
+            variant="outline"
+            onClick={handleSave}
+            disabled={isSaving || !hasUnsavedChanges}
+            className="h-11 px-6 rounded-2xl border-slate-200 font-sans font-bold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all gap-2"
+          >
+            {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+            {t('common.save')}
+          </Button>
+
+          <Button
+            variant="default"
+            onClick={handleDownload}
+            disabled={isDownloading}
+            className="h-11 px-6 rounded-2xl bg-primary text-white font-sans font-bold shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all gap-2"
+          >
+            {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+            {t('common.download')}
+          </Button>
+        </div>
+      </header>
+
+      <main className="flex flex-1 overflow-hidden">
+        {/* Left Panel: Form Editor */}
+        <div className={cn(
+          "flex h-full flex-col border-r border-slate-200 bg-white transition-all duration-500",
+          isFullscreenPreview ? "w-0 opacity-0 invisible" : "w-full lg:w-[500px] xl:w-[600px]"
+        )}>
+          <div className="flex h-16 shrink-0 items-center px-8 border-b border-slate-100 bg-slate-50/50">
+            <h2 className="font-sans text-sm font-black uppercase tracking-widest text-slate-500">
+              {resumeId ? t('builder.editMode') : t('builder.createAndPreview')}
+            </h2>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
+            <div className="max-w-2xl mx-auto space-y-10">
+              <ResumeForm 
+                resumeData={resumeData} 
+                onUpdate={handleUpdate}
+              />
             </div>
-            <span className="text-gray-400">|</span>
+          </div>
+        </div>
+
+        {/* Right Panel: Preview & Tools */}
+        <div className="relative flex flex-1 flex-col overflow-hidden bg-slate-100/50">
+          {/* Preview Navigation */}
+          <div className="flex h-16 shrink-0 items-center justify-between px-8 bg-white border-b border-slate-200 z-20">
+            <RetroTabs
+              tabs={[
+                { id: 'resume', label: t('builder.previewTabs.resume') },
+                { id: 'cover-letter', label: t('builder.previewTabs.coverLetter'), disabled: !coverLetter },
+                { id: 'outreach', label: t('builder.previewTabs.outreach'), disabled: !outreachMessage },
+                { id: 'jd-match', label: t('builder.previewTabs.jdMatch'), disabled: !jobDescription },
+              ]}
+              activeTab={activeTab}
+              onTabChange={(id) => setActiveTab(id as TabId)}
+              className="bg-slate-100 border-none p-1 rounded-xl"
+            />
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsFullscreenPreview(!isFullscreenPreview)}
+                className="rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+              >
+                {isFullscreenPreview ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
+              </Button>
+            </div>
+          </div>
+
+          {/* Preview Content Area */}
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-12">
+            <div className="mx-auto flex h-full max-w-5xl flex-col">
+              <div className={cn(
+                "flex-1 transition-all duration-500 transform",
+                activeTab === 'resume' ? "scale-100 opacity-100" : "scale-95 opacity-0 hidden"
+              )}>
+                <div className="mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-slate-200 rounded-sm overflow-hidden">
+                  <PaginatedPreview
+                    resumeData={localizedResumeDataForPreview}
+                    settings={templateSettings}
+                    isFullscreen={isFullscreenPreview}
+                  />
+                </div>
+              </div>
+
+              {activeTab === 'cover-letter' && coverLetter && (
+                <div className="animate-in fade-in zoom-in-95 duration-300">
+                  <CoverLetterPreview content={coverLetter} personalInfo={resumeData.personalInfo} pageSize={templateSettings.pageSize} />
+                </div>
+              )}
+
+              {activeTab === 'outreach' && outreachMessage && (
+                <div className="animate-in fade-in zoom-in-95 duration-300">
+                  <OutreachPreview content={outreachMessage} />
+                </div>
+              )}
+
+              {activeTab === 'jd-match' && jobDescription && (
+                <div className="animate-in fade-in zoom-in-95 duration-300">
+                  <JDComparisonView 
+                    resumeData={resumeData} 
+                    jobDescription={jobDescription}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Floating Action Menu (Mobile/Bottom) */}
+          <div className="absolute bottom-8 right-8 flex flex-col gap-3 z-30">
+            <Button
+              size="lg"
+              className="h-14 w-14 rounded-2xl bg-primary text-white shadow-xl shadow-primary/30 hover:scale-110 active:scale-95 transition-all p-0"
+              onClick={() => regenerateWizard.startRegenerate()}
+              disabled={!resumeId}
+            >
+              <Sparkles className="h-6 w-6" />
+            </Button>
+          </div>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <div
+        className={cn(
+          'p-4 bg-[#F0F0E8] flex justify-between items-center font-mono text-xs text-blue-700 border-t border-black no-print',
+          isFullscreenPreview && 'hidden'
+        )}
+      >
+        <span className="uppercase font-bold flex items-center gap-2">
+          <Image
+            src="/logo.svg"
+            alt="Resume Matcher"
+            width={20}
+            height={20}
+            className="w-5 h-5"
+          />
+          {t('builder.footer.moduleLabel')}
+        </span>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-700"></div>
             <span className="uppercase">
-              {templateSettings.pageSize === 'A4' ? 'A4' : t('builder.pageSize.usLetter')}
+              {templateSettings.template === 'swiss-single' ||
+              templateSettings.template === 'modern'
+                ? t('builder.footer.singleColumn')
+                : t('builder.footer.twoColumn')}
             </span>
           </div>
+          <span className="text-gray-400">|</span>
+          <span className="uppercase">
+            {templateSettings.pageSize === 'A4' ? 'A4' : t('builder.pageSize.usLetter')}
+          </span>
         </div>
       </div>
 

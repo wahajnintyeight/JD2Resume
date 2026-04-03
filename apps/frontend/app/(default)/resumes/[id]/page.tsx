@@ -18,6 +18,7 @@ import { ArrowLeft, Edit, Download, Loader2, AlertCircle, Sparkles, Pencil, Targ
 import { EnrichmentModal } from '@/components/enrichment/enrichment-modal';
 import ATSScanDialog from '@/components/resume/ats-scan-dialog';
 import { useTranslations } from '@/lib/i18n';
+import { cn } from '@/lib/utils';
 import { withLocalizedDefaultSections } from '@/lib/utils/section-helpers';
 import { useLanguage } from '@/lib/context/language-context';
 import { downloadBlobAsFile, openUrlInNewTab, sanitizeFilename } from '@/lib/utils/download';
@@ -280,34 +281,53 @@ export default function ResumeViewerPage() {
   }
 
   return (
-    <div className="flex min-h-full w-full flex-col bg-[#F0F0E8] md:border-l border-black p-6 md:p-8">
-      <div className="w-full">
+    <div className="flex min-h-full w-full flex-col bg-[#F0F0E8] font-sans">
+      <div className="mx-auto w-full max-w-6xl flex-1 border-x-2 border-black bg-white p-6 md:p-12 lg:p-16 shadow-[20px_0px_60px_-15px_rgba(0,0,0,0.05)]">
         {/* Header Actions */}
-        <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 no-print">
-          <Button variant="outline" onClick={() => router.push('/dashboard')}>
-            <ArrowLeft className="w-4 h-4" />
+        <div className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 no-print">
+          <Button 
+            variant="ghost" 
+            onClick={() => router.push('/dashboard')}
+            className="font-mono text-xs font-bold uppercase tracking-widest hover:bg-gray-100 rounded-none border-2 border-transparent hover:border-black transition-all"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
             {t('nav.backToDashboard')}
           </Button>
 
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             {isMasterResume && (
-              <Button onClick={() => setShowEnrichmentModal(true)} className="gap-2">
-                <Sparkles className="w-4 h-4" />
+              <Button 
+                onClick={() => setShowEnrichmentModal(true)} 
+                className="h-12 px-6 border-2 border-black bg-blue-700 text-white font-bold uppercase tracking-widest hover:bg-blue-800 transition-all active:translate-x-1 active:translate-y-1 active:shadow-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
                 {t('resumeViewer.enhanceResume')}
               </Button>
             )}
             {!isMasterResume && (
-              <Button onClick={() => setShowATSScanDialog(true)} variant="outline" className="gap-2">
-                <Target className="w-4 h-4" />
+              <Button 
+                onClick={() => setShowATSScanDialog(true)} 
+                variant="outline" 
+                className="h-12 px-6 border-2 border-black bg-white text-black font-bold uppercase tracking-widest hover:bg-gray-100 transition-all active:translate-x-1 active:translate-y-1 active:shadow-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+              >
+                <Target className="w-4 h-4 mr-2" />
                 ATS Scan
               </Button>
             )}
-            <Button variant="outline" onClick={handleEdit}>
-              <Edit className="w-4 h-4" />
+            <Button 
+              variant="outline" 
+              onClick={handleEdit}
+              className="h-12 px-6 border-2 border-black bg-white text-black font-bold uppercase tracking-widest hover:bg-gray-100 transition-all active:translate-x-1 active:translate-y-1 active:shadow-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+            >
+              <Edit className="w-4 h-4 mr-2" />
               {t('dashboard.editResume')}
             </Button>
-            <Button variant="success" onClick={handleDownload}>
-              <Download className="w-4 h-4" />
+            <Button 
+              variant="default" 
+              onClick={handleDownload}
+              className="h-12 px-6 border-2 border-black bg-black text-white font-bold uppercase tracking-widest hover:bg-gray-900 transition-all active:translate-x-1 active:translate-y-1 active:shadow-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+            >
+              <Download className="w-4 h-4 mr-2" />
               {t('resumeViewer.downloadResume')}
             </Button>
           </div>
@@ -315,69 +335,93 @@ export default function ResumeViewerPage() {
 
         {/* Editable Title (tailored resumes only) */}
         {!isMasterResume && (
-          <div className="mb-6 no-print">
-            {isEditingTitle ? (
-              <input
-                type="text"
-                value={editingTitleValue}
-                onChange={(e) => setEditingTitleValue(e.target.value)}
-                onBlur={handleTitleSave}
-                onKeyDown={handleTitleKeyDown}
-                autoFocus
-                maxLength={80}
-                placeholder={t('resumeViewer.titlePlaceholder')}
-                className="font-serif text-2xl font-bold border-b-2 border-black bg-transparent outline-none w-full max-w-xl px-0 py-1"
-              />
-            ) : (
-              <button
-                onClick={() => {
-                  setEditingTitleValue(resumeTitle || '');
-                  setIsEditingTitle(true);
-                }}
-                className="group flex items-center gap-2 cursor-pointer bg-transparent border-none p-0"
-              >
-                <h2
-                  className={`font-serif text-2xl font-bold border-b-2 border-transparent group-hover:border-black transition-colors ${!resumeTitle ? 'text-gray-400' : ''}`}
+          <div className="mb-10 no-print flex justify-center">
+            <div className="w-full max-w-2xl text-center">
+              {isEditingTitle ? (
+                <div className="relative group">
+                  <input
+                    type="text"
+                    value={editingTitleValue}
+                    onChange={(e) => setEditingTitleValue(e.target.value)}
+                    onBlur={handleTitleSave}
+                    onKeyDown={handleTitleKeyDown}
+                    autoFocus
+                    maxLength={80}
+                    placeholder={t('resumeViewer.titlePlaceholder')}
+                    className="w-full font-serif text-3xl md:text-4xl font-black uppercase tracking-tight border-b-4 border-black bg-transparent outline-none py-2 text-center"
+                  />
+                  <div className="absolute -bottom-1 left-0 w-full h-1 bg-blue-600 origin-left scale-x-0 group-focus-within:scale-x-100 transition-transform duration-500" />
+                </div>
+              ) : (
+                <button
+                  onClick={() => {
+                    setEditingTitleValue(resumeTitle || '');
+                    setIsEditingTitle(true);
+                  }}
+                  className="group relative inline-flex items-center gap-4 px-6 py-2 transition-all"
                 >
-                  {resumeTitle || t('resumeViewer.titlePlaceholder')}
-                </h2>
-                <Pencil
-                  className={`w-4 h-4 transition-opacity ${resumeTitle ? 'opacity-0 group-hover:opacity-60' : 'opacity-40 group-hover:opacity-60'}`}
-                />
-              </button>
-            )}
+                  <h2
+                    className={cn(
+                      "font-serif text-3xl md:text-4xl font-black uppercase tracking-tight text-black border-b-4 border-transparent group-hover:border-black transition-all",
+                      !resumeTitle && "text-gray-300 italic"
+                    )}
+                  >
+                    {resumeTitle || t('resumeViewer.titlePlaceholder')}
+                  </h2>
+                  <Pencil
+                    className={cn(
+                      "w-5 h-5 transition-all duration-300",
+                      resumeTitle ? "opacity-0 group-hover:opacity-100 group-hover:scale-110" : "opacity-40"
+                    )}
+                  />
+                  <div className="absolute -inset-2 border-2 border-black opacity-0 group-hover:opacity-10 transition-opacity pointer-events-none" />
+                </button>
+              )}
+            </div>
           </div>
         )}
 
         {/* Resume Viewer */}
-        <div className="flex justify-center pb-4">
-          <div className="resume-print w-full max-w-[210mm] border-2 border-black bg-white shadow-[8px_8px_0px_0px_#000000]">
-            <Resume
-              resumeData={localizedResumeData || resumeData}
-              additionalSectionLabels={{
-                technicalSkills: t('resume.additionalLabels.technicalSkills'),
-                languages: t('resume.additionalLabels.languages'),
-                certifications: t('resume.additionalLabels.certifications'),
-                awards: t('resume.additionalLabels.awards'),
-              }}
-              sectionHeadings={{
-                summary: t('resume.sections.summary'),
-                experience: t('resume.sections.experience'),
-                education: t('resume.sections.education'),
-                projects: t('resume.sections.projects'),
-                certifications: t('resume.sections.certifications'),
-                skills: t('resume.sections.skillsOnly'),
-                languages: t('resume.sections.languages'),
-                awards: t('resume.sections.awards'),
-                links: t('resume.sections.links'),
-              }}
-              fallbackLabels={{ name: t('resume.defaults.name') }}
-            />
+        <div className="flex justify-center pb-12">
+          <div className="relative group">
+            {/* Decorative Corner Accents */}
+            <div className="absolute -top-4 -left-4 w-12 h-12 border-l-4 border-t-4 border-black pointer-events-none z-10" />
+            <div className="absolute -top-4 -right-4 w-12 h-12 border-r-4 border-t-4 border-black pointer-events-none z-10" />
+            <div className="absolute -bottom-4 -left-4 w-12 h-12 border-l-4 border-b-4 border-black pointer-events-none z-10" />
+            <div className="absolute -bottom-4 -right-4 w-12 h-12 border-r-4 border-b-4 border-black pointer-events-none z-10" />
+            
+            <div className="resume-print w-full max-w-[210mm] border-1 rounded-sm border-black bg-white shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] relative transition-transform duration-500 group-hover:translate-x-[-4px] group-hover:translate-y-[-4px] group-hover:shadow-[20px_20px_0px_0px_rgba(0,0,0,1)]">
+              <Resume
+                resumeData={localizedResumeData || resumeData}
+                additionalSectionLabels={{
+                  technicalSkills: t('resume.additionalLabels.technicalSkills'),
+                  languages: t('resume.additionalLabels.languages'),
+                  certifications: t('resume.additionalLabels.certifications'),
+                  awards: t('resume.additionalLabels.awards'),
+                }}
+                sectionHeadings={{
+                  summary: t('resume.sections.summary'),
+                  experience: t('resume.sections.experience'),
+                  education: t('resume.sections.education'),
+                  projects: t('resume.sections.projects'),
+                  certifications: t('resume.sections.certifications'),
+                  skills: t('resume.sections.skillsOnly'),
+                  languages: t('resume.sections.languages'),
+                  awards: t('resume.sections.awards'),
+                  links: t('resume.sections.links'),
+                }}
+                fallbackLabels={{ name: t('resume.defaults.name') }}
+              />
+            </div>
           </div>
         </div>
 
-        <div className="flex justify-end pt-4 no-print">
-          <Button variant="destructive" onClick={() => setShowDeleteDialog(true)}>
+        <div className="flex justify-center pt-8 no-print">
+          <Button 
+            variant="ghost" 
+            onClick={() => setShowDeleteDialog(true)}
+            className="font-mono text-xs font-bold uppercase tracking-widest text-red-600 hover:bg-red-50 hover:text-red-700 rounded-none border-2 border-transparent hover:border-red-600 transition-all px-8 py-6"
+          >
             {isMasterResume
               ? t('confirmations.deleteMasterResumeTitle')
               : t('dashboard.deleteResume')}
