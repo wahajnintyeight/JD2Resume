@@ -62,6 +62,12 @@
       background-position: 200% center;
     }
   }
+
+  @keyframes spin-slow {
+    to {
+      transform: rotate(360deg);
+    }
+  }
 }
 
 :root {
@@ -146,6 +152,12 @@
   }
   button {
     font-family: var(--font-mono);
+  }
+}
+
+@layer utilities {
+  .animate-spin-slow {
+    animation: spin-slow 3s linear infinite;
   }
 }
 

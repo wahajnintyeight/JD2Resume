@@ -32,6 +32,7 @@ import { Label } from '@/components/ui/label';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Dropdown } from '@/components/ui/dropdown';
 import { SearchableDropdown } from '@/components/ui/searchable-dropdown';
+import { LoadingAnimation } from '@/components/ui/loading-animation';
 import {
   Save,
   Key,
@@ -645,39 +646,61 @@ export default function SettingsPage() {
 
   const requiresApiKey = providerInfo.requiresKey ?? true;
 
+  // Show full-page loading animation while initial config loads
+  if (status === 'loading') {
+    return (
+      <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-50 via-indigo-50/20 to-purple-50/30">
+        <div className="bg-white rounded-3xl shadow-2xl border border-slate-200/60 p-12">
+          <LoadingAnimation 
+            message="Loading settings..." 
+            variant="sparkle" 
+            size="lg" 
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex h-full w-full flex-col bg-[#F0F0E8] font-sans">
-      <div className="flex h-full w-full flex-1 flex-col border-black bg-[#F0F0E8] md:border-l">
+    <div className="flex h-full w-full flex-col bg-gradient-to-br from-slate-50 via-indigo-50/20 to-purple-50/30 font-sans">
+      <div className="flex h-full w-full flex-1 flex-col">
         {/* Header */}
-        <div className="border-b border-black p-4 sm:p-6 lg:p-8 bg-white flex flex-col sm:flex-row justify-between items-start gap-4">
-          <div>
-            <h1 className="font-serif text-2xl sm:text-3xl font-bold tracking-tight uppercase">
-              {t('settings.title')}
-            </h1>
-            <p className="font-mono text-xs text-gray-500 mt-2 uppercase tracking-wider">
-              {'// '}
+        <div className="border-b border-slate-200/60 backdrop-blur-xl bg-white/80 p-6 sm:p-8 lg:p-10 flex flex-col sm:flex-row justify-between items-start gap-6 sticky top-0 z-10 shadow-sm">
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-200/50">
+                <Settings2 className="w-5 h-5 text-white" />
+              </div>
+              <h1 className="text-3xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-slate-900 via-indigo-900 to-purple-900 bg-clip-text text-transparent">
+                {t('settings.title')}
+              </h1>
+            </div>
+            <p className="text-sm text-slate-600 ml-[52px]">
               {t('settings.subtitle')}
             </p>
           </div>
           <Link href="/dashboard">
-            <Button variant="outline" size="sm" className="w-full sm:w-auto">
+            <Button variant="outline" size="sm" className="w-full sm:w-auto shadow-sm hover:shadow-md transition-shadow">
               <ArrowLeft className="w-4 h-4" />
               {t('common.back')}
             </Button>
           </Link>
         </div>
 
-        <div className="p-4 sm:p-6 lg:p-8 space-y-8 lg:space-y-10">
+        <div className="p-6 sm:p-8 lg:p-10 space-y-10 lg:space-y-12 max-w-7xl mx-auto w-full">
           {/* API Key Not Configured Warning */}
           {!statusLoading && systemStatus && !systemStatus.llm_configured && (
-            <div className="border-2 border-amber-500 bg-amber-50 p-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
-              <div className="flex items-start gap-3">
-                <div className="w-3 h-3 bg-amber-500 mt-1 shrink-0"></div>
-                <div className="flex-1">
-                  <p className="font-mono text-sm font-bold uppercase tracking-wider text-amber-800">
+            <div className="relative overflow-hidden rounded-3xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-6 shadow-lg shadow-amber-100/50">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-amber-200/20 rounded-full -mr-16 -mt-16" />
+              <div className="relative flex items-start gap-4">
+                <div className="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-amber-200/50 shrink-0">
+                  <AlertTriangle className="w-6 h-6" />
+                </div>
+                <div className="flex-1 space-y-1">
+                  <p className="text-lg font-bold text-amber-900">
                     {t('settings.setupRequired.title')}
                   </p>
-                  <p className="font-mono text-xs text-amber-700 mt-1">
+                  <p className="text-sm text-amber-800/80">
                     {t('settings.setupRequired.description')}
                   </p>
                 </div>
@@ -686,120 +709,143 @@ export default function SettingsPage() {
           )}
 
           {/* System Status Panel */}
-          <section className="space-y-4">
-            <div className="flex items-center justify-between border-b border-black/10 pb-2">
+          <section className="space-y-6">
+            <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <Activity className="w-4 h-4" />
-                  <h2 className="font-mono text-sm font-bold uppercase tracking-wider">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-200/50">
+                  <Activity className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900">
                     {t('settings.systemStatus.title')}
                   </h2>
+                  {lastFetched && (
+                    <span className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
+                      <Clock className="w-3 h-3" />
+                      {formatLastFetched()}
+                    </span>
+                  )}
                 </div>
-                {lastFetched && (
-                  <span className="font-mono text-xs text-gray-400 flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    {formatLastFetched()}
-                  </span>
-                )}
               </div>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={refreshStatus}
                 disabled={statusLoading}
-                className="gap-1 text-xs"
+                className="gap-2 hover:bg-slate-100 rounded-xl"
               >
-                <RefreshCw className={`w-3 h-3 ${statusLoading ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 ${statusLoading ? 'animate-spin' : ''}`} />
                 {t('settings.systemStatus.refresh')}
               </Button>
             </div>
 
             {statusLoading ? (
-              <div className="flex items-center justify-center p-8">
-                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+              <div className="bg-white rounded-3xl border border-slate-200/60 shadow-sm overflow-hidden">
+                <LoadingAnimation 
+                  message="Checking system status..." 
+                  variant="sparkle" 
+                  size="md" 
+                />
               </div>
             ) : !systemStatus ? (
-              <div className="flex flex-col items-center justify-center p-8 gap-3 border border-dashed border-red-300 bg-red-50">
-                <p className="font-mono text-xs text-red-600 uppercase">
-                  {t('settings.systemStatus.unableToConnect')}
-                </p>
-                <p className="font-mono text-xs text-gray-600">
-                  {t('settings.systemStatus.expectedAt', { apiUrl: API_URL })}
-                </p>
+              <div className="flex flex-col items-center justify-center p-12 gap-4 rounded-3xl border-2 border-dashed border-red-200 bg-red-50/50">
+                <div className="w-16 h-16 rounded-2xl bg-red-100 flex items-center justify-center">
+                  <XCircle className="w-8 h-8 text-red-600" />
+                </div>
+                <div className="text-center space-y-2">
+                  <p className="text-sm font-semibold text-red-900">
+                    {t('settings.systemStatus.unableToConnect')}
+                  </p>
+                  <p className="text-xs text-slate-600">
+                    {t('settings.systemStatus.expectedAt', { apiUrl: API_URL })}
+                  </p>
+                </div>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={refreshStatus}
-                  className="gap-1 text-xs"
+                  className="gap-2 mt-2"
                 >
-                  <RefreshCw className="w-3 h-3" />
+                  <RefreshCw className="w-4 h-4" />
                   {t('common.retry')}
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* LLM Status */}
-                <div className="border border-black bg-white p-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Server className="w-4 h-4 text-gray-500" />
-                    <span className="font-mono text-xs uppercase text-gray-500">
-                      {t('settings.statusCards.llm')}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {systemStatus.llm_healthy ? (
-                      <CheckCircle2 className="w-5 h-5 text-green-600" />
-                    ) : (
-                      <XCircle className="w-5 h-5 text-red-500" />
-                    )}
-                    <span className="font-mono text-sm font-bold">
-                      {systemStatus.llm_healthy
-                        ? t('settings.statusValues.healthy')
-                        : t('settings.statusValues.offline')}
-                    </span>
+                <div className="group relative overflow-hidden bg-white rounded-3xl border border-slate-200/60 p-6 shadow-sm hover:shadow-xl hover:border-indigo-200 transition-all duration-300">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-green-100 to-emerald-100 rounded-full -mr-12 -mt-12 opacity-50 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Server className="w-5 h-5 text-slate-400" />
+                      {systemStatus.llm_healthy ? (
+                        <CheckCircle2 className="w-5 h-5 text-green-600" />
+                      ) : (
+                        <XCircle className="w-5 h-5 text-red-500" />
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                        {t('settings.statusCards.llm')}
+                      </p>
+                      <p className="text-lg font-bold text-slate-900 mt-1">
+                        {systemStatus.llm_healthy
+                          ? t('settings.statusValues.healthy')
+                          : t('settings.statusValues.offline')}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
                 {/* Database Status */}
-                <div className="border border-black bg-white p-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Database className="w-4 h-4 text-gray-500" />
-                    <span className="font-mono text-xs uppercase text-gray-500">
-                      {t('settings.statusCards.database')}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                    <span className="font-mono text-sm font-bold">
-                      {t('settings.statusValues.connected')}
-                    </span>
+                <div className="group relative overflow-hidden bg-white rounded-3xl border border-slate-200/60 p-6 shadow-sm hover:shadow-xl hover:border-indigo-200 transition-all duration-300">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-full -mr-12 -mt-12 opacity-50 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Database className="w-5 h-5 text-slate-400" />
+                      <CheckCircle2 className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                        {t('settings.statusCards.database')}
+                      </p>
+                      <p className="text-lg font-bold text-slate-900 mt-1">
+                        {t('settings.statusValues.connected')}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
                 {/* Resumes Count */}
-                <div className="border border-black bg-white p-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
-                  <div className="flex items-center gap-2 mb-2">
-                    <FileText className="w-4 h-4 text-gray-500" />
-                    <span className="font-mono text-xs uppercase text-gray-500">
-                      {t('settings.statusCards.resumes')}
-                    </span>
+                <div className="group relative overflow-hidden bg-white rounded-3xl border border-slate-200/60 p-6 shadow-sm hover:shadow-xl hover:border-indigo-200 transition-all duration-300">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-indigo-100 to-purple-100 rounded-full -mr-12 -mt-12 opacity-50 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative space-y-3">
+                    <FileText className="w-5 h-5 text-slate-400" />
+                    <div>
+                      <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                        {t('settings.statusCards.resumes')}
+                      </p>
+                      <p className="text-3xl font-bold text-slate-900 mt-1">
+                        {systemStatus.database_stats.total_resumes}
+                      </p>
+                    </div>
                   </div>
-                  <span className="font-mono text-2xl font-bold">
-                    {systemStatus.database_stats.total_resumes}
-                  </span>
                 </div>
 
                 {/* Jobs Count */}
-                <div className="border border-black bg-white p-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Briefcase className="w-4 h-4 text-gray-500" />
-                    <span className="font-mono text-xs uppercase text-gray-500">
-                      {t('settings.statusCards.jobs')}
-                    </span>
+                <div className="group relative overflow-hidden bg-white rounded-3xl border border-slate-200/60 p-6 shadow-sm hover:shadow-xl hover:border-indigo-200 transition-all duration-300">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full -mr-12 -mt-12 opacity-50 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative space-y-3">
+                    <Briefcase className="w-5 h-5 text-slate-400" />
+                    <div>
+                      <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                        {t('settings.statusCards.jobs')}
+                      </p>
+                      <p className="text-3xl font-bold text-slate-900 mt-1">
+                        {systemStatus.database_stats.total_jobs}
+                      </p>
+                    </div>
                   </div>
-                  <span className="font-mono text-2xl font-bold">
-                    {systemStatus.database_stats.total_jobs}
-                  </span>
                 </div>
               </div>
             )}
@@ -807,40 +853,41 @@ export default function SettingsPage() {
             {/* Additional Stats Row */}
             {systemStatus && (
               <div className="grid grid-cols-2 gap-4">
-                <div className="border border-black bg-white p-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Sparkles className="w-4 h-4 text-gray-500" />
-                    <span className="font-mono text-xs uppercase text-gray-500">
-                      {t('settings.statusCards.improvements')}
-                    </span>
+                <div className="group relative overflow-hidden bg-white rounded-3xl border border-slate-200/60 p-6 shadow-sm hover:shadow-xl hover:border-indigo-200 transition-all duration-300">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-amber-100 to-yellow-100 rounded-full -mr-12 -mt-12 opacity-50 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative space-y-3">
+                    <Sparkles className="w-5 h-5 text-slate-400" />
+                    <div>
+                      <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                        {t('settings.statusCards.improvements')}
+                      </p>
+                      <p className="text-3xl font-bold text-slate-900 mt-1">
+                        {systemStatus.database_stats.total_improvements}
+                      </p>
+                    </div>
                   </div>
-                  <span className="font-mono text-2xl font-bold">
-                    {systemStatus.database_stats.total_improvements}
-                  </span>
                 </div>
-                <div className="border border-black bg-white p-4 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
-                  <div className="flex items-center gap-2 mb-2">
-                    <FileText className="w-4 h-4 text-gray-500" />
-                    <span className="font-mono text-xs uppercase text-gray-500">
-                      {t('settings.statusCards.masterResume')}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {systemStatus.has_master_resume ? (
-                      <>
+                <div className="group relative overflow-hidden bg-white rounded-3xl border border-slate-200/60 p-6 shadow-sm hover:shadow-xl hover:border-indigo-200 transition-all duration-300">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-teal-100 to-cyan-100 rounded-full -mr-12 -mt-12 opacity-50 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative space-y-3">
+                    <div className="flex items-center justify-between">
+                      <FileText className="w-5 h-5 text-slate-400" />
+                      {systemStatus.has_master_resume ? (
                         <CheckCircle2 className="w-5 h-5 text-green-600" />
-                        <span className="font-mono text-sm font-bold">
-                          {t('settings.statusValues.configured')}
-                        </span>
-                      </>
-                    ) : (
-                      <>
+                      ) : (
                         <XCircle className="w-5 h-5 text-amber-500" />
-                        <span className="font-mono text-sm font-bold">
-                          {t('settings.statusValues.notSet')}
-                        </span>
-                      </>
-                    )}
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">
+                        {t('settings.statusCards.masterResume')}
+                      </p>
+                      <p className="text-lg font-bold text-slate-900 mt-1">
+                        {systemStatus.has_master_resume
+                          ? t('settings.statusValues.configured')
+                          : t('settings.statusValues.notSet')}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -848,26 +895,33 @@ export default function SettingsPage() {
           </section>
 
           {/* LLM Configuration */}
-          <section className="space-y-6">
-            <div className="flex items-center gap-2 border-b border-black/10 pb-2">
-              <Key className="w-4 h-4" />
-              <h2 className="font-mono text-sm font-bold uppercase tracking-wider">
-                {t('settings.llmConfigurationTitle')}
-              </h2>
+          <section className="bg-white rounded-3xl border border-slate-200/60 shadow-lg overflow-hidden">
+            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6 sm:p-8 border-b border-slate-200/60">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-200/50">
+                  <Key className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900">
+                    {t('settings.llmConfigurationTitle')}
+                  </h2>
+                  <p className="text-sm text-slate-600 mt-1">Configure your AI model provider and credentials</p>
+                </div>
+              </div>
             </div>
 
-            <div className="grid gap-6">
-              <div className="space-y-2">
-                <Label>Mode</Label>
-                <div className="grid grid-cols-2 gap-2">
+            <div className="p-6 sm:p-8 space-y-8">
+              <div className="space-y-3">
+                <Label className="text-sm font-semibold text-slate-700">Configuration Mode</Label>
+                <div className="inline-flex p-1 bg-slate-100 rounded-2xl gap-1">
                   <button
                     type="button"
                     onClick={() => handleLlmConfigModeChange('preset')}
                     disabled={!isAdmin}
-                    className={`px-2 sm:px-3 py-2 text-xs uppercase ${SEGMENTED_BUTTON_BASE} ${
+                    className={`px-6 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ${
                       llmConfigMode === 'preset'
-                        ? SEGMENTED_BUTTON_ACTIVE
-                        : SEGMENTED_BUTTON_INACTIVE
+                        ? 'bg-white text-indigo-700 shadow-sm'
+                        : 'text-slate-600 hover:text-slate-900'
                     } ${!isAdmin ? 'cursor-not-allowed opacity-50' : ''}`}
                   >
                     Providers
@@ -876,10 +930,10 @@ export default function SettingsPage() {
                     type="button"
                     onClick={() => handleLlmConfigModeChange('custom')}
                     disabled={!isAdmin}
-                    className={`px-2 sm:px-3 py-2 text-xs uppercase ${SEGMENTED_BUTTON_BASE} ${
+                    className={`px-6 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ${
                       llmConfigMode === 'custom'
-                        ? SEGMENTED_BUTTON_ACTIVE
-                        : SEGMENTED_BUTTON_INACTIVE
+                        ? 'bg-white text-indigo-700 shadow-sm'
+                        : 'text-slate-600 hover:text-slate-900'
                     } ${!isAdmin ? 'cursor-not-allowed opacity-50' : ''}`}
                   >
                     Custom Provider
@@ -889,34 +943,39 @@ export default function SettingsPage() {
 
               {/* Provider Selection */}
               {llmConfigMode === 'preset' ? (
-                <div className="space-y-2">
-                  <Label>{t('settings.providerLabel')}</Label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+                <div className="space-y-3">
+                  <Label className="text-sm font-semibold text-slate-700">{t('settings.providerLabel')}</Label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                     {PROVIDERS.map((p) => (
                       <button
                         key={p}
                         type="button"
                         onClick={() => handleProviderChange(p)}
                         disabled={!isAdmin}
-                        className={`px-2 sm:px-3 py-2 text-xs uppercase ${SEGMENTED_BUTTON_BASE} ${
-                          provider === p ? SEGMENTED_BUTTON_ACTIVE : SEGMENTED_BUTTON_INACTIVE
+                        className={`relative px-4 py-4 text-sm font-medium rounded-2xl border-2 transition-all duration-200 ${
+                          provider === p
+                            ? 'bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-300 text-indigo-700 shadow-lg shadow-indigo-100'
+                            : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:shadow-md'
                         } ${!isAdmin ? 'cursor-not-allowed opacity-50' : ''}`}
                       >
-                        {PROVIDER_INFO[p].name.split(' ')[0]}
+                        {provider === p && (
+                          <div className="absolute top-2 right-2 w-2 h-2 bg-indigo-600 rounded-full" />
+                        )}
+                        {PROVIDER_INFO[p].name}
                       </button>
                     ))}
                   </div>
-                  <p className="text-xs text-gray-500 font-mono">
+                  <p className="text-xs text-slate-500 bg-slate-50 rounded-xl p-3">
                     {t('settings.llmConfiguration.selectedProvider', {
                       provider: providerInfo.name,
                     })}
                   </p>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  <Label>{t('settings.providerLabel')}</Label>
-                  <div className="border border-black bg-white p-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
-                    <p className="font-mono text-xs text-gray-700">
+                <div className="space-y-3">
+                  <Label className="text-sm font-semibold text-slate-700">{t('settings.providerLabel')}</Label>
+                  <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl border border-slate-200 p-4">
+                    <p className="text-sm font-medium text-slate-700">
                       OpenAI-compatible
                     </p>
                   </div>
@@ -1036,22 +1095,22 @@ export default function SettingsPage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <div className="flex flex-col sm:flex-row gap-4 pt-4">
                 <Button
                   onClick={handleSave}
                   disabled={status === 'saving' || status === 'loading' || !isAdmin}
-                  className="w-full sm:flex-1"
+                  className="w-full sm:flex-1 h-12 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-lg shadow-indigo-200/50 hover:shadow-xl transition-all duration-200"
                 >
                   {status === 'saving' ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-5 h-5 animate-spin" />
                   ) : status === 'saved' ? (
                     <>
-                      <CheckCircle2 className="w-4 h-4" />
+                      <CheckCircle2 className="w-5 h-5" />
                       {t('common.success')}
                     </>
                   ) : (
                     <>
-                      <Save className="w-4 h-4" />
+                      <Save className="w-5 h-5" />
                       {t('common.save')}
                     </>
                   )}
@@ -1060,13 +1119,13 @@ export default function SettingsPage() {
                   variant="outline"
                   onClick={handleTestConnection}
                   disabled={status === 'testing' || status === 'saving' || !isAdmin}
-                  className="w-full sm:w-auto"
+                  className="w-full sm:w-auto h-12 border-2 hover:bg-slate-50 hover:border-slate-300 transition-all duration-200"
                 >
                   {status === 'testing' ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
                     <>
-                      <Activity className="w-4 h-4" />
+                      <Activity className="w-5 h-5" />
                       {t('settings.llmConfiguration.testConnection')}
                     </>
                   )}
@@ -1075,54 +1134,63 @@ export default function SettingsPage() {
 
               {/* Error Message */}
               {error && (
-                <div className="border border-red-300 bg-red-50 p-3">
-                  <p className="text-xs text-red-600 font-mono">
-                    {t('settings.llmConfiguration.errorPrefix', { error })}
-                  </p>
+                <div className="rounded-2xl border-2 border-red-200 bg-red-50 p-4">
+                  <div className="flex items-start gap-3">
+                    <XCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                    <p className="text-sm text-red-700">
+                      {t('settings.llmConfiguration.errorPrefix', { error })}
+                    </p>
+                  </div>
                 </div>
               )}
 
               {/* Health Check Result */}
               {healthCheck && (
                 <div
-                  className={`border p-4 ${
+                  className={`rounded-2xl border-2 p-6 ${
                     healthCheck.healthy
-                      ? 'border-green-300 bg-green-50'
-                      : 'border-red-300 bg-red-50'
+                      ? 'border-green-200 bg-gradient-to-br from-green-50 to-emerald-50'
+                      : 'border-red-200 bg-gradient-to-br from-red-50 to-rose-50'
                   }`}
                 >
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex items-center gap-3 mb-3">
                     {healthCheck.healthy ? (
-                      <CheckCircle2 className="w-5 h-5 text-green-600" />
+                      <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
+                        <CheckCircle2 className="w-6 h-6 text-green-600" />
+                      </div>
                     ) : (
-                      <XCircle className="w-5 h-5 text-red-500" />
+                      <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
+                        <XCircle className="w-6 h-6 text-red-600" />
+                      </div>
                     )}
-                    <span className="font-mono text-sm font-bold">
-                      {healthCheck.healthy
-                        ? t('settings.llmConfiguration.connectionSuccessful')
-                        : t('settings.llmConfiguration.connectionFailed')}
-                    </span>
+                    <div>
+                      <p className="text-base font-bold text-slate-900">
+                        {healthCheck.healthy
+                          ? t('settings.llmConfiguration.connectionSuccessful')
+                          : t('settings.llmConfiguration.connectionFailed')}
+                      </p>
+                      <p className="text-sm text-slate-600 mt-0.5">
+                        {t('settings.llmConfiguration.connectionDetails', {
+                          provider: healthCheck.provider,
+                          model: healthCheck.model,
+                        })}
+                      </p>
+                    </div>
                   </div>
-                  <p className="font-mono text-xs text-gray-600">
-                    {t('settings.llmConfiguration.connectionDetails', {
-                      provider: healthCheck.provider,
-                      model: healthCheck.model,
-                    })}
-                  </p>
                   {healthCheckError && (
-                    <p className="font-mono text-xs text-red-600 mt-1">{healthCheckError}</p>
+                    <p className="text-sm text-red-700 bg-red-100/50 rounded-xl p-3 mt-3">{healthCheckError}</p>
                   )}
                   {healthCheckWarning && (
-                    <p className="font-mono text-xs text-amber-700 mt-1">{healthCheckWarning}</p>
+                    <p className="text-sm text-amber-700 bg-amber-100/50 rounded-xl p-3 mt-3">{healthCheckWarning}</p>
                   )}
                   {healthDetailItems.length > 0 && (
-                    <div className="mt-3 space-y-3">
+                    <div className="mt-4 space-y-4">
                       {healthDetailItems.map((item) => (
                         <div key={item.key}>
-                          <p className="font-mono text-[10px] uppercase tracking-wider text-gray-600">
+                          <p className="text-xs font-semibold uppercase tracking-wider text-slate-600 mb-2">
                             {item.label}
                           </p>
-                          <pre className="mt-1 whitespace-pre-wrap break-all rounded-none border border-black bg-white p-3 text-xs text-gray-800 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)]">
+                          <pre className="whitespace-pre-wrap break-all rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-800 shadow-sm">
                             {item.value}
                           </pre>
                         </div>
@@ -1135,20 +1203,25 @@ export default function SettingsPage() {
           </section>
 
           {/* Content Generation Section */}
-          <section className="space-y-6">
-            <div className="flex items-center gap-2 border-b border-black/10 pb-2">
-              <Settings2 className="w-4 h-4" />
-              <h2 className="font-mono text-sm font-bold uppercase tracking-wider">
-                {t('settings.contentGeneration.title')}
-              </h2>
+          <section className="bg-white rounded-3xl border border-slate-200/60 shadow-lg overflow-hidden">
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-6 sm:p-8 border-b border-slate-200/60">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-lg shadow-purple-200/50">
+                  <Settings2 className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900">
+                    {t('settings.contentGeneration.title')}
+                  </h2>
+                  <p className="text-sm text-slate-600 mt-1">
+                    {t('settings.contentGeneration.description')}
+                  </p>
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <p className="text-sm text-gray-600 mb-4">
-                {t('settings.contentGeneration.description')}
-              </p>
-
-              <div className="space-y-3">
+            <div className="p-6 sm:p-8 space-y-6">
+              <div className="space-y-4">
                 <ToggleSwitch
                   checked={enableCoverLetter}
                   onCheckedChange={(checked) => {
@@ -1171,7 +1244,7 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <div className="pt-4 border-t border-gray-200">
+              <div className="pt-6 border-t border-slate-200">
                 <Dropdown
                   options={localizedPromptOptions}
                   value={defaultPromptId}
@@ -1185,58 +1258,71 @@ export default function SettingsPage() {
           </section>
 
           {/* Language Settings Section */}
-          <section className="space-y-6">
-            <div className="flex items-center gap-2 border-b border-black/10 pb-2">
-              <Globe className="w-4 h-4" />
-              <h2 className="font-mono text-sm font-bold uppercase tracking-wider">
-                {t('settings.uiLanguage')} & {t('settings.contentLanguage')}
-              </h2>
+          <section className="bg-white rounded-3xl border border-slate-200/60 shadow-lg overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 p-6 sm:p-8 border-b border-slate-200/60">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-600 flex items-center justify-center shadow-lg shadow-blue-200/50">
+                  <Globe className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-900">
+                    {t('settings.uiLanguage')} & {t('settings.contentLanguage')}
+                  </h2>
+                  <p className="text-sm text-slate-600 mt-1">Customize language preferences for interface and content</p>
+                </div>
+              </div>
             </div>
 
-            {/* UI Language */}
-            <div className="space-y-4">
-              <div>
-                <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-                  {t('settings.uiLanguage')}
-                </h3>
-                <p className="text-sm text-gray-600 mb-3">{t('settings.uiLanguageDescription')}</p>
-              </div>
+            <div className="p-6 sm:p-8 space-y-8">
+              {/* UI Language */}
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 mb-1">
+                    {t('settings.uiLanguage')}
+                  </h3>
+                  <p className="text-sm text-slate-600">{t('settings.uiLanguageDescription')}</p>
+                </div>
 
-              <div className="space-y-2">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {supportedLanguages.map((lang) => (
                     <button
                       key={`ui-${lang}`}
                       onClick={() => setUiLanguage(lang as Locale)}
                       disabled={languageLoading}
-                      className={`px-4 py-3 text-sm ${SEGMENTED_BUTTON_BASE} ${uiLanguage === lang ? SEGMENTED_BUTTON_ACTIVE : SEGMENTED_BUTTON_INACTIVE}`}
+                      className={`px-4 py-3 text-sm font-medium rounded-2xl border-2 transition-all duration-200 ${
+                        uiLanguage === lang
+                          ? 'bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-300 text-blue-700 shadow-lg shadow-blue-100'
+                          : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:shadow-md'
+                      }`}
                     >
                       {languageNames[lang]}
                     </button>
                   ))}
                 </div>
               </div>
-            </div>
 
-            {/* Content Language */}
-            <div className="space-y-4 pt-4 border-t border-gray-200">
-              <div>
-                <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-gray-700 mb-2">
-                  {t('settings.contentLanguage')}
-                </h3>
-                <p className="text-sm text-gray-600 mb-3">
-                  {t('settings.contentLanguageDescription')}
-                </p>
-              </div>
+              {/* Content Language */}
+              <div className="space-y-4 pt-6 border-t border-slate-200">
+                <div>
+                  <h3 className="text-base font-bold text-slate-900 mb-1">
+                    {t('settings.contentLanguage')}
+                  </h3>
+                  <p className="text-sm text-slate-600">
+                    {t('settings.contentLanguageDescription')}
+                  </p>
+                </div>
 
-              <div className="space-y-2">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {supportedLanguages.map((lang) => (
                     <button
                       key={`content-${lang}`}
                       onClick={() => setContentLanguage(lang as SupportedLanguage)}
                       disabled={languageLoading}
-                      className={`px-4 py-3 text-sm ${SEGMENTED_BUTTON_BASE} ${contentLanguage === lang ? SEGMENTED_BUTTON_ACTIVE : SEGMENTED_BUTTON_INACTIVE}`}
+                      className={`px-4 py-3 text-sm font-medium rounded-2xl border-2 transition-all duration-200 ${
+                        contentLanguage === lang
+                          ? 'bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-300 text-blue-700 shadow-lg shadow-blue-100'
+                          : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300 hover:shadow-md'
+                      }`}
                     >
                       {languageNames[lang]}
                     </button>
@@ -1247,87 +1333,96 @@ export default function SettingsPage() {
           </section>
 
           {/* Danger Zone */}
-          <section className="space-y-6">
-            <div className="flex items-center gap-2 border-b border-red-200 pb-2">
-              <AlertTriangle className="w-4 h-4 text-red-600" />
-              <h2 className="font-mono text-sm font-bold uppercase tracking-wider text-red-600">
-                {t('settings.dangerZone')}
-              </h2>
+          <section className="bg-gradient-to-br from-red-50 to-rose-50 rounded-3xl border-2 border-red-200 shadow-lg overflow-hidden">
+            <div className="bg-gradient-to-r from-red-100 to-rose-100 p-6 sm:p-8 border-b border-red-200">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-red-600 to-rose-600 flex items-center justify-center shadow-lg shadow-red-200/50">
+                  <AlertTriangle className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-red-900">
+                    {t('settings.dangerZone')}
+                  </h2>
+                  <p className="text-sm text-red-700 mt-1">Irreversible actions that affect your data</p>
+                </div>
+              </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Clear API Keys */}
-              <div className="border border-red-200 bg-red-50/50 p-6 space-y-4">
-                <div>
-                  <h3 className="font-bold text-sm text-red-900 mb-1">
+            <div className="p-6 sm:p-8">
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Clear API Keys */}
+                <div className="bg-white rounded-2xl border-2 border-red-200 p-6 space-y-4 hover:shadow-lg transition-shadow">
+                  <div>
+                    <h3 className="text-base font-bold text-red-900 mb-2">
+                      {t('settings.clearApiKeys')}
+                    </h3>
+                    <p className="text-sm text-red-700">{t('settings.clearApiKeysDescription')}</p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    className="w-full border-2 border-red-300 text-red-700 hover:bg-red-50 hover:border-red-400 transition-all"
+                    onClick={() => setShowClearApiKeysDialog(true)}
+                    disabled={isResetting || !isAdmin}
+                  >
+                    <Key className="w-4 h-4 mr-2" />
                     {t('settings.clearApiKeys')}
-                  </h3>
-                  <p className="text-xs text-red-700">{t('settings.clearApiKeysDescription')}</p>
+                    {!isAdmin && <LockIcon className="ml-2 w-3 h-3" />}
+                  </Button>
                 </div>
-                <Button
-                  variant="outline"
-                  className="w-full border-red-200 text-red-700 hover:bg-red-50 hover:text-red-800 hover:border-red-300"
-                  onClick={() => setShowClearApiKeysDialog(true)}
-                  disabled={isResetting || !isAdmin}
-                >
-                  <Key className="w-4 h-4 mr-2" />
-                  {t('settings.clearApiKeys')}
-                  {!isAdmin && <LockIcon className="ml-2 w-3 h-3" />}
-                </Button>
-              </div>
 
-              {/* Reset Database */}
-              <div className="border border-red-200 bg-red-50/50 p-6 space-y-4">
-                <div>
-                  <h3 className="font-bold text-sm text-red-900 mb-1">
+                {/* Reset Database */}
+                <div className="bg-white rounded-2xl border-2 border-red-200 p-6 space-y-4 hover:shadow-lg transition-shadow">
+                  <div>
+                    <h3 className="text-base font-bold text-red-900 mb-2">
+                      {t('settings.resetDatabase')}
+                    </h3>
+                    <p className="text-sm text-red-700">{t('settings.resetDatabaseDescription')}</p>
+                  </div>
+                  <Button
+                    variant="destructive"
+                    className="w-full shadow-lg hover:shadow-xl transition-all"
+                    onClick={() => setShowResetDatabaseDialog(true)}
+                    disabled={isResetting || !isAdmin}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
                     {t('settings.resetDatabase')}
-                  </h3>
-                  <p className="text-xs text-red-700">{t('settings.resetDatabaseDescription')}</p>
+                    {!isAdmin && <LockIcon className="ml-2 w-3 h-3" />}
+                  </Button>
                 </div>
-                <Button
-                  variant="destructive"
-                  className="w-full"
-                  onClick={() => setShowResetDatabaseDialog(true)}
-                  disabled={isResetting || !isAdmin}
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  {t('settings.resetDatabase')}
-                  {!isAdmin && <LockIcon className="ml-2 w-3 h-3" />}
-                </Button>
               </div>
             </div>
           </section>
         </div>
 
         {/* Footer */}
-        <div className="bg-[#E5E5E0] p-4 border-t border-black flex flex-col sm:flex-row justify-between items-center gap-2">
-          <div className="flex items-center gap-2">
+        <div className="bg-white/80 backdrop-blur-xl border-t border-slate-200/60 p-6 flex flex-col sm:flex-row justify-between items-center gap-4 shadow-lg">
+          <div className="flex items-center gap-3">
             <Image
               src="/logo.svg"
               alt="Resume Matcher"
-              width={20}
-              height={20}
-              className="w-5 h-5"
+              width={24}
+              height={24}
+              className="w-6 h-6"
             />
-            <span className="font-mono text-xs text-gray-500">
-              {getVersionString().toUpperCase()}
+            <span className="text-sm font-medium text-slate-600">
+              {getVersionString()}
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {statusLoading ? (
               <>
-                <Loader2 className="w-3 h-3 animate-spin text-gray-500" />
-                <span className="font-mono text-xs text-gray-500">
+                <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
+                <span className="text-sm text-slate-600">
                   {t('settings.footer.status.checking')}
                 </span>
               </>
             ) : systemStatus ? (
               <>
                 <div
-                  className={`w-3 h-3 ${systemStatus.status === 'ready' ? 'bg-green-700' : 'bg-amber-500'}`}
+                  className={`w-3 h-3 rounded-full ${systemStatus.status === 'ready' ? 'bg-green-500 shadow-lg shadow-green-200' : 'bg-amber-500 shadow-lg shadow-amber-200'}`}
                 ></div>
                 <span
-                  className={`font-mono text-xs font-bold ${systemStatus.status === 'ready' ? 'text-green-700' : 'text-amber-600'}`}
+                  className={`text-sm font-semibold ${systemStatus.status === 'ready' ? 'text-green-700' : 'text-amber-700'}`}
                 >
                   {systemStatus.status === 'ready'
                     ? t('settings.footer.status.ready')
@@ -1335,7 +1430,7 @@ export default function SettingsPage() {
                 </span>
               </>
             ) : (
-              <span className="font-mono text-xs text-gray-500">
+              <span className="text-sm text-slate-500">
                 {t('settings.footer.status.offline')}
               </span>
             )}

@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { useTranslations } from '@/lib/i18n';
 import { fetchAuthMe, type AuthUser } from '@/lib/api/auth';
 import { API_BASE } from '@/lib/api/client';
+import { LoadingAnimation } from '@/components/ui/loading-animation';
 
 import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
 import AlertCircle from 'lucide-react/dist/esm/icons/alert-circle';
@@ -355,17 +356,17 @@ export default function DashboardPage() {
             key={item.key}
             onClick={() => setActiveFilter(item.key as ResumeFilter)}
             className={cn(
-              'inline-flex items-center justify-center gap-2 rounded-[1.05rem] border px-3 py-2 text-xs font-semibold transition-all duration-300',
+              'inline-flex items-center justify-center gap-2 border-2 px-3 py-2 text-xs font-bold uppercase tracking-wide transition-all duration-200',
               activeFilter === item.key
-                ? 'border-transparent bg-[linear-gradient(135deg,#2563eb,#4f46e5,#8b5cf6)] text-white shadow-[0_14px_30px_rgba(79,70,229,0.2)]'
-                : 'border-white/80 bg-white/72 text-slate-600 shadow-[0_8px_22px_rgba(15,23,42,0.05)] hover:bg-white hover:text-slate-950'
+                ? 'border-black bg-black text-white'
+                : 'border-black bg-white text-black hover:bg-black hover:text-white'
             )}
           >
             <span>{item.label}</span>
             <span
               className={cn(
-                'rounded-full px-1.5 py-0.5 text-[10px]',
-                activeFilter === item.key ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'
+                'border px-1.5 py-0.5 text-[10px] font-bold',
+                activeFilter === item.key ? 'border-white bg-white text-black' : 'border-black bg-black text-white'
               )}
             >
               {item.count}
@@ -375,12 +376,12 @@ export default function DashboardPage() {
       </div>
 
       <div className="relative min-w-0 sm:w-[17rem]">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-black" />
         <input
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search resumes, companies, or roles"
-          className="h-11 w-full rounded-[1.1rem] border border-white/80 bg-white/78 pl-10 pr-4 text-sm text-slate-700 shadow-[0_10px_26px_rgba(15,23,42,0.06)] outline-none transition-all placeholder:text-slate-400 focus:border-primary/20 focus:bg-white"
+          className="h-11 w-full border-2 border-black bg-white pl-10 pr-4 text-sm font-medium text-black outline-none transition-all placeholder:text-slate-500 focus:bg-yellow-100"
         />
       </div>
     </div>
@@ -388,22 +389,28 @@ export default function DashboardPage() {
 
   if (authUser === 'loading') {
     return (
-      <div className="flex min-h-screen items-center justify-center p-6">
-        <p className="font-sans text-sm text-slate-500">Checking session...</p>
+      <div className="flex min-h-screen items-center justify-center bg-[repeating-linear-gradient(45deg,#fef3c7,#fef3c7_10px,#fde68a_10px,#fde68a_20px)]">
+        <div className="bg-white border-4 border-black p-12">
+          <LoadingAnimation 
+            message="Checking session..." 
+            variant="sparkle" 
+            size="lg" 
+          />
+        </div>
       </div>
     );
   }
 
   if (!authUser) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-6">
-        <Card className="w-full max-w-md rounded-[1.8rem] bg-white shadow-[0_30px_80px_rgba(15,23,42,0.12)]">
+      <div className="flex min-h-screen items-center justify-center bg-[repeating-linear-gradient(45deg,#fef3c7,#fef3c7_10px,#fde68a_10px,#fde68a_20px)] p-6">
+        <Card className="w-full max-w-md border-4 border-black bg-white">
           <div className="space-y-6 p-8 text-center">
             <div className="space-y-2">
-              <CardTitle className="font-sans text-3xl font-bold text-primary">
+              <CardTitle className="font-sans text-3xl font-bold uppercase text-black">
                 Sign in required
               </CardTitle>
-              <CardDescription className="text-sm">{t('errors.unauthorized')}</CardDescription>
+              <CardDescription className="text-sm font-medium">{t('errors.unauthorized')}</CardDescription>
             </div>
             <a href={loginUrl} className="block">
               <Button className="w-full">Sign in with Google</Button>
@@ -425,16 +432,16 @@ export default function DashboardPage() {
       >
         {masterResumeId && !isLlmConfigured && !statusLoading && (
           <div className="xl:col-span-3 2xl:col-span-4">
-            <div className="flex flex-col gap-4 rounded-[1.6rem] border border-amber-200/70 bg-[linear-gradient(135deg,rgba(255,251,235,0.92),rgba(255,255,255,0.82))] p-4 shadow-[0_16px_40px_rgba(245,158,11,0.12)] backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between sm:p-5">
+            <div className="flex flex-col gap-4 border-4 border-amber-600 bg-amber-100 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
               <div className="flex items-start gap-3 sm:items-center">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.15rem] bg-amber-100 text-amber-600 shadow-sm">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center border-2 border-amber-800 bg-amber-300 text-amber-900">
                   <AlertTriangle className="h-5 w-5" />
                 </div>
                 <div className="min-w-0">
-                  <p className="font-sans text-sm font-semibold text-amber-950">
+                  <p className="font-sans text-sm font-bold uppercase text-amber-950">
                     {t('dashboard.llmNotConfiguredTitle')}
                   </p>
-                  <p className="mt-1 text-sm leading-6 text-amber-800/80">
+                  <p className="mt-1 text-sm font-medium leading-6 text-amber-900">
                     {t('dashboard.llmNotConfiguredMessage')}
                   </p>
                 </div>
@@ -443,7 +450,7 @@ export default function DashboardPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full rounded-[1rem] border-amber-200 text-amber-800 hover:bg-white sm:w-auto"
+                  className="w-full border-2 border-amber-800 bg-white font-bold uppercase text-amber-900 hover:bg-amber-800 hover:text-white sm:w-auto"
                 >
                   <Settings className="mr-2 h-4 w-4" />
                   {t('nav.settings')}
@@ -460,20 +467,20 @@ export default function DashboardPage() {
                 <Link href="/settings" className="block">
                   <Card
                     variant="interactive"
-                    className="min-h-[17rem] rounded-[1.8rem] border-dashed border-amber-200/80 bg-amber-50/55"
+                    className="min-h-[17rem] border-4 border-dashed border-amber-600 bg-amber-100"
                   >
                     <div className="flex h-full flex-col justify-between gap-8">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-[1.4rem] bg-amber-100 text-amber-700 shadow-sm">
+                      <div className="flex h-16 w-16 items-center justify-center border-2 border-amber-800 bg-amber-300 text-amber-900">
                         <AlertTriangle className="h-8 w-8" />
                       </div>
                       <div className="space-y-3">
-                        <CardTitle className="text-2xl text-amber-950">
+                        <CardTitle className="text-2xl font-bold uppercase text-amber-950">
                           {t('dashboard.setupRequiredTitle')}
                         </CardTitle>
-                        <CardDescription className="max-w-xl text-amber-800/80">
+                        <CardDescription className="max-w-xl font-medium text-amber-900">
                           {t('dashboard.setupRequiredMessage')}
                         </CardDescription>
-                        <div className="inline-flex items-center gap-2 rounded-full bg-white/70 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-amber-700">
+                        <div className="inline-flex items-center gap-2 border-2 border-amber-800 bg-white px-3 py-1 text-xs font-bold uppercase tracking-wider text-amber-900">
                           <Settings className="h-3.5 w-3.5" />
                           {t('nav.goToSettings')}
                         </div>
@@ -489,17 +496,17 @@ export default function DashboardPage() {
                   trigger={
                     <Card
                       variant="interactive"
-                      className="min-h-[17rem] rounded-[1.9rem] bg-[linear-gradient(135deg,rgba(37,99,235,0.96),rgba(99,102,241,0.92),rgba(168,85,247,0.88))] text-white shadow-[0_26px_60px_rgba(79,70,229,0.24)]"
+                      className="min-h-[17rem] border-4 border-black bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-600 text-white"
                     >
                       <div className="flex h-full flex-col justify-between gap-8">
-                        <div className="flex h-18 w-18 items-center justify-center rounded-[1.5rem] border border-white/20 bg-white/12 backdrop-blur-sm">
+                        <div className="flex h-18 w-18 items-center justify-center border-4 border-white bg-black">
                           <Plus className="h-9 w-9" />
                         </div>
                         <div className="space-y-3">
-                          <CardTitle className="text-3xl leading-tight text-white">
+                          <CardTitle className="text-3xl font-bold uppercase leading-tight text-white">
                             {t('dashboard.initializeMasterResume')}
                           </CardTitle>
-                          <CardDescription className="max-w-xl text-white/75">
+                          <CardDescription className="max-w-xl font-medium text-white">
                             {t('dashboard.initializeSequence')}
                           </CardDescription>
                         </div>
@@ -511,21 +518,21 @@ export default function DashboardPage() {
             ) : (
               <Card
                 variant="interactive"
-                className="min-h-[17rem] rounded-[1.9rem]"
+                className="min-h-[17rem] border-4 border-black bg-white"
                 onClick={() => router.push(`/resumes/${masterResumeId}`)}
               >
                 <div className="flex h-full flex-col gap-6">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex items-start gap-4">
-                      <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[1.45rem] bg-[linear-gradient(135deg,#2563eb,#4f46e5,#8b5cf6)] text-white shadow-[0_20px_40px_rgba(79,70,229,0.22)]">
-                        <span className="font-sans text-2xl font-bold">M</span>
+                      <div className="flex h-16 w-16 shrink-0 items-center justify-center border-4 border-black bg-gradient-to-br from-cyan-400 to-blue-600 text-white">
+                        <span className="font-sans text-2xl font-black">M</span>
                       </div>
                       <div className="min-w-0">
-                        <div className="mb-2 inline-flex items-center rounded-full border border-sky-100 bg-sky-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-sky-700">
+                        <div className="mb-2 inline-flex items-center border-2 border-sky-700 bg-sky-200 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-sky-900">
                           Master resume
                         </div>
-                        <CardTitle className="text-2xl">Primary resume library</CardTitle>
-                        <CardDescription className="mt-2 max-w-xl">
+                        <CardTitle className="text-2xl font-bold">Primary resume library</CardTitle>
+                        <CardDescription className="mt-2 max-w-xl font-medium">
                           Keep your baseline experience updated so new tailored resumes can be created quickly.
                         </CardDescription>
                       </div>
@@ -535,7 +542,7 @@ export default function DashboardPage() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="z-10 h-11 w-11 rounded-[1.05rem]"
+                        className="z-10 h-11 w-11 border-2 border-black bg-white hover:bg-black hover:text-white"
                         onClick={(e) => {
                           e.stopPropagation();
                           setShowMasterManager(true);
@@ -547,7 +554,7 @@ export default function DashboardPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="z-10 h-11 w-11 rounded-[1.05rem]"
+                          className="z-10 h-11 w-11 border-2 border-black bg-white hover:bg-black hover:text-white"
                           onClick={handleRetryProcessing}
                           disabled={isRetrying}
                         >
@@ -565,14 +572,17 @@ export default function DashboardPage() {
                     <div className="space-y-3">
                       <div
                         className={cn(
-                          'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold',
-                          masterStatus.badge
+                          'inline-flex items-center gap-2 border-2 px-3 py-1.5 text-xs font-bold uppercase',
+                          processingStatus === 'ready' && 'border-emerald-700 bg-emerald-200 text-emerald-900',
+                          processingStatus === 'processing' && 'border-sky-700 bg-sky-200 text-sky-900',
+                          processingStatus === 'failed' && 'border-rose-700 bg-rose-200 text-rose-900',
+                          processingStatus === 'loading' && 'border-slate-700 bg-slate-200 text-slate-900'
                         )}
                       >
                         {masterStatus.icon}
                         <span>{masterStatus.text}</span>
                       </div>
-                      <div className={cn('text-sm font-medium', masterStatus.tone)}>
+                      <div className="text-sm font-bold text-black">
                         Ready master resumes unlock faster tailoring flows.
                       </div>
                     </div>
@@ -582,7 +592,7 @@ export default function DashboardPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="rounded-[1rem]"
+                          className="border-2 border-black font-bold uppercase"
                           onClick={handleRetryProcessing}
                           disabled={isRetrying}
                         >
@@ -593,14 +603,14 @@ export default function DashboardPage() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="rounded-[1rem] border-rose-200 text-rose-600 hover:bg-rose-50"
+                          className="border-2 border-rose-700 bg-rose-200 font-bold uppercase text-rose-900 hover:bg-rose-700 hover:text-white"
                           onClick={handleDeleteAndReupload}
                         >
                           {t('dashboard.deleteAndReupload')}
                         </Button>
                       </div>
                     ) : (
-                      <div className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500">
+                      <div className="inline-flex items-center gap-2 text-sm font-bold uppercase text-black">
                         <span>Open workspace</span>
                         <ChevronRight className="h-4 w-4" />
                       </div>
@@ -610,51 +620,51 @@ export default function DashboardPage() {
               </Card>
             )}
 
-            <Card className="min-h-[17rem] rounded-[1.9rem]">
+            <Card className="min-h-[17rem] border-4 border-black bg-white">
               <div className="flex h-full flex-col gap-5">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <div className="mb-2 inline-flex items-center rounded-full border border-violet-100 bg-violet-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-violet-700">
+                    <div className="mb-2 inline-flex items-center border-2 border-violet-700 bg-violet-200 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-violet-900">
                       Workspace stats
                     </div>
-                    <CardTitle className="text-xl">Resume pipeline overview</CardTitle>
-                    <CardDescription className="mt-2">
+                    <CardTitle className="text-xl font-bold">Resume pipeline overview</CardTitle>
+                    <CardDescription className="mt-2 font-medium">
                       Designed to stay usable even as your dashboard grows past 20 tailored resumes.
                     </CardDescription>
                   </div>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-[1.15rem] bg-[linear-gradient(135deg,#4f46e5,#8b5cf6)] text-white shadow-[0_14px_28px_rgba(79,70,229,0.2)]">
+                  <div className="flex h-12 w-12 items-center justify-center border-4 border-black bg-gradient-to-br from-purple-400 to-pink-500 text-white">
                     <Sparkles className="h-5 w-5" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-[1.2rem] border border-white/75 bg-white/76 p-4">
-                    <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Tailored</div>
-                    <div className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+                  <div className="border-2 border-black bg-cyan-100 p-4">
+                    <div className="text-xs font-bold uppercase tracking-wider text-cyan-900">Tailored</div>
+                    <div className="mt-2 text-3xl font-black tracking-tight text-black">
                       {tailoredResumes.length}
                     </div>
                   </div>
-                  <div className="rounded-[1.2rem] border border-white/75 bg-white/76 p-4">
-                    <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Ready</div>
-                    <div className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+                  <div className="border-2 border-black bg-green-100 p-4">
+                    <div className="text-xs font-bold uppercase tracking-wider text-green-900">Ready</div>
+                    <div className="mt-2 text-3xl font-black tracking-tight text-black">
                       {counts.ready}
                     </div>
                   </div>
-                  <div className="rounded-[1.2rem] border border-white/75 bg-white/76 p-4">
-                    <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Processing</div>
-                    <div className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+                  <div className="border-2 border-black bg-yellow-100 p-4">
+                    <div className="text-xs font-bold uppercase tracking-wider text-yellow-900">Processing</div>
+                    <div className="mt-2 text-3xl font-black tracking-tight text-black">
                       {counts.processing + counts.pending}
                     </div>
                   </div>
-                  <div className="rounded-[1.2rem] border border-white/75 bg-white/76 p-4">
-                    <div className="text-xs uppercase tracking-[0.18em] text-slate-400">Failed</div>
-                    <div className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+                  <div className="border-2 border-black bg-red-100 p-4">
+                    <div className="text-xs font-bold uppercase tracking-wider text-red-900">Failed</div>
+                    <div className="mt-2 text-3xl font-black tracking-tight text-black">
                       {counts.failed}
                     </div>
                   </div>
                 </div>
 
-                <div className="mt-auto rounded-[1.2rem] border border-dashed border-slate-200 bg-slate-50/70 p-4 text-sm leading-6 text-slate-500">
+                <div className="mt-auto border-2 border-dashed border-black bg-slate-100 p-4 text-sm font-medium leading-6 text-black">
                   Search, filter, and compact cards make high-volume resume collections easier to scan on desktop and mobile.
                 </div>
               </div>
@@ -665,16 +675,16 @@ export default function DashboardPage() {
         {isTailorEnabled && (
           <Card
             variant="interactive"
-            className="min-h-[15rem] rounded-[1.8rem] bg-[linear-gradient(135deg,rgba(255,255,255,0.92),rgba(244,247,255,0.92))]"
+            className="min-h-[15rem] border-4 border-black bg-gradient-to-br from-pink-300 via-purple-300 to-indigo-400"
             onClick={() => router.push('/tailor')}
           >
             <div className="flex h-full flex-col justify-between gap-6">
-              <div className="flex h-16 w-16 items-center justify-center rounded-[1.4rem] bg-[linear-gradient(135deg,#2563eb,#4f46e5,#8b5cf6)] text-white shadow-[0_18px_36px_rgba(79,70,229,0.22)]">
+              <div className="flex h-16 w-16 items-center justify-center border-4 border-white bg-black text-white">
                 <Plus className="h-8 w-8" />
               </div>
               <div>
-                <CardTitle className="text-2xl">Create tailored resume</CardTitle>
-                <CardDescription className="mt-2">
+                <CardTitle className="text-2xl font-bold uppercase text-black">Create tailored resume</CardTitle>
+                <CardDescription className="mt-2 font-medium text-black">
                   Start a new variation from your master resume with role-specific tailoring.
                 </CardDescription>
               </div>
@@ -683,14 +693,14 @@ export default function DashboardPage() {
         )}
 
         {!isTailorEnabled && (
-          <Card className="min-h-[15rem] rounded-[1.8rem] border-dashed">
+          <Card className="min-h-[15rem] border-4 border-dashed border-black bg-slate-100">
             <div className="flex h-full flex-col justify-between gap-6">
-              <div className="flex h-16 w-16 items-center justify-center rounded-[1.4rem] bg-slate-100 text-slate-500">
+              <div className="flex h-16 w-16 items-center justify-center border-2 border-slate-400 bg-slate-200 text-slate-600">
                 <Plus className="h-8 w-8" />
               </div>
               <div>
-                <CardTitle className="text-2xl text-slate-800">{t('dashboard.createResume')}</CardTitle>
-                <CardDescription className="mt-2">
+                <CardTitle className="text-2xl font-bold uppercase text-slate-800">{t('dashboard.createResume')}</CardTitle>
+                <CardDescription className="mt-2 font-medium">
                   Upload and finish processing your master resume before creating tailored versions.
                 </CardDescription>
               </div>
@@ -711,18 +721,18 @@ export default function DashboardPage() {
           </div>
 
           {filteredResumes.length === 0 ? (
-            <Card className="rounded-[1.8rem]">
+            <Card className="border-4 border-black bg-white">
               <div className="flex flex-col items-center justify-center gap-4 py-12 text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-[1.4rem] bg-slate-100 text-slate-500">
+                <div className="flex h-16 w-16 items-center justify-center border-2 border-slate-400 bg-slate-200 text-slate-600">
                   <FileText className="h-8 w-8" />
                 </div>
                 <div className="space-y-2">
-                  <CardTitle className="text-xl">
+                  <CardTitle className="text-xl font-bold uppercase">
                     {searchQuery || activeFilter !== 'all'
                       ? 'No resumes match this view'
                       : 'No tailored resumes yet'}
                   </CardTitle>
-                  <CardDescription className="max-w-md">
+                  <CardDescription className="max-w-md font-medium">
                     {searchQuery || activeFilter !== 'all'
                       ? 'Try another search term or switch filters to see more resumes.'
                       : 'Once you tailor resumes, they will appear here in a compact, scroll-friendly layout.'}
@@ -745,24 +755,24 @@ export default function DashboardPage() {
                   <Card
                     key={resume.resume_id}
                     variant="interactive"
-                    className="min-h-[15rem] rounded-[1.7rem]"
+                    className="min-h-[15rem] border-4 border-black bg-white"
                     onClick={() => router.push(`/resumes/${resume.resume_id}`)}
                   >
                     <div className="flex h-full flex-col gap-5">
                       <div className="flex items-start justify-between gap-3">
                         <div
-                          className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.2rem] shadow-[0_16px_32px_rgba(15,23,42,0.14)]"
+                          className="flex h-14 w-14 shrink-0 items-center justify-center border-4 border-black"
                           style={{ backgroundColor: color.bg, color: color.fg }}
                         >
-                          <span className="font-sans text-lg font-bold">{getMonogram(title) || 'R'}</span>
+                          <span className="font-sans text-lg font-black">{getMonogram(title) || 'R'}</span>
                         </div>
                         <span
                           className={cn(
-                            'rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]',
-                            status === 'ready' && 'border-emerald-200 bg-emerald-50 text-emerald-700',
+                            'border-2 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider',
+                            status === 'ready' && 'border-emerald-700 bg-emerald-200 text-emerald-900',
                             (status === 'processing' || status === 'pending') &&
-                              'border-sky-200 bg-sky-50 text-sky-700',
-                            status === 'failed' && 'border-rose-200 bg-rose-50 text-rose-700'
+                              'border-sky-700 bg-sky-200 text-sky-900',
+                            status === 'failed' && 'border-rose-700 bg-rose-200 text-rose-900'
                           )}
                         >
                           {status}
@@ -770,26 +780,26 @@ export default function DashboardPage() {
                       </div>
 
                       <div className="space-y-2">
-                        <CardTitle className="text-lg leading-6">
+                        <CardTitle className="text-lg font-bold leading-6">
                           <span className="block line-clamp-2">{title}</span>
                         </CardTitle>
-                        <CardDescription className="line-clamp-3 min-h-[4.5rem] text-sm leading-6">
+                        <CardDescription className="line-clamp-3 min-h-[4.5rem] text-sm font-medium leading-6">
                           {resume.jobSnippet ||
                             resume.filename ||
                             'Role-specific resume version ready for review.'}
                         </CardDescription>
                       </div>
 
-                      <div className="mt-auto flex items-end justify-between gap-3 pt-2">
+                      <div className="mt-auto flex items-end justify-between gap-3 border-t-2 border-dashed border-black pt-2">
                         <div className="min-w-0">
-                          <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-600">
                             Updated
                           </div>
-                          <div className="mt-1 text-sm font-medium text-slate-600">
+                          <div className="mt-1 text-sm font-bold text-black">
                             {formatDate(resume.updated_at || resume.created_at)}
                           </div>
                         </div>
-                        <div className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500">
+                        <div className="inline-flex items-center gap-2 text-sm font-bold uppercase text-black">
                           Open
                           <ChevronRight className="h-4 w-4" />
                         </div>

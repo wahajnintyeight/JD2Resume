@@ -48,7 +48,7 @@ export function ModelInfoCard({
     : description;
 
   return (
-    <div className={`mt-3 rounded border-2 border-black bg-[#F0F0E8] p-3 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.1)] ${className}`}>
+    <div className={`mt-3 rounded border-2 border-black bg-[#F0F0E8] p-3 ${className}`}>
       {/* Header with label and token info */}
       <div className="flex flex-wrap items-center gap-2 mb-2">
         <div className="flex items-center gap-1.5">
