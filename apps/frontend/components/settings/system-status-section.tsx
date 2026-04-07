@@ -184,7 +184,9 @@ export function SystemStatusSection({
               <p className="text-base font-bold uppercase tracking-[0.08em] text-rose-100">
                 {t('settings.systemStatus.unableToConnect')}
               </p>
-              <p className="text-xs text-slate-400">{t('settings.systemStatus.expectedAt', { apiUrl: API_URL })}</p>
+              <p className="text-xs text-slate-400">
+                {t('settings.systemStatus.expectedAt', { apiUrl: API_URL })}
+              </p>
             </div>
             <Button
               variant="outline"

@@ -34,7 +34,7 @@ export default function MasterResumeSelector({
         setError(null);
         const response = await listMasterResumes();
         setMasters(response.masters);
-        
+
         // Auto-select if only one master exists
         if (response.masters.length === 1 && !selectedResumeId) {
           onSelect(response.masters[0].resume_id, response.masters[0].master_category);
@@ -110,8 +110,8 @@ export default function MasterResumeSelector({
                 No master resume found
               </h4>
               <p className="mt-2 font-sans text-sm text-amber-800/80 font-medium leading-relaxed italic">
-                {'// '}Please set at least one resume as master before tailoring. Go to the dashboard and
-                click "Set as Master" on a resume.
+                {'// '}Please set at least one resume as master before tailoring. Go to the
+                dashboard and click "Set as Master" on a resume.
               </p>
             </div>
           </div>

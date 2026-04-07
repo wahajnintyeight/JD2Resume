@@ -55,12 +55,12 @@ export function ResumeUploadDialog({
   } | null>(null);
   const [failedResumeId, setFailedResumeId] = useState<string | null>(null);
   const [isRetryingProcessing, setIsRetryingProcessing] = useState(false);
-  
+
   // Support both prop naming conventions
   const effectiveOpen = isOpenProp !== undefined ? isOpenProp : controlledOpen;
   const isControlled = effectiveOpen !== undefined;
   const isOpen = isControlled ? effectiveOpen : internalOpen;
-  
+
   const setIsOpen = (nextOpen: boolean) => {
     if (!isControlled) {
       setInternalOpen(nextOpen);

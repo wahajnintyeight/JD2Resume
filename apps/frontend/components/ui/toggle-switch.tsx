@@ -49,7 +49,11 @@ export const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
         <div id={labelId} className="font-bold text-sm text-slate-900 dark:text-white">
           {label}
         </div>
-        {description && <div className="font-sans text-xs text-slate-600 dark:text-slate-400 mt-1 font-medium">{description}</div>}
+        {description && (
+          <div className="font-sans text-xs text-slate-600 dark:text-slate-400 mt-1 font-medium">
+            {description}
+          </div>
+        )}
       </div>
       <button
         type="button"
@@ -63,8 +67,8 @@ export const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
           'border-2 transition-colors',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2',
           'disabled:cursor-not-allowed',
-          checked 
-            ? 'bg-indigo-600 border-indigo-600' 
+          checked
+            ? 'bg-indigo-600 border-indigo-600'
             : 'bg-slate-200 dark:bg-slate-700 border-slate-300 dark:border-slate-600'
         )}
       >

@@ -207,10 +207,7 @@ const Resume: React.FC<ResumeProps> = ({
         />
       )}
       {mergedSettings.template === 'classic-ats' && (
-        <ResumeClassicAts
-          data={resumeData}
-          additionalSectionLabels={additionalSectionLabels}
-        />
+        <ResumeClassicAts data={resumeData} additionalSectionLabels={additionalSectionLabels} />
       )}
     </div>
   );

@@ -32,7 +32,12 @@ export const RetroTabs: React.FC<RetroTabsProps> = ({
   className,
 }) => {
   return (
-    <div className={cn('flex items-center gap-1 p-1 bg-accent/30 rounded-2xl border border-border/20 backdrop-blur-sm', className)}>
+    <div
+      className={cn(
+        'flex items-center gap-1 p-1 bg-accent/30 rounded-2xl border border-border/20 backdrop-blur-sm',
+        className
+      )}
+    >
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
         const isDisabled = tab.disabled;
@@ -50,9 +55,7 @@ export const RetroTabs: React.FC<RetroTabsProps> = ({
                 'scale-[1.02]',
               ],
               !isActive &&
-                !isDisabled && [
-                  'text-muted-foreground hover:text-foreground hover:bg-white/50',
-                ],
+                !isDisabled && ['text-muted-foreground hover:text-foreground hover:bg-white/50'],
               isDisabled && ['text-muted-foreground/30 cursor-not-allowed opacity-50']
             )}
           >

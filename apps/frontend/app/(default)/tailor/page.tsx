@@ -8,10 +8,7 @@ import { Card, CardDescription, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useResumePreview } from '@/components/common/resume_previewer_context';
-import type {
-  ChangeDecision,
-  ImprovedResult,
-} from '@/components/common/resume_previewer_context';
+import type { ChangeDecision, ImprovedResult } from '@/components/common/resume_previewer_context';
 import type { ResumeData } from '@/components/dashboard/resume-component';
 import {
   uploadJobDescriptions,
@@ -468,13 +465,15 @@ export default function TailorPage() {
                     </div>
                     <CardTitle
                       className="text-2xl font-black uppercase tracking-[-0.06em] text-[#f7efdd]"
-                      style={{ fontFamily: 'var(--font-playfair-display), "Times New Roman", serif' }}
+                      style={{
+                        fontFamily: 'var(--font-playfair-display), "Times New Roman", serif',
+                      }}
                     >
                       Source and strategy
                     </CardTitle>
                     <CardDescription className="text-sm leading-6 text-[#cabfa8]">
-                      Keep the setup readable: first pick the source resume, then choose the
-                      prompt style that best matches the role.
+                      Keep the setup readable: first pick the source resume, then choose the prompt
+                      style that best matches the role.
                     </CardDescription>
                   </div>
 

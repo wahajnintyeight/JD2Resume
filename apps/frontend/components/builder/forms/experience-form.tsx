@@ -139,26 +139,26 @@ export const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, onChange }
     <section className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.92),rgba(15,23,42,0.68))] p-6 shadow-[0_24px_60px_rgba(2,6,23,0.38)] sm:p-8">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.13),transparent_25%),radial-gradient(circle_at_82%_18%,rgba(96,165,250,0.12),transparent_22%)]" />
 
-      <div className="relative mb-7 flex flex-col gap-6 border-b border-white/10 pb-6 md:flex-row md:items-end md:justify-between">
+      <div className="relative mb-7 flex flex-col gap-6 border-b border-white/10 pb-6 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex items-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-[1.4rem] border border-white/10 bg-[linear-gradient(135deg,rgba(34,211,238,0.2),rgba(96,165,250,0.14))] text-cyan-100 shadow-[0_10px_30px_rgba(15,23,42,0.3)]">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.4rem] border border-white/10 bg-[linear-gradient(135deg,rgba(34,211,238,0.2),rgba(96,165,250,0.14))] text-cyan-100 shadow-[0_10px_30px_rgba(15,23,42,0.3)]">
             <span className="font-serif text-2xl font-black uppercase">X</span>
           </div>
           <div>
             <p className="font-sans text-[10px] font-bold uppercase tracking-[0.35em] text-cyan-200/80">
               work history
             </p>
-            <h3 className="mt-2 font-serif text-3xl font-black uppercase tracking-[0.08em] text-white">
+            <h3 className="mt-2 font-serif text-2xl font-black uppercase tracking-[0.08em] text-white sm:text-3xl">
               {t('builder.experience')}
             </h3>
           </div>
         </div>
 
-        <div className="max-w-sm rounded-[1.5rem] border border-white/10 bg-white/5 px-4 py-3">
+        <div className="w-full shrink-0 lg:max-w-sm rounded-[1.5rem] border border-white/10 bg-white/5 px-4 py-3">
           <p className="font-sans text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">
             execution proof
           </p>
-          <p className="mt-2 text-sm leading-6 text-slate-300">
+          <p className="mt-2 text-sm leading-relaxed text-slate-300">
             Capture roles as compact proof points with clear scope, context, and measurable
             outcomes.
           </p>

@@ -56,11 +56,11 @@ export const ResumeClassicAts: React.FC<ResumeClassicAtsProps> = ({
   // Helper to render contact line
   const renderContactLine = () => {
     const parts: string[] = [];
-    
+
     if (personalInfo?.location) parts.push(personalInfo.location);
     if (personalInfo?.phone) parts.push(personalInfo.phone);
     if (personalInfo?.email) parts.push(personalInfo.email);
-    
+
     return parts.join(' | ');
   };
 
@@ -126,10 +126,14 @@ export const ResumeClassicAts: React.FC<ResumeClassicAtsProps> = ({
                       <span className={styles.degree}>{edu.degree}</span>
                     </div>
                     <div className={styles.educationRight}>
-                      {edu.years && <span className={styles.dateRange}>{formatDateRange(edu.years)}</span>}
+                      {edu.years && (
+                        <span className={styles.dateRange}>{formatDateRange(edu.years)}</span>
+                      )}
                     </div>
                   </div>
-                  {edu.description && <p className={styles.educationDescription}>{edu.description}</p>}
+                  {edu.description && (
+                    <p className={styles.educationDescription}>{edu.description}</p>
+                  )}
                 </div>
               ))}
             </div>
@@ -148,11 +152,14 @@ export const ResumeClassicAts: React.FC<ResumeClassicAtsProps> = ({
                     <div className={styles.projectLeft}>
                       <span className={styles.projectName}>{project.name}</span>
                       <span className={styles.projectTech}>
-                        {project.role || [project.github, project.website].filter(Boolean).join(', ')}
+                        {project.role ||
+                          [project.github, project.website].filter(Boolean).join(', ')}
                       </span>
                     </div>
                     <div className={styles.projectRight}>
-                      {project.years && <span className={styles.dateRange}>{formatDateRange(project.years)}</span>}
+                      {project.years && (
+                        <span className={styles.dateRange}>{formatDateRange(project.years)}</span>
+                      )}
                     </div>
                   </div>
                   {project.description && project.description.length > 0 && (
@@ -174,7 +181,8 @@ export const ResumeClassicAts: React.FC<ResumeClassicAtsProps> = ({
         if (!additional) return null;
         const hasSkills = additional.technicalSkills && additional.technicalSkills.length > 0;
         const hasLanguages = additional.languages && additional.languages.length > 0;
-        const hasCerts = additional.certificationsTraining && additional.certificationsTraining.length > 0;
+        const hasCerts =
+          additional.certificationsTraining && additional.certificationsTraining.length > 0;
         const hasAwards = additional.awards && additional.awards.length > 0;
 
         if (!hasSkills && !hasLanguages && !hasCerts && !hasAwards) return null;
@@ -186,9 +194,16 @@ export const ResumeClassicAts: React.FC<ResumeClassicAtsProps> = ({
               {hasSkills && (
                 <div className={styles.skillCategory}>
                   <span className={styles.skillLabel}>
-                    {(additionalSectionLabels?.technicalSkills || 'Technical Skills').replace(/:$/, '')}:
+                    {(additionalSectionLabels?.technicalSkills || 'Technical Skills').replace(
+                      /:$/,
+                      ''
+                    )}
+                    :
                   </span>
-                  <span className={styles.skillValues}> {additional.technicalSkills?.join(', ')}</span>
+                  <span className={styles.skillValues}>
+                    {' '}
+                    {additional.technicalSkills?.join(', ')}
+                  </span>
                 </div>
               )}
               {hasLanguages && (
@@ -202,7 +217,9 @@ export const ResumeClassicAts: React.FC<ResumeClassicAtsProps> = ({
                   <span className={styles.skillLabel}>Certifications:</span>
                   <ul className={styles.certList}>
                     {additional.certificationsTraining?.map((cert, index) => (
-                      <li key={index} className={styles.certItem}>{cert}</li>
+                      <li key={index} className={styles.certItem}>
+                        {cert}
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -212,7 +229,9 @@ export const ResumeClassicAts: React.FC<ResumeClassicAtsProps> = ({
                   <span className={styles.skillLabel}>Awards:</span>
                   <ul className={styles.awardList}>
                     {additional.awards?.map((award, index) => (
-                      <li key={index} className={styles.awardItem}>{award}</li>
+                      <li key={index} className={styles.awardItem}>
+                        {award}
+                      </li>
                     ))}
                   </ul>
                 </div>
@@ -223,13 +242,7 @@ export const ResumeClassicAts: React.FC<ResumeClassicAtsProps> = ({
 
       default:
         // Render custom sections
-        return (
-          <DynamicResumeSection
-            key={section.id}
-            sectionMeta={section}
-            resumeData={data}
-          />
-        );
+        return <DynamicResumeSection key={section.id} sectionMeta={section} resumeData={data} />;
     }
   };
 
@@ -237,15 +250,9 @@ export const ResumeClassicAts: React.FC<ResumeClassicAtsProps> = ({
     <div className={styles.resumeContainer}>
       {/* Header */}
       <header className={styles.header}>
-        {personalInfo?.name && (
-          <h1 className={styles.name}>{personalInfo.name.toUpperCase()}</h1>
-        )}
-        {personalInfo?.title && (
-          <p className={styles.title}>{personalInfo.title}</p>
-        )}
-        <div className={styles.contactLine}>
-          {renderContactLine()}
-        </div>
+        {personalInfo?.name && <h1 className={styles.name}>{personalInfo.name.toUpperCase()}</h1>}
+        {personalInfo?.title && <p className={styles.title}>{personalInfo.title}</p>}
+        <div className={styles.contactLine}>{renderContactLine()}</div>
         {personalInfo?.linkedin && (
           <div className={styles.linkedinLine}>
             LinkedIn:{' '}
@@ -266,9 +273,7 @@ export const ResumeClassicAts: React.FC<ResumeClassicAtsProps> = ({
       </header>
 
       {/* Sections */}
-      <main className={styles.main}>
-        {sortedSections.map((section) => renderSection(section))}
-      </main>
+      <main className={styles.main}>{sortedSections.map((section) => renderSection(section))}</main>
     </div>
   );
 };

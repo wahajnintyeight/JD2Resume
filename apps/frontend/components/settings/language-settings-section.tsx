@@ -74,7 +74,9 @@ export function LanguageSettingsSection({
                 </p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Content language</p>
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                  Content language
+                </p>
                 <p className="mt-2 text-sm font-semibold text-white">
                   {languageNames[contentLanguage] ?? contentLanguage}
                 </p>
@@ -130,7 +132,9 @@ export function LanguageSettingsSection({
                     <FileText className="h-4 w-4 text-cyan-200" />
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Generated copy</p>
+                    <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                      Generated copy
+                    </p>
                     <p className="mt-2 text-sm font-semibold text-white">
                       {languageNames[contentLanguage] ?? contentLanguage}
                     </p>
@@ -144,7 +148,9 @@ export function LanguageSettingsSection({
                     <Languages className="h-4 w-4 text-fuchsia-200" />
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Available locales</p>
+                    <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                      Available locales
+                    </p>
                     <p className="mt-2 text-sm leading-6 text-slate-200">
                       {supportedLanguages.length} language options available across UI and content.
                     </p>

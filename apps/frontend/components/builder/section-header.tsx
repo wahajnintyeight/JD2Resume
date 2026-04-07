@@ -89,58 +89,51 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
   return (
     <div
       className={cn(
-        "space-y-0 rounded-2xl border border-slate-200 bg-white p-8 shadow-sm transition-all duration-300",
-        isHidden && "border-dashed bg-slate-50/50 opacity-50 grayscale"
+        'relative transition-all duration-300 mb-8 group/section',
+        isHidden && 'opacity-40 grayscale'
       )}
     >
-      {/* Section Header - Modern Design */}
-      <div className="flex justify-between items-center border-b border-slate-100 pb-6 mb-8">
-        {/* Section Name (editable) */}
-        <div className="flex items-center gap-4">
-          <div className={cn(
-            "w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm transition-colors",
-            isHidden ? "bg-slate-200 text-slate-400" : "bg-primary/10 text-primary"
-          )}>
-            <span className="font-serif text-xl font-black uppercase">{section.displayName.charAt(0)}</span>
-          </div>
-          
+      <div className="flex justify-end mb-3 px-2 opacity-20 group-hover/section:opacity-100 focus-within:opacity-100 transition-opacity">
+        <div className="flex items-center gap-1 bg-white/[0.03] p-1.5 flex-wrap rounded-[1.2rem] border border-white/10 backdrop-blur-sm">
           {isEditing ? (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 mr-2 ml-1">
               <Input
                 value={editedName}
                 onChange={(e) => setEditedName(e.target.value)}
                 onBlur={handleSaveEdit}
                 onKeyDown={handleKeyDown}
                 autoFocus
-                className="h-10 px-4 rounded-xl border-primary font-serif text-xl font-black uppercase tracking-tight bg-white min-w-[200px]"
+                className="h-9 px-3 rounded-xl border border-cyan-300/30 font-sans text-sm tracking-wide bg-slate-900/50 text-white w-[180px] focus-visible:ring-1 focus-visible:ring-cyan-300/50"
               />
-              <Button size="icon" variant="ghost" onClick={handleSaveEdit} className="h-10 w-10 rounded-xl text-green-600 hover:bg-green-50">
-                <Check className="h-5 w-5" />
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={handleSaveEdit}
+                className="h-9 w-9 rounded-xl text-emerald-400 hover:bg-emerald-400/10 hover:text-emerald-300"
+              >
+                <Check className="h-4 w-4" />
               </Button>
             </div>
           ) : (
-            <div className="flex items-center gap-3 group/title">
-              <h3 className="font-serif text-2xl font-black uppercase tracking-tight text-slate-900">
-                {section.displayName}
-              </h3>
-              <button
-                onClick={handleStartEdit}
-                className="opacity-0 group-hover/title:opacity-100 p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-primary transition-all"
-              >
-                <Pencil className="h-4 w-4" />
-              </button>
-            </div>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleStartEdit}
+              className="h-9 px-3 rounded-xl text-slate-400 hover:text-cyan-300 hover:bg-white/5 font-sans text-[11px] tracking-[0.2em] uppercase font-bold"
+            >
+              <Pencil className="h-3.5 w-3.5 mr-2" />
+              {t('common.edit')}
+            </Button>
           )}
-        </div>
 
-        {/* Section Controls - Clean Icon Row */}
-        <div className="flex items-center gap-1 bg-slate-50 p-1.5 rounded-2xl border border-slate-100">
+          <div className="w-px h-5 bg-white/10 mx-1 hidden sm:block" />
+
           <Button
             size="icon"
             variant="ghost"
             onClick={onMoveUp}
             disabled={isFirst || isPersonalInfo}
-            className="h-9 w-9 rounded-xl text-slate-500 hover:text-primary hover:bg-white hover:shadow-sm disabled:opacity-30"
+            className="h-9 w-9 rounded-xl text-slate-400 hover:text-cyan-300 hover:bg-white/5 disabled:opacity-30 disabled:hover:bg-transparent"
           >
             <ChevronUp className="h-5 w-5" />
           </Button>
@@ -149,20 +142,20 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
             variant="ghost"
             onClick={onMoveDown}
             disabled={isLast || isPersonalInfo}
-            className="h-9 w-9 rounded-xl text-slate-500 hover:text-primary hover:bg-white hover:shadow-sm disabled:opacity-30"
+            className="h-9 w-9 rounded-xl text-slate-400 hover:text-cyan-300 hover:bg-white/5 disabled:opacity-30 disabled:hover:bg-transparent"
           >
             <ChevronDown className="h-5 w-5" />
           </Button>
-          <div className="w-px h-5 bg-slate-200 mx-1" />
+          <div className="w-px h-5 bg-white/10 mx-1 hidden sm:block" />
           <Button
             size="icon"
             variant="ghost"
             onClick={onToggleVisibility}
             className={cn(
-              "h-9 w-9 rounded-xl transition-all",
-              isHidden 
-                ? "text-slate-400 hover:text-slate-600 hover:bg-white hover:shadow-sm" 
-                : "text-primary hover:bg-white hover:shadow-sm"
+              'h-9 w-9 rounded-xl transition-all',
+              isHidden
+                ? 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                : 'text-cyan-300 hover:bg-white/5'
             )}
           >
             {isHidden ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -172,7 +165,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
             variant="ghost"
             onClick={handleDeleteClick}
             disabled={!canDelete}
-            className="h-9 w-9 rounded-xl text-slate-400 hover:text-red-600 hover:bg-white hover:shadow-sm disabled:opacity-30"
+            className="h-9 w-9 rounded-xl text-slate-500 hover:text-rose-400 hover:bg-rose-400/10 disabled:opacity-30 disabled:hover:bg-transparent"
           >
             <Trash2 className="h-5 w-5" />
           </Button>

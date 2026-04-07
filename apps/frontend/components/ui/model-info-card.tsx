@@ -39,16 +39,19 @@ export function ModelInfoCard({
   const tokenInfo = [
     contextLength && `Context: ${formatTokens(contextLength)}`,
     maxCompletionTokens && `Max: ${formatTokens(maxCompletionTokens)}`,
-  ].filter(Boolean).join(' | ');
+  ]
+    .filter(Boolean)
+    .join(' | ');
 
   // Truncate description for preview
   const shouldTruncate = description && description.length > 150;
-  const displayDescription = shouldTruncate && !isExpanded
-    ? `${description.slice(0, 150)}...`
-    : description;
+  const displayDescription =
+    shouldTruncate && !isExpanded ? `${description.slice(0, 150)}...` : description;
 
   return (
-    <div className={`mt-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 p-4 ${className}`}>
+    <div
+      className={`mt-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 p-4 ${className}`}
+    >
       {/* Header with label and token info */}
       <div className="flex flex-wrap items-center gap-2 mb-2">
         <div className="flex items-center gap-1.5">
@@ -72,9 +75,7 @@ export function ModelInfoCard({
       {/* Description */}
       {description && (
         <div className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
-          <p className={!isExpanded ? 'line-clamp-3' : ''}>
-            {displayDescription}
-          </p>
+          <p className={!isExpanded ? 'line-clamp-3' : ''}>{displayDescription}</p>
           {shouldTruncate && (
             <button
               onClick={() => setIsExpanded(!isExpanded)}

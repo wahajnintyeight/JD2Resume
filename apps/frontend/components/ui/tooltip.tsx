@@ -64,12 +64,7 @@ export const TooltipTrigger = React.forwardRef<
   }
 
   return (
-    <button
-      ref={ref}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      {...props}
-    >
+    <button ref={ref} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} {...props}>
       {children}
     </button>
   );

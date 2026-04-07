@@ -1,6 +1,6 @@
 /**
  * DOCX Template Mapper
- * 
+ *
  * Maps frontend ResumeData to backend DOCX template placeholders.
  * This ensures the data structure matches what the backend expects.
  */
@@ -9,7 +9,7 @@ import type { ResumeData } from '@/components/dashboard/resume-component';
 
 /**
  * Map frontend resume data to backend DOCX template format.
- * 
+ *
  * Backend placeholders:
  * - {{NAME}}, {{DESIGNATION_TITLE}}, {{LOCATION}}, {{PHONE}}, {{EMAIL}}, {{LINKEDIN_URL}}
  * - {{SUMMARY_START}} ... {{SUMMARY}} ... {{SUMMARY_END}}

@@ -1,6 +1,6 @@
 /**
  * HTML Sanitization Utilities
- * 
+ *
  * Uses dynamic imports to avoid bundling issues with isomorphic-dompurify
  * during static generation. The DOMPurify library is only loaded when
  * sanitization is actually needed at runtime.
@@ -60,7 +60,7 @@ export function sanitizeHtmlSync(dirty: string): string {
     // Use browser's native DOM API for sanitization
     const div = document.createElement('div');
     div.innerHTML = dirty;
-    
+
     // Remove disallowed tags
     const allElements = div.getElementsByTagName('*');
     for (let i = allElements.length - 1; i >= 0; i--) {
@@ -71,17 +71,17 @@ export function sanitizeHtmlSync(dirty: string): string {
         el.parentNode?.replaceChild(text, el);
       } else {
         // Remove disallowed attributes
-        Array.from(el.attributes).forEach(attr => {
+        Array.from(el.attributes).forEach((attr) => {
           if (!ALLOWED_ATTR.includes(attr.name.toLowerCase())) {
             el.removeAttribute(attr.name);
           }
         });
       }
     }
-    
+
     return div.innerHTML;
   }
-  
+
   // Server-side fallback: basic tag stripping
   return dirty.replace(/<[^>]*>/g, '');
 }
@@ -99,7 +99,7 @@ export function stripHtml(html: string): string {
     tmp.innerHTML = html;
     return tmp.textContent || tmp.innerText || '';
   }
-  
+
   // Server-side: regex-based stripping
   return html.replace(/<[^>]*>/g, '');
 }

@@ -19,10 +19,10 @@ interface RichTextToolbarProps {
  * Active states shown with blue background.
  * Supports compact mode for bubble menu.
  */
-export const RichTextToolbar: React.FC<RichTextToolbarProps> = ({ 
-  editor, 
+export const RichTextToolbar: React.FC<RichTextToolbarProps> = ({
+  editor,
   onLinkClick,
-  compact = false 
+  compact = false,
 }) => {
   const tools = [
     {
@@ -72,8 +72,8 @@ export const RichTextToolbar: React.FC<RichTextToolbarProps> = ({
             title={`${tool.label} (${tool.shortcut})`}
             className={cn(
               'h-7 w-7 rounded-md transition-colors',
-              tool.isActive 
-                ? 'bg-blue-700 text-white hover:bg-blue-800 hover:text-white' 
+              tool.isActive
+                ? 'bg-blue-700 text-white hover:bg-blue-800 hover:text-white'
                 : 'hover:bg-slate-100'
             )}
           >
@@ -100,8 +100,8 @@ export const RichTextToolbar: React.FC<RichTextToolbarProps> = ({
           title={`${tool.label} (${tool.shortcut})`}
           className={cn(
             'h-7 w-7 rounded-md transition-colors',
-            tool.isActive 
-              ? 'bg-blue-700 text-white hover:bg-blue-800 hover:text-white' 
+            tool.isActive
+              ? 'bg-blue-700 text-white hover:bg-blue-800 hover:text-white'
               : 'hover:bg-slate-200'
           )}
         >

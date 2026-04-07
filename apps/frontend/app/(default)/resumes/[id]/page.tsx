@@ -301,11 +301,7 @@ export default function ResumeViewerPage() {
           <p
             className={cn(
               'mb-6 text-base font-semibold leading-7',
-              isProcessing
-                ? 'text-[#dafaf5]'
-                : isFailed
-                  ? 'text-[#ffe3b6]'
-                  : 'text-[#ffd1d1]'
+              isProcessing ? 'text-[#dafaf5]' : isFailed ? 'text-[#ffe3b6]' : 'text-[#ffd1d1]'
             )}
           >
             {error || t('resumeViewer.resumeNotFound')}
@@ -351,7 +347,10 @@ export default function ResumeViewerPage() {
   }
 
   return (
-    <div className="relative flex min-h-full w-full flex-col overflow-hidden bg-[#050913]" style={pageTheme}>
+    <div
+      className="relative flex min-h-full w-full flex-col overflow-hidden bg-[#050913]"
+      style={pageTheme}
+    >
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(245,158,11,0.16),transparent_24%),radial-gradient(circle_at_85%_14%,rgba(98,232,215,0.14),transparent_25%),radial-gradient(circle_at_68%_75%,rgba(255,107,107,0.08),transparent_18%),linear-gradient(180deg,#04070d_0%,#091421_100%)]" />
       <div
         className="absolute inset-0 opacity-35"
@@ -383,8 +382,14 @@ export default function ResumeViewerPage() {
                 <div className="space-y-4">
                   <div className="flex flex-wrap items-center gap-3">
                     <div className="inline-flex items-center gap-2 rounded-full border border-[#f59e0b]/20 bg-[#f59e0b]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#ffd89c]">
-                      {isMasterResume ? <Sparkles className="h-3.5 w-3.5" /> : <Target className="h-3.5 w-3.5" />}
-                      <span>{isMasterResume ? t('resumeViewer.enhanceResume') : 'Tailored resume'}</span>
+                      {isMasterResume ? (
+                        <Sparkles className="h-3.5 w-3.5" />
+                      ) : (
+                        <Target className="h-3.5 w-3.5" />
+                      )}
+                      <span>
+                        {isMasterResume ? t('resumeViewer.enhanceResume') : 'Tailored resume'}
+                      </span>
                     </div>
 
                     <div className="inline-flex items-center gap-2 rounded-full border border-[#62e8d7]/18 bg-[#62e8d7]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#dffcf8]">
@@ -407,7 +412,9 @@ export default function ResumeViewerPage() {
                             maxLength={80}
                             placeholder={t('resumeViewer.titlePlaceholder')}
                             className="w-full bg-transparent text-left text-3xl font-black uppercase tracking-[-0.07em] text-[#f6ebd2] outline-none md:text-5xl"
-                            style={{ fontFamily: 'var(--font-playfair-display), "Times New Roman", serif' }}
+                            style={{
+                              fontFamily: 'var(--font-playfair-display), "Times New Roman", serif',
+                            }}
                           />
                         </div>
                       ) : (
@@ -423,14 +430,18 @@ export default function ResumeViewerPage() {
                               'truncate text-3xl font-black uppercase tracking-[-0.07em] text-[#f6ebd2] md:text-5xl',
                               !resumeTitle && 'italic text-[#8f846e]'
                             )}
-                            style={{ fontFamily: 'var(--font-playfair-display), "Times New Roman", serif' }}
+                            style={{
+                              fontFamily: 'var(--font-playfair-display), "Times New Roman", serif',
+                            }}
                           >
                             {resumeTitle || t('resumeViewer.titlePlaceholder')}
                           </h2>
                           <Pencil
                             className={cn(
                               'h-5 w-5 shrink-0 text-[#9c9076] transition-all duration-300',
-                              resumeTitle ? 'opacity-0 group-hover:opacity-100 group-hover:text-[#e9dcc0]' : 'opacity-50'
+                              resumeTitle
+                                ? 'opacity-0 group-hover:opacity-100 group-hover:text-[#e9dcc0]'
+                                : 'opacity-50'
                             )}
                           />
                         </button>
@@ -442,7 +453,9 @@ export default function ResumeViewerPage() {
                     <div className="max-w-4xl">
                       <h2
                         className="text-3xl font-black uppercase tracking-[-0.07em] text-[#f6ebd2] md:text-5xl"
-                        style={{ fontFamily: 'var(--font-playfair-display), "Times New Roman", serif' }}
+                        style={{
+                          fontFamily: 'var(--font-playfair-display), "Times New Roman", serif',
+                        }}
                       >
                         Master Resume
                         <span className="block bg-[linear-gradient(90deg,#f6ebd2_0%,#f59e0b_38%,#62e8d7_100%)] bg-clip-text text-transparent">
@@ -517,8 +530,8 @@ export default function ResumeViewerPage() {
                       document stage
                     </p>
                     <p className="mt-2 text-sm leading-6 text-[#dacfb7]">
-                      This preview is framed as a print plate. Use edit for structure changes,
-                      scan for ATS posture, and export when the composition is ready.
+                      This preview is framed as a print plate. Use edit for structure changes, scan
+                      for ATS posture, and export when the composition is ready.
                     </p>
                   </div>
                 </div>

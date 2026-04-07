@@ -5,7 +5,12 @@
  * These settings affect both the live preview and PDF generation.
  */
 
-export type TemplateType = 'swiss-single' | 'swiss-two-column' | 'modern' | 'modern-two-column' | 'classic-ats';
+export type TemplateType =
+  | 'swiss-single'
+  | 'swiss-two-column'
+  | 'modern'
+  | 'modern-two-column'
+  | 'classic-ats';
 
 export type PageSize = 'A4' | 'LETTER';
 

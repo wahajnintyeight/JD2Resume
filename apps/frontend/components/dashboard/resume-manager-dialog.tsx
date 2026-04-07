@@ -1,7 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { deleteResume, fetchResumeList, type ResumeListItem, unsetMasterResume } from '@/lib/api/resume';
+import {
+  deleteResume,
+  fetchResumeList,
+  type ResumeListItem,
+  unsetMasterResume,
+} from '@/lib/api/resume';
 import { Button } from '@/components/ui/button';
 import { ResumeUploadDialog } from '@/components/dashboard/resume-upload-dialog';
 import SetMasterDialog from '@/components/dashboard/set-master-dialog';
@@ -200,7 +205,9 @@ export default function ResumeManagerDialog({
 
               <div className="mt-7 grid gap-3 sm:grid-cols-3">
                 <div className="rounded-[1.4rem] border border-[#f7e8c4]/10 bg-[linear-gradient(180deg,rgba(245,158,11,0.08),rgba(255,255,255,0.02))] p-4 backdrop-blur-sm">
-                  <p className="text-[10px] uppercase tracking-[0.28em] text-[#b8ae94]">stored resumes</p>
+                  <p className="text-[10px] uppercase tracking-[0.28em] text-[#b8ae94]">
+                    stored resumes
+                  </p>
                   <p
                     className="mt-2 text-3xl font-black tracking-[-0.08em] text-[#fff6df]"
                     style={{ fontFamily: 'var(--font-playfair-display), "Times New Roman", serif' }}
@@ -209,7 +216,9 @@ export default function ResumeManagerDialog({
                   </p>
                 </div>
                 <div className="rounded-[1.4rem] border border-[#f7e8c4]/10 bg-[linear-gradient(180deg,rgba(65,214,195,0.08),rgba(255,255,255,0.02))] p-4 backdrop-blur-sm">
-                  <p className="text-[10px] uppercase tracking-[0.28em] text-[#b8ae94]">master variants</p>
+                  <p className="text-[10px] uppercase tracking-[0.28em] text-[#b8ae94]">
+                    master variants
+                  </p>
                   <p
                     className="mt-2 text-3xl font-black tracking-[-0.08em] text-[#dffcf8]"
                     style={{ fontFamily: 'var(--font-playfair-display), "Times New Roman", serif' }}
@@ -218,9 +227,13 @@ export default function ResumeManagerDialog({
                   </p>
                 </div>
                 <div className="rounded-[1.4rem] border border-[#f7e8c4]/10 bg-[linear-gradient(180deg,rgba(144,124,255,0.08),rgba(255,255,255,0.02))] p-4 backdrop-blur-sm">
-                  <p className="text-[10px] uppercase tracking-[0.28em] text-[#b8ae94]">library posture</p>
+                  <p className="text-[10px] uppercase tracking-[0.28em] text-[#b8ae94]">
+                    library posture
+                  </p>
                   <p className="mt-2 text-sm font-semibold text-[#f7f0db]">
-                    {resumes.length > 0 ? 'Primed for tailoring runs' : 'Awaiting first archival drop'}
+                    {resumes.length > 0
+                      ? 'Primed for tailoring runs'
+                      : 'Awaiting first archival drop'}
                   </p>
                 </div>
               </div>
@@ -239,7 +252,9 @@ export default function ResumeManagerDialog({
                 </div>
               ) : error ? (
                 <div className="rounded-[1.8rem] border border-rose-300/20 bg-[linear-gradient(180deg,rgba(244,63,94,0.1),rgba(255,255,255,0.015))] p-5 sm:p-6">
-                  <p className="text-[11px] uppercase tracking-[0.24em] text-rose-200">load failure</p>
+                  <p className="text-[11px] uppercase tracking-[0.24em] text-rose-200">
+                    load failure
+                  </p>
                   <p className="mt-3 text-sm leading-6 text-rose-100">{error}</p>
                 </div>
               ) : resumes.length === 0 ? (
@@ -258,7 +273,9 @@ export default function ResumeManagerDialog({
 
                     <h3
                       className="mt-6 text-3xl font-black uppercase tracking-[-0.06em] text-[#fff6df] sm:text-4xl"
-                      style={{ fontFamily: 'var(--font-playfair-display), "Times New Roman", serif' }}
+                      style={{
+                        fontFamily: 'var(--font-playfair-display), "Times New Roman", serif',
+                      }}
                     >
                       No resumes in orbit
                     </h3>
@@ -422,7 +439,8 @@ export default function ResumeManagerDialog({
                             <p
                               className="mt-1 text-lg font-bold text-[#f8f2df]"
                               style={{
-                                fontFamily: 'var(--font-playfair-display), "Times New Roman", serif',
+                                fontFamily:
+                                  'var(--font-playfair-display), "Times New Roman", serif',
                               }}
                             >
                               Master strategy
@@ -431,9 +449,9 @@ export default function ResumeManagerDialog({
                         </div>
 
                         <p className="mt-5 text-sm leading-6 text-[#dbd3bf]">
-                          Master resumes act as source templates during tailoring. Keep one for
-                          each serious lane: platform engineering, product analytics, staff
-                          frontend, or design systems.
+                          Master resumes act as source templates during tailoring. Keep one for each
+                          serious lane: platform engineering, product analytics, staff frontend, or
+                          design systems.
                         </p>
 
                         <div className="mt-5 rounded-[1.15rem] border border-[#f7e8c4]/10 bg-black/20 p-4">

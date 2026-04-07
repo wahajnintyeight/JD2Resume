@@ -13,9 +13,7 @@ export default function DefaultLayout({ children }: { children: React.ReactNode 
       <StatusCacheProvider>
         <LanguageProvider>
           <ResumePreviewProvider>
-            <LocalizedErrorBoundary>
-              {children}
-            </LocalizedErrorBoundary>
+            <LocalizedErrorBoundary>{children}</LocalizedErrorBoundary>
           </ResumePreviewProvider>
         </LanguageProvider>
       </StatusCacheProvider>

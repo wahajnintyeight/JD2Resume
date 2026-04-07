@@ -264,7 +264,7 @@ export async function downloadResumePdf(
     const text = await res.text().catch(() => '');
     throw new Error(`Failed to download resume (status ${res.status}): ${text}`);
   }
-  
+
   // Extract filename from Content-Disposition header
   let filename = `resume_${resumeId}.pdf`;
   const disposition = res.headers.get('Content-Disposition');
@@ -279,7 +279,7 @@ export async function downloadResumePdf(
   } else {
     console.log('No Content-Disposition header found, using fallback');
   }
-  
+
   return { blob: await res.blob(), filename };
 }
 
@@ -290,14 +290,16 @@ export function getResumeDocxUrl(resumeId: string): string {
 }
 
 /** Downloads resume as DOCX */
-export async function downloadResumeDocx(resumeId: string): Promise<{ blob: Blob; filename: string }> {
+export async function downloadResumeDocx(
+  resumeId: string
+): Promise<{ blob: Blob; filename: string }> {
   const url = getResumeDocxUrl(resumeId);
   const res = await apiFetch(url);
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     throw new Error(`Failed to download resume as DOCX (status ${res.status}): ${text}`);
   }
-  
+
   // Extract filename from Content-Disposition header
   let filename = `resume_${resumeId}.docx`;
   const disposition = res.headers.get('Content-Disposition');
@@ -312,7 +314,7 @@ export async function downloadResumeDocx(resumeId: string): Promise<{ blob: Blob
   } else {
     console.log('No Content-Disposition header found for DOCX, using fallback');
   }
-  
+
   return { blob: await res.blob(), filename };
 }
 
@@ -323,7 +325,7 @@ export async function saveResumePdf(
   locale?: Locale
 ): Promise<{ filename: string; path: string }> {
   const normalizedId = normalizeResumeId(resumeId);
-  
+
   // Build query params from settings
   const params = new URLSearchParams();
   if (settings) {
@@ -347,15 +349,15 @@ export async function saveResumePdf(
   if (locale) {
     params.append('lang', locale);
   }
-  
+
   const url = `${API_BASE}/resumes/${encodeURIComponent(normalizedId)}/pdf/save?${params.toString()}`;
   const res = await apiPost(url, {});
-  
+
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     throw new Error(`Failed to save resume PDF (status ${res.status}): ${text}`);
   }
-  
+
   const data = await res.json();
   return { filename: data.filename, path: data.path };
 }
@@ -470,7 +472,6 @@ export async function fetchJobDescription(
   return res.json();
 }
 
-
 // ============================================================================
 // Master Resume Management
 // ============================================================================
@@ -504,7 +505,7 @@ export async function listMasterResumes(): Promise<MasterResumesResponse> {
 
 /** Get master resume for a specific category */
 export async function getMasterResume(category?: string): Promise<any> {
-  const url = category 
+  const url = category
     ? `/resumes/master?category=${encodeURIComponent(category)}`
     : '/resumes/master';
   const res = await apiFetch(url);
@@ -518,10 +519,7 @@ export async function getMasterResume(category?: string): Promise<any> {
 }
 
 /** Set a resume as master for a specific category */
-export async function setMasterResume(
-  resumeId: string, 
-  category?: string
-): Promise<void> {
+export async function setMasterResume(resumeId: string, category?: string): Promise<void> {
   const url = category
     ? `/resumes/${encodeURIComponent(resumeId)}/master?category=${encodeURIComponent(category)}`
     : `/resumes/${encodeURIComponent(resumeId)}/master`;
@@ -549,7 +547,7 @@ export interface ATSScanResult {
   overall_match_score?: number; // Backend alias
   pass_probability: 'high' | 'medium' | 'low';
   searchability_status?: string;
-  
+
   // Title Analysis
   title_analysis?: {
     jd_title: string;
@@ -557,7 +555,7 @@ export interface ATSScanResult {
     match_status: 'Exact' | 'Partial' | 'None';
     recommendation?: string;
   };
-  
+
   // Hard Skills Analysis
   hard_skills_analysis?: {
     total_keywords_searched: number;
@@ -570,7 +568,7 @@ export interface ATSScanResult {
       advice: string;
     }>;
   };
-  
+
   // Placement Audit
   placement_audit?: {
     headline_score: number;
@@ -580,20 +578,23 @@ export interface ATSScanResult {
     bullet_points_score: number;
     bullet_points_feedback: string;
   };
-  
+
   // Knockout Filters
-  knockout_filters?: Record<string, {
-    required: string;
-    detected: string;
-    status: 'PASS' | 'FAIL';
-  }>;
-  
+  knockout_filters?: Record<
+    string,
+    {
+      required: string;
+      detected: string;
+      status: 'PASS' | 'FAIL';
+    }
+  >;
+
   // Action Plan
   action_plan?: Array<{
     priority: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
     action: string;
   }>;
-  
+
   category_scores: {
     keyword_match: {
       score: number;
@@ -643,7 +644,7 @@ export async function scanResumeATS(
   if (jobDescription) {
     payload.job_description = jobDescription;
   }
-  
+
   const res = await apiPost('/ats/scan', payload);
   if (!res.ok) {
     const error = await res.json().catch(() => ({ detail: 'ATS scan failed' }));
@@ -653,10 +654,7 @@ export async function scanResumeATS(
 }
 
 /** Downloads ATS scan report as PDF */
-export function getATSScanPdfUrl(
-  resumeId: string,
-  pageSize: 'A4' | 'LETTER' = 'A4'
-): string {
+export function getATSScanPdfUrl(resumeId: string, pageSize: 'A4' | 'LETTER' = 'A4'): string {
   const normalizedId = normalizeResumeId(resumeId);
   const params = new URLSearchParams({ pageSize });
   return `${API_BASE}/ats/scan/${encodeURIComponent(normalizedId)}/pdf?${params.toString()}`;
@@ -672,7 +670,7 @@ export async function downloadATSScanPdf(
     const text = await res.text().catch(() => '');
     throw new Error(`Failed to download ATS scan report (status ${res.status}): ${text}`);
   }
-  
+
   let filename = `ATS_Report_${resumeId}.pdf`;
   const disposition = res.headers.get('Content-Disposition');
   if (disposition) {
@@ -681,7 +679,7 @@ export async function downloadATSScanPdf(
       filename = match[1];
     }
   }
-  
+
   return { blob: await res.blob(), filename };
 }
 

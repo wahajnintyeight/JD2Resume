@@ -25,14 +25,14 @@ export default function SetMasterDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       setLoading(true);
       setError(null);
-      
+
       const categoryValue = useDefault ? undefined : category.trim();
       await setMasterResume(resumeId, categoryValue);
-      
+
       onSuccess();
       onClose();
     } catch (err) {
@@ -112,7 +112,10 @@ export default function SetMasterDialog({
           {/* Category Input */}
           {!useDefault && (
             <div className="border-2 border-black bg-white p-4">
-              <label htmlFor="category" className="block font-mono text-sm font-bold uppercase text-black">
+              <label
+                htmlFor="category"
+                className="block font-mono text-sm font-bold uppercase text-black"
+              >
                 Category Name
               </label>
               <input
@@ -150,12 +153,7 @@ export default function SetMasterDialog({
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              variant="default"
-              className="flex-1"
-              disabled={loading}
-            >
+            <Button type="submit" variant="default" className="flex-1" disabled={loading}>
               {loading ? 'Setting...' : 'Set as Master'}
             </Button>
           </div>

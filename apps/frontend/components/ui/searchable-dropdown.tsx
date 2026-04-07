@@ -356,7 +356,9 @@ export function SearchableDropdown({
                           </div>
                         </div>
 
-                        {isSelected && <Check className="h-4 w-4 shrink-0 text-white dark:text-violet-100" />}
+                        {isSelected && (
+                          <Check className="h-4 w-4 shrink-0 text-white dark:text-violet-100" />
+                        )}
                       </button>
                     );
                   })}

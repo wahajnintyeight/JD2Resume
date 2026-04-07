@@ -111,7 +111,9 @@ export default function SettingsPage() {
   const { user } = useAuth();
   const [status, setStatus] = useState<Status>('loading');
   const [error, setError] = useState<string | null>(null);
-  const [activeSection, setActiveSection] = useState<'system' | 'llm' | 'features' | 'language' | 'danger'>('system');
+  const [activeSection, setActiveSection] = useState<
+    'system' | 'llm' | 'features' | 'language' | 'danger'
+  >('system');
 
   const isAdmin = useMemo(() => {
     return Boolean(user?.email && ADMIN_EMAILS.includes(user.email));
@@ -412,9 +414,7 @@ export default function SettingsPage() {
       } catch (err) {
         if (!cancelledRef.current) {
           console.error('Failed to fetch OpenRouter models:', err);
-          setOpenRouterModelsError(
-            err instanceof Error ? err.message : 'Failed to load models'
-          );
+          setOpenRouterModelsError(err instanceof Error ? err.message : 'Failed to load models');
         }
       } finally {
         if (!cancelledRef.current) {
@@ -655,11 +655,7 @@ export default function SettingsPage() {
     return (
       <div className="flex h-full w-full items-center justify-center bg-slate-100 dark:bg-[#050505]">
         <div className="bg-white dark:bg-[#0A0A0A] rounded-2xl border border-slate-200 dark:border-white/10 p-12 shadow-2xl">
-          <LoadingAnimation 
-            message="Loading settings..." 
-            variant="sparkle" 
-            size="lg" 
-          />
+          <LoadingAnimation message="Loading settings..." variant="sparkle" size="lg" />
         </div>
       </div>
     );
@@ -689,7 +685,8 @@ export default function SettingsPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-12">
-        <div className="space-y-12">{/* Content sections will go here */}
+        <div className="space-y-12">
+          {/* Content sections will go here */}
           {/* API Key Not Configured Warning */}
           {!statusLoading && systemStatus && !systemStatus.llm_configured && (
             <div className="relative overflow-hidden rounded-2xl border-2 border-amber-500/20 bg-amber-50 dark:bg-amber-500/10 p-6">

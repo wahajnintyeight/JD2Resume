@@ -45,16 +45,11 @@ import {
 
 const StatusBadge = ({ status }: { status: string }) => {
   const styles: Record<string, string> = {
-    ready:
-      'border-emerald-400/20 bg-emerald-400/10 text-emerald-200',
-    processing:
-      'border-amber-400/20 bg-amber-400/10 text-amber-200 animate-pulse',
-    pending:
-      'border-slate-400/20 bg-slate-400/10 text-slate-300',
-    failed:
-      'border-rose-400/20 bg-rose-400/10 text-rose-200',
-    loading:
-      'border-cyan-400/20 bg-cyan-400/10 text-cyan-200',
+    ready: 'border-emerald-400/20 bg-emerald-400/10 text-emerald-200',
+    processing: 'border-amber-400/20 bg-amber-400/10 text-amber-200 animate-pulse',
+    pending: 'border-slate-400/20 bg-slate-400/10 text-slate-300',
+    failed: 'border-rose-400/20 bg-rose-400/10 text-rose-200',
+    loading: 'border-cyan-400/20 bg-cyan-400/10 text-cyan-200',
   };
 
   return (
@@ -573,7 +568,9 @@ export default function DashboardPage() {
                         tailoring flow
                       </p>
                       <p className="mt-2 text-sm font-semibold text-slate-100">
-                        {isTailorEnabled ? 'Ready for new tailoring request' : 'Waiting on master readiness'}
+                        {isTailorEnabled
+                          ? 'Ready for new tailoring request'
+                          : 'Waiting on master readiness'}
                       </p>
                     </div>
                   </div>

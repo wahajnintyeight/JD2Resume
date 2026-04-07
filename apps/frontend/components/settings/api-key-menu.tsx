@@ -116,12 +116,13 @@ export default function ApiKeyMenu(): React.ReactElement {
               {!isAdmin && <Lock className="h-4 w-4 text-gray-400" />}
             </h3>
             <p className="text-xs text-gray-600 mb-3">{t('settings.apiKeyMenu.description')}</p>
-            
+
             {!isAdmin ? (
               <div className="rounded-none border-2 border-dashed border-gray-300 bg-gray-50 p-4 text-center">
                 <Lock className="mx-auto h-8 w-8 text-gray-300 mb-2" />
                 <p className="text-xs font-medium text-gray-500">
-                  {t('settings.apiKeyMenu.adminOnly') || 'Only administrators can manage global API keys.'}
+                  {t('settings.apiKeyMenu.adminOnly') ||
+                    'Only administrators can manage global API keys.'}
                 </p>
               </div>
             ) : (

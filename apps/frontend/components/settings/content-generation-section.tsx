@@ -146,7 +146,9 @@ export function ContentGenerationSection({
                   <div>
                     <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Outreach</p>
                     <p className="mt-2 text-sm font-semibold text-white">
-                      {enableOutreach ? 'Short-form messaging enabled' : 'Short-form messaging paused'}
+                      {enableOutreach
+                        ? 'Short-form messaging enabled'
+                        : 'Short-form messaging paused'}
                     </p>
                   </div>
                 </div>
@@ -162,8 +164,8 @@ export function ContentGenerationSection({
                       Default prompt
                     </p>
                     <p className="mt-2 text-sm leading-6 text-slate-200">
-                      {localizedPromptOptions.find((option) => option.id === defaultPromptId)?.label ||
-                        t('settings.promptSettings.title')}
+                      {localizedPromptOptions.find((option) => option.id === defaultPromptId)
+                        ?.label || t('settings.promptSettings.title')}
                     </p>
                   </div>
                 </div>
@@ -171,7 +173,6 @@ export function ContentGenerationSection({
             </div>
           </div>
         </div>
-
 
         <div className="mt-8 grid gap-6 sm:mt-10 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
           <div className="space-y-6">
@@ -239,7 +240,9 @@ export function ContentGenerationSection({
               <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Letter mode</p>
                 <p className="mt-2 text-sm font-semibold text-white">
-                  {enableCoverLetter ? 'Included in generation flow' : 'Excluded from generation flow'}
+                  {enableCoverLetter
+                    ? 'Included in generation flow'
+                    : 'Excluded from generation flow'}
                 </p>
               </div>
 

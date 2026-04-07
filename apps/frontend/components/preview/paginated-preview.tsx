@@ -173,10 +173,7 @@ export function PaginatedPreview({ resumeData, settings, isFullscreen }: Paginat
       </div>
 
       {/* Scrollable preview area */}
-      <div
-        ref={containerRef}
-        className="flex-1 overflow-auto p-2"
-      >
+      <div ref={containerRef} className="flex-1 overflow-auto p-2">
         {/* Hidden measurement container - renders content at actual size */}
         <div
           ref={measurementRef}

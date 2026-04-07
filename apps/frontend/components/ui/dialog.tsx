@@ -190,7 +190,10 @@ interface DialogTitleProps {
 
 const DialogTitle: React.FC<DialogTitleProps> = ({ className, children, ...props }) => (
   <h2
-    className={cn('font-sans text-2xl font-bold leading-tight tracking-tight text-foreground', className)}
+    className={cn(
+      'font-sans text-2xl font-bold leading-tight tracking-tight text-foreground',
+      className
+    )}
     {...props}
   >
     {children}

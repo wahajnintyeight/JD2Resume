@@ -138,7 +138,9 @@ export function LLMConfigSection({
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Provider</p>
                 <p className="mt-2 text-sm font-semibold text-white">{providerInfo.name}</p>
                 <p className="mt-1 text-sm text-slate-400">
-                  {llmConfigMode === 'preset' ? 'Curated provider routing' : 'Custom-compatible API'}
+                  {llmConfigMode === 'preset'
+                    ? 'Curated provider routing'
+                    : 'Custom-compatible API'}
                 </p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
@@ -153,7 +155,11 @@ export function LLMConfigSection({
               <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
                 <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Connection</p>
                 <p className="mt-2 text-sm font-semibold text-white">
-                  {healthCheck ? (healthCheck.healthy ? 'Healthy' : 'Needs attention') : 'Not tested'}
+                  {healthCheck
+                    ? healthCheck.healthy
+                      ? 'Healthy'
+                      : 'Needs attention'
+                    : 'Not tested'}
                 </p>
                 <p className="mt-1 text-sm text-slate-400">
                   Test the endpoint after updating your settings.
@@ -328,7 +334,9 @@ export function LLMConfigSection({
                     placeholder={providerInfo.defaultModel}
                     loading={openRouterModelsLoading}
                     loadingText={t('settings.llmConfiguration.loadingModels')}
-                    emptyText={openRouterModelsError || t('settings.llmConfiguration.noModelsFound')}
+                    emptyText={
+                      openRouterModelsError || t('settings.llmConfiguration.noModelsFound')
+                    }
                     allowFreeform={true}
                     pageSize={15}
                   />

@@ -15,53 +15,45 @@ A modern, animated loading component with multiple variants for different use ca
 The component is already set up in your project. Just import it:
 
 ```tsx
-import { LoadingAnimation, LoadingOverlay, LoadingSection } from '@/components/ui/loading-animation';
+import {
+  LoadingAnimation,
+  LoadingOverlay,
+  LoadingSection,
+} from '@/components/ui/loading-animation';
 ```
 
 ## Variants
 
 ### 1. Default (Spinner)
+
 Simple rotating loader - good for generic loading states.
 
 ```tsx
-<LoadingAnimation 
-  message="Loading..." 
-  variant="default" 
-  size="md" 
-/>
+<LoadingAnimation message="Loading..." variant="default" size="md" />
 ```
 
 ### 2. Sparkle ✨ (Recommended)
+
 Rotating gradient circle with sparkle icon - best for important operations.
 
 ```tsx
-<LoadingAnimation 
-  message="Checking system status..." 
-  variant="sparkle" 
-  size="lg" 
-/>
+<LoadingAnimation message="Checking system status..." variant="sparkle" size="lg" />
 ```
 
 ### 3. Pulse
+
 Expanding rings animation - great for background operations.
 
 ```tsx
-<LoadingAnimation 
-  message="Syncing..." 
-  variant="pulse" 
-  size="md" 
-/>
+<LoadingAnimation message="Syncing..." variant="pulse" size="md" />
 ```
 
 ### 4. Dots
+
 Bouncing dots - minimal and perfect for inline loading.
 
 ```tsx
-<LoadingAnimation 
-  message="Processing..." 
-  variant="dots" 
-  size="sm" 
-/>
+<LoadingAnimation message="Processing..." variant="dots" size="sm" />
 ```
 
 ## Sizes
@@ -73,47 +65,42 @@ Bouncing dots - minimal and perfect for inline loading.
 ## Components
 
 ### LoadingAnimation
+
 Basic loading animation component.
 
 ```tsx
-<LoadingAnimation 
-  message="Loading data..." 
-  variant="sparkle" 
-  size="md" 
-/>
+<LoadingAnimation message="Loading data..." variant="sparkle" size="md" />
 ```
 
 **Props:**
+
 - `message?: string` - Optional loading message
 - `variant?: 'default' | 'sparkle' | 'pulse' | 'dots'` - Animation style (default: 'default')
 - `size?: 'sm' | 'md' | 'lg'` - Size of the animation (default: 'md')
 
 ### LoadingOverlay
+
 Full-screen loading overlay with backdrop blur.
 
 ```tsx
-<LoadingOverlay 
-  message="Loading your workspace..." 
-  variant="sparkle" 
-/>
+<LoadingOverlay message="Loading your workspace..." variant="sparkle" />
 ```
 
 **Props:**
+
 - `message?: string` - Optional loading message
 - `variant?: 'default' | 'sparkle' | 'pulse' | 'dots'` - Animation style (default: 'sparkle')
 
 ### LoadingSection
+
 Loading state for content sections.
 
 ```tsx
-<LoadingSection 
-  message="Loading content..." 
-  variant="dots"
-  className="min-h-[400px]" 
-/>
+<LoadingSection message="Loading content..." variant="dots" className="min-h-[400px]" />
 ```
 
 **Props:**
+
 - `message?: string` - Optional loading message
 - `variant?: 'default' | 'sparkle' | 'pulse' | 'dots'` - Animation style (default: 'dots')
 - `className?: string` - Additional CSS classes
@@ -121,16 +108,13 @@ Loading state for content sections.
 ## Usage Examples
 
 ### Full-Page Loading (Initial Load)
+
 ```tsx
 if (isLoading) {
   return (
     <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-50 via-indigo-50/20 to-purple-50/30">
       <div className="bg-white rounded-3xl shadow-2xl border border-slate-200/60 p-12">
-        <LoadingAnimation 
-          message="Loading settings..." 
-          variant="sparkle" 
-          size="lg" 
-        />
+        <LoadingAnimation message="Loading settings..." variant="sparkle" size="lg" />
       </div>
     </div>
   );
@@ -138,14 +122,11 @@ if (isLoading) {
 ```
 
 ### Section Loading
+
 ```tsx
 <div className="bg-white rounded-3xl border border-slate-200/60 shadow-sm">
   {isLoading ? (
-    <LoadingAnimation 
-      message="Checking system status..." 
-      variant="sparkle" 
-      size="md" 
-    />
+    <LoadingAnimation message="Checking system status..." variant="sparkle" size="md" />
   ) : (
     <YourContent />
   )}
@@ -153,16 +134,15 @@ if (isLoading) {
 ```
 
 ### Modal/Overlay Loading
+
 ```tsx
-{isProcessing && (
-  <LoadingOverlay 
-    message="Processing your request..." 
-    variant="pulse" 
-  />
-)}
+{
+  isProcessing && <LoadingOverlay message="Processing your request..." variant="pulse" />;
+}
 ```
 
 ### Inline Loading
+
 ```tsx
 <div className="flex items-center gap-3">
   <LoadingAnimation variant="dots" size="sm" />
@@ -173,6 +153,7 @@ if (isLoading) {
 ## When to Use Each Variant
 
 ### Sparkle ✨
+
 - Initial page loads
 - Authentication checks
 - Important system operations
@@ -180,6 +161,7 @@ if (isLoading) {
 - **Example**: Settings page, Dashboard session check
 
 ### Pulse
+
 - Background sync operations
 - Real-time updates
 - Continuous monitoring
@@ -187,6 +169,7 @@ if (isLoading) {
 - **Example**: File uploads, Data synchronization
 
 ### Dots
+
 - Inline loading states
 - Form submissions
 - Quick operations
@@ -194,6 +177,7 @@ if (isLoading) {
 - **Example**: Save buttons, Search inputs
 
 ### Default
+
 - Generic loading states
 - When you need a simple spinner
 - Fallback option
@@ -202,6 +186,7 @@ if (isLoading) {
 ## Styling
 
 The component uses Tailwind CSS and follows your design system:
+
 - Gradient colors: `from-indigo-600 to-purple-600`
 - Border radius: `rounded-2xl`, `rounded-3xl`
 - Shadows: `shadow-lg`, `shadow-2xl`
@@ -210,6 +195,7 @@ The component uses Tailwind CSS and follows your design system:
 ## Animation Details
 
 All animations are built with Framer Motion and include:
+
 - Smooth transitions
 - Infinite loops
 - Optimized performance
@@ -225,6 +211,7 @@ All animations are built with Framer Motion and include:
 ## Browser Support
 
 Works in all modern browsers that support:
+
 - CSS transforms
 - CSS animations
 - Framer Motion (React 18+)

@@ -4,13 +4,13 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  scanResumeATS, 
-  downloadATSScanPdf, 
-  previewATSApply, 
+import {
+  scanResumeATS,
+  downloadATSScanPdf,
+  previewATSApply,
   confirmATSApply,
   type ATSScanResult,
-  type ATSApplyPreviewResponse 
+  type ATSApplyPreviewResponse,
 } from '@/lib/api/resume';
 import { ATSApplyPreviewModal } from './ats-apply-preview-modal';
 import Loader2 from 'lucide-react/dist/esm/icons/loader-2';
@@ -45,7 +45,7 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
   const [downloadingPdf, setDownloadingPdf] = useState(false);
   const [editingJobDescription, setEditingJobDescription] = useState(false);
   const [customJobDescription, setCustomJobDescription] = useState('');
-  
+
   // Apply suggestions states
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [applyPreview, setApplyPreview] = useState<ATSApplyPreviewResponse | null>(null);
@@ -57,10 +57,7 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
     setError(null);
     setResults(null); // Clear previous results
     try {
-      const scanResults = await scanResumeATS(
-        resumeId,
-        customJobDescription || undefined
-      );
+      const scanResults = await scanResumeATS(resumeId, customJobDescription || undefined);
       setResults(scanResults);
       setEditingJobDescription(false);
     } catch (err) {
@@ -82,11 +79,11 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
 
   const handlePreviewApply = async () => {
     if (!results) return;
-    
+
     setApplyLoading(true);
     setApplyError(null);
     setShowApplyModal(true);
-    
+
     try {
       const preview = await previewATSApply(resumeId, results);
       setApplyPreview(preview);
@@ -99,7 +96,7 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
 
   const handleConfirmApply = async () => {
     if (!applyPreview?.modified_resume) return;
-    
+
     setApplyLoading(true);
     try {
       await confirmATSApply(resumeId, applyPreview.modified_resume);
@@ -200,14 +197,12 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                 <div className="w-20 h-20 mx-auto border-2 border-black bg-blue-700 flex items-center justify-center mb-6 shadow-[4px_4px_0px_0px_#000000]">
                   <Target className="w-10 h-10 text-white" />
                 </div>
-                <h3 className="font-serif text-2xl font-bold uppercase mb-3">
-                  Ready to Scan
-                </h3>
+                <h3 className="font-serif text-2xl font-bold uppercase mb-3">Ready to Scan</h3>
                 <p className="font-mono text-sm text-gray-600 mb-6 max-w-md mx-auto">
-                  Analyze how well this resume will perform in Applicant Tracking Systems (ATS).
-                  Get detailed scores and actionable recommendations.
+                  Analyze how well this resume will perform in Applicant Tracking Systems (ATS). Get
+                  detailed scores and actionable recommendations.
                 </p>
-                
+
                 {/* Job Description Input */}
                 <div className="max-w-2xl mx-auto mb-6">
                   <label className="block font-mono text-xs font-bold uppercase text-left mb-2">
@@ -223,10 +218,10 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                     For tailored resumes, the original job description will be used if left empty.
                   </p>
                 </div>
-                
-                <Button 
-                  onClick={handleScan} 
-                  size="lg" 
+
+                <Button
+                  onClick={handleScan}
+                  size="lg"
                   className="font-mono uppercase shadow-[4px_4px_0px_0px_#000000] hover:shadow-[2px_2px_0px_0px_#000000] transition-all"
                   disabled={loading}
                 >
@@ -258,12 +253,22 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                   Analyzing Resume...
                 </p>
                 <p className="font-mono text-xs text-gray-500 max-w-md text-center">
-                  Scanning keywords, experience alignment, technical skills, format compatibility, and education requirements
+                  Scanning keywords, experience alignment, technical skills, format compatibility,
+                  and education requirements
                 </p>
                 <div className="mt-6 flex items-center gap-2">
-                  <div className="w-2 h-2 bg-blue-700 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-2 h-2 bg-blue-700 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-2 h-2 bg-blue-700 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  <div
+                    className="w-2 h-2 bg-blue-700 rounded-full animate-bounce"
+                    style={{ animationDelay: '0ms' }}
+                  />
+                  <div
+                    className="w-2 h-2 bg-blue-700 rounded-full animate-bounce"
+                    style={{ animationDelay: '150ms' }}
+                  />
+                  <div
+                    className="w-2 h-2 bg-blue-700 rounded-full animate-bounce"
+                    style={{ animationDelay: '300ms' }}
+                  />
                 </div>
               </div>
             )}
@@ -301,10 +306,12 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                         How ATS Systems Actually Work
                       </h4>
                       <p className="font-mono text-xs text-blue-800 mb-2">
-                        ATS is a search engine, not a grader. Recruiters search for EXACT keywords (SQL, Python, Tableau) - not soft skills (leadership, communication).
+                        ATS is a search engine, not a grader. Recruiters search for EXACT keywords
+                        (SQL, Python, Tableau) - not soft skills (leadership, communication).
                       </p>
                       <p className="font-mono text-xs text-blue-800">
-                        This scan focuses on HARD SKILLS only and checks for exact matches, not synonyms.
+                        This scan focuses on HARD SKILLS only and checks for exact matches, not
+                        synonyms.
                       </p>
                     </div>
                   </div>
@@ -399,11 +406,13 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
 
                 {/* Title Analysis - NEW */}
                 {(results as any).title_analysis && (
-                  <div className={`border-2 p-4 shadow-[4px_4px_0px_0px_#000000] ${
-                    (results as any).title_analysis.match_status === 'Exact' 
-                      ? 'border-green-700 bg-green-50' 
-                      : 'border-red-600 bg-red-50'
-                  }`}>
+                  <div
+                    className={`border-2 p-4 shadow-[4px_4px_0px_0px_#000000] ${
+                      (results as any).title_analysis.match_status === 'Exact'
+                        ? 'border-green-700 bg-green-50'
+                        : 'border-red-600 bg-red-50'
+                    }`}
+                  >
                     <div className="flex items-start gap-3">
                       {(results as any).title_analysis.match_status === 'Exact' ? (
                         <CheckCircle2 className="w-5 h-5 text-green-700 shrink-0 mt-1" />
@@ -417,19 +426,25 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                         <div className="space-y-2 font-mono text-sm">
                           <div>
                             <span className="text-gray-600">Job Description Title:</span>{' '}
-                            <span className="font-bold">{(results as any).title_analysis.jd_title}</span>
+                            <span className="font-bold">
+                              {(results as any).title_analysis.jd_title}
+                            </span>
                           </div>
                           <div>
                             <span className="text-gray-600">Your Resume Title:</span>{' '}
-                            <span className="font-bold">{(results as any).title_analysis.resume_title}</span>
+                            <span className="font-bold">
+                              {(results as any).title_analysis.resume_title}
+                            </span>
                           </div>
                           <div>
                             <span className="text-gray-600">Match Status:</span>{' '}
-                            <span className={`font-bold ${
-                              (results as any).title_analysis.match_status === 'Exact' 
-                                ? 'text-green-700' 
-                                : 'text-red-600'
-                            }`}>
+                            <span
+                              className={`font-bold ${
+                                (results as any).title_analysis.match_status === 'Exact'
+                                  ? 'text-green-700'
+                                  : 'text-red-600'
+                              }`}
+                            >
                               {(results as any).title_analysis.match_status}
                             </span>
                           </div>
@@ -471,7 +486,7 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                         <div className="font-mono text-xs text-gray-600">Match Rate</div>
                       </div>
                     </div>
-                    
+
                     {/* Synonym Traps - CRITICAL */}
                     {(results as any).hard_skills_analysis.synonym_traps?.length > 0 && (
                       <div className="border-2 border-orange-600 bg-orange-50 p-3 mt-3">
@@ -482,18 +497,22 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                           ATS systems search for EXACT keywords. Using similar words won't work:
                         </p>
                         <div className="space-y-2">
-                          {(results as any).hard_skills_analysis.synonym_traps.map((trap: any, i: number) => (
-                            <div key={i} className="bg-white border border-orange-600 p-2">
-                              <div className="font-mono text-xs">
-                                <span className="text-red-600 line-through">{trap.resume_term}</span>
-                                {' → '}
-                                <span className="text-green-700 font-bold">{trap.jd_term}</span>
+                          {(results as any).hard_skills_analysis.synonym_traps.map(
+                            (trap: any, i: number) => (
+                              <div key={i} className="bg-white border border-orange-600 p-2">
+                                <div className="font-mono text-xs">
+                                  <span className="text-red-600 line-through">
+                                    {trap.resume_term}
+                                  </span>
+                                  {' → '}
+                                  <span className="text-green-700 font-bold">{trap.jd_term}</span>
+                                </div>
+                                <div className="font-mono text-xs text-gray-600 mt-1">
+                                  {trap.advice}
+                                </div>
                               </div>
-                              <div className="font-mono text-xs text-gray-600 mt-1">
-                                {trap.advice}
-                              </div>
-                            </div>
-                          ))}
+                            )
+                          )}
                         </div>
                       </div>
                     )}
@@ -514,7 +533,9 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                       <div className="border border-black p-3">
                         <div className="flex items-center justify-between mb-1">
                           <span className="font-mono text-xs font-bold">Headline/Summary</span>
-                          <span className={`text-lg font-bold ${getScoreColor((results as any).placement_audit.headline_score)}`}>
+                          <span
+                            className={`text-lg font-bold ${getScoreColor((results as any).placement_audit.headline_score)}`}
+                          >
                             {(results as any).placement_audit.headline_score}
                           </span>
                         </div>
@@ -533,14 +554,18 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                       <div className="border border-black p-3">
                         <div className="flex items-center justify-between mb-1">
                           <span className="font-mono text-xs font-bold">Skills Section</span>
-                          <span className={`text-lg font-bold ${getScoreColor((results as any).placement_audit.skills_section_score)}`}>
+                          <span
+                            className={`text-lg font-bold ${getScoreColor((results as any).placement_audit.skills_section_score)}`}
+                          >
                             {(results as any).placement_audit.skills_section_score}
                           </span>
                         </div>
                         <div className="h-2 bg-gray-200 border border-black mb-2">
                           <div
                             className={`h-full ${(results as any).placement_audit.skills_section_score >= 75 ? 'bg-green-700' : (results as any).placement_audit.skills_section_score >= 50 ? 'bg-yellow-700' : 'bg-red-700'}`}
-                            style={{ width: `${(results as any).placement_audit.skills_section_score}%` }}
+                            style={{
+                              width: `${(results as any).placement_audit.skills_section_score}%`,
+                            }}
                           />
                         </div>
                         <p className="font-mono text-xs text-gray-600">
@@ -552,14 +577,18 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                       <div className="border border-black p-3">
                         <div className="flex items-center justify-between mb-1">
                           <span className="font-mono text-xs font-bold">Experience Bullets</span>
-                          <span className={`text-lg font-bold ${getScoreColor((results as any).placement_audit.bullet_points_score)}`}>
+                          <span
+                            className={`text-lg font-bold ${getScoreColor((results as any).placement_audit.bullet_points_score)}`}
+                          >
                             {(results as any).placement_audit.bullet_points_score}
                           </span>
                         </div>
                         <div className="h-2 bg-gray-200 border border-black mb-2">
                           <div
                             className={`h-full ${(results as any).placement_audit.bullet_points_score >= 75 ? 'bg-green-700' : (results as any).placement_audit.bullet_points_score >= 50 ? 'bg-yellow-700' : 'bg-red-700'}`}
-                            style={{ width: `${(results as any).placement_audit.bullet_points_score}%` }}
+                            style={{
+                              width: `${(results as any).placement_audit.bullet_points_score}%`,
+                            }}
                           />
                         </div>
                         <p className="font-mono text-xs text-gray-600">
@@ -580,30 +609,34 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                       Binary requirements that automatically reject candidates
                     </p>
                     <div className="space-y-2">
-                      {Object.entries((results as any).knockout_filters).map(([key, filter]: [string, any]) => (
-                        <div
-                          key={key}
-                          className={`border p-3 ${
-                            filter.status === 'PASS' 
-                              ? 'border-green-700 bg-green-50' 
-                              : 'border-red-600 bg-red-50'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="font-mono text-xs font-bold uppercase">
-                              {key.replace(/_/g, ' ')}
-                            </span>
-                            <span className={`font-mono text-xs font-bold ${
-                              filter.status === 'PASS' ? 'text-green-700' : 'text-red-600'
-                            }`}>
-                              {filter.status}
-                            </span>
+                      {Object.entries((results as any).knockout_filters).map(
+                        ([key, filter]: [string, any]) => (
+                          <div
+                            key={key}
+                            className={`border p-3 ${
+                              filter.status === 'PASS'
+                                ? 'border-green-700 bg-green-50'
+                                : 'border-red-600 bg-red-50'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="font-mono text-xs font-bold uppercase">
+                                {key.replace(/_/g, ' ')}
+                              </span>
+                              <span
+                                className={`font-mono text-xs font-bold ${
+                                  filter.status === 'PASS' ? 'text-green-700' : 'text-red-600'
+                                }`}
+                              >
+                                {filter.status}
+                              </span>
+                            </div>
+                            <div className="font-mono text-xs text-gray-600 mt-1">
+                              Required: {filter.required} | Detected: {filter.detected}
+                            </div>
                           </div>
-                          <div className="font-mono text-xs text-gray-600 mt-1">
-                            Required: {filter.required} | Detected: {filter.detected}
-                          </div>
-                        </div>
-                      ))}
+                        )
+                      )}
                     </div>
                   </div>
                 )}
@@ -624,9 +657,7 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm font-bold uppercase">
-                      Pass Probability:
-                    </span>
+                    <span className="font-mono text-sm font-bold uppercase">Pass Probability:</span>
                     <span
                       className={`flex items-center gap-1 font-mono text-sm font-bold uppercase ${getProbabilityDisplay(results.pass_probability).color}`}
                     >
@@ -742,7 +773,8 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                       ❌ Missing Hard Skills & Keywords
                     </h4>
                     <p className="font-mono text-xs text-red-800 mb-3">
-                      These exact technical skills from the job description are missing. Add them to your Skills section.
+                      These exact technical skills from the job description are missing. Add them to
+                      your Skills section.
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {results.missing_keywords.map((keyword, i) => (
@@ -768,7 +800,10 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                     </p>
                     <ul className="space-y-2">
                       {results.recommendations.map((rec, i) => (
-                        <li key={i} className="font-mono text-sm text-blue-800 flex items-start gap-2">
+                        <li
+                          key={i}
+                          className="font-mono text-sm text-blue-800 flex items-start gap-2"
+                        >
                           <span className="font-bold shrink-0">{i + 1}.</span>
                           <span>{rec}</span>
                         </li>
@@ -795,8 +830,8 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
 
                 {/* Action Buttons */}
                 <div className="flex flex-wrap justify-center gap-3 pt-4">
-                  <Button 
-                    onClick={handleDownloadPdf} 
+                  <Button
+                    onClick={handleDownloadPdf}
                     variant="default"
                     className="font-mono uppercase shadow-[4px_4px_0px_0px_#000000] hover:shadow-[2px_2px_0px_0px_#000000] transition-all"
                     disabled={downloadingPdf}
@@ -813,9 +848,9 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                       </>
                     )}
                   </Button>
-                  
+
                   {/* Apply Suggestions Button */}
-                  <Button 
+                  <Button
                     onClick={handlePreviewApply}
                     variant="outline"
                     className="font-mono uppercase border-blue-700 text-blue-700 hover:bg-blue-50 shadow-[4px_4px_0px_0px_#000000] hover:shadow-[2px_2px_0px_0px_#000000] transition-all"
@@ -833,10 +868,10 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                       </>
                     )}
                   </Button>
-                  
-                  <Button 
-                    onClick={handleScan} 
-                    variant="outline" 
+
+                  <Button
+                    onClick={handleScan}
+                    variant="outline"
                     className="font-mono uppercase shadow-[4px_4px_0px_0px_#000000] hover:shadow-[2px_2px_0px_0px_#000000] transition-all"
                     disabled={loading}
                   >

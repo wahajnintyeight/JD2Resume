@@ -98,7 +98,8 @@ export function DiffPreviewModal({
   };
 
   const allAccepted =
-    detailedChanges && detailedChanges.length > 0 &&
+    detailedChanges &&
+    detailedChanges.length > 0 &&
     detailedChanges.every((_, index) => changeDecisions[index] === 'accepted');
 
   const isSectionAccepted = (changes: { index: number }[]) =>
@@ -129,7 +130,11 @@ export function DiffPreviewModal({
               <Button variant="outline" onClick={onClose} className="gap-2 w-full sm:w-auto">
                 {t('common.cancel')}
               </Button>
-              <Button variant="warning" onClick={() => onConfirm()} className="gap-2 w-full sm:w-auto">
+              <Button
+                variant="warning"
+                onClick={() => onConfirm()}
+                className="gap-2 w-full sm:w-auto"
+              >
                 {t('tailor.missingDiffDialog.confirmLabel')}
               </Button>
             </div>
@@ -186,12 +191,36 @@ export function DiffPreviewModal({
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-                <StatCard label={t('tailor.diffModal.skillsAdded')} value={diffSummary.skills_added} variant="success" />
-                <StatCard label={t('tailor.diffModal.skillsRemoved')} value={diffSummary.skills_removed} variant="warning" />
-                <StatCard label={t('tailor.diffModal.certificationsAdded')} value={diffSummary.certifications_added} variant="info" />
-                <StatCard label={t('tailor.diffModal.descriptionsModified')} value={diffSummary.descriptions_modified} variant="info" />
-                <StatCard label={t('tailor.diffModal.titleChanged')} value={diffSummary.title_changed ? 1 : 0} variant={diffSummary.title_changed ? 'info' : 'success'} />
-                <StatCard label={t('tailor.diffModal.highRiskChanges')} value={diffSummary.high_risk_changes} variant={diffSummary.high_risk_changes > 0 ? 'danger' : 'success'} />
+                <StatCard
+                  label={t('tailor.diffModal.skillsAdded')}
+                  value={diffSummary.skills_added}
+                  variant="success"
+                />
+                <StatCard
+                  label={t('tailor.diffModal.skillsRemoved')}
+                  value={diffSummary.skills_removed}
+                  variant="warning"
+                />
+                <StatCard
+                  label={t('tailor.diffModal.certificationsAdded')}
+                  value={diffSummary.certifications_added}
+                  variant="info"
+                />
+                <StatCard
+                  label={t('tailor.diffModal.descriptionsModified')}
+                  value={diffSummary.descriptions_modified}
+                  variant="info"
+                />
+                <StatCard
+                  label={t('tailor.diffModal.titleChanged')}
+                  value={diffSummary.title_changed ? 1 : 0}
+                  variant={diffSummary.title_changed ? 'info' : 'success'}
+                />
+                <StatCard
+                  label={t('tailor.diffModal.highRiskChanges')}
+                  value={diffSummary.high_risk_changes}
+                  variant={diffSummary.high_risk_changes > 0 ? 'danger' : 'success'}
+                />
               </div>
 
               {diffSummary.high_risk_changes > 0 && (
@@ -219,49 +248,84 @@ export function DiffPreviewModal({
             <div className="mt-4 space-y-4">
               {[
                 { id: 'title', title: t('tailor.diffModal.titleChanges'), items: titleChanges },
-                { id: 'summary', title: t('tailor.diffModal.summaryChanges'), items: summaryChanges },
+                {
+                  id: 'summary',
+                  title: t('tailor.diffModal.summaryChanges'),
+                  items: summaryChanges,
+                },
                 { id: 'skills', title: t('tailor.diffModal.skillChanges'), items: skillChanges },
-                { id: 'experience', title: t('tailor.diffModal.experienceChanges'), items: experienceChanges },
-                { id: 'descriptions', title: t('tailor.diffModal.descriptionChanges'), items: descChanges },
-                { id: 'education', title: t('tailor.diffModal.educationChanges'), items: educationChanges },
-                { id: 'project', title: t('tailor.diffModal.projectChanges'), items: projectChanges },
-                { id: 'certifications', title: t('tailor.diffModal.certificationChanges'), items: certChanges },
-              ].map(section => section.items.length > 0 && (
-                <ChangeSection
-                  key={section.id}
-                  title={section.title}
-                  count={section.items.length}
-                  isExpanded={expandedSections.has(section.id)}
-                  onToggle={() => toggleSection(section.id)}
-                  onAcceptAll={() => acceptSectionChanges(section.items.map(i => i.index))}
-                  acceptLabel={t('tailor.diffModal.acceptSection')}
-                  isAccepted={isSectionAccepted(section.items)}
-                >
-                  {section.items.map(({ change, index }) => (
-                    <ChangeItem
-                      key={index}
-                      change={change}
-                      decision={changeDecisions[index] ?? 'pending'}
-                      onDecisionChange={(d: ChangeDecision) => updateDecision(index, d)}
-                      labels={decisionLabels}
-                    />
-                  ))}
-                </ChangeSection>
-              ))}
+                {
+                  id: 'experience',
+                  title: t('tailor.diffModal.experienceChanges'),
+                  items: experienceChanges,
+                },
+                {
+                  id: 'descriptions',
+                  title: t('tailor.diffModal.descriptionChanges'),
+                  items: descChanges,
+                },
+                {
+                  id: 'education',
+                  title: t('tailor.diffModal.educationChanges'),
+                  items: educationChanges,
+                },
+                {
+                  id: 'project',
+                  title: t('tailor.diffModal.projectChanges'),
+                  items: projectChanges,
+                },
+                {
+                  id: 'certifications',
+                  title: t('tailor.diffModal.certificationChanges'),
+                  items: certChanges,
+                },
+              ].map(
+                (section) =>
+                  section.items.length > 0 && (
+                    <ChangeSection
+                      key={section.id}
+                      title={section.title}
+                      count={section.items.length}
+                      isExpanded={expandedSections.has(section.id)}
+                      onToggle={() => toggleSection(section.id)}
+                      onAcceptAll={() => acceptSectionChanges(section.items.map((i) => i.index))}
+                      acceptLabel={t('tailor.diffModal.acceptSection')}
+                      isAccepted={isSectionAccepted(section.items)}
+                    >
+                      {section.items.map(({ change, index }) => (
+                        <ChangeItem
+                          key={index}
+                          change={change}
+                          decision={changeDecisions[index] ?? 'pending'}
+                          onDecisionChange={(d: ChangeDecision) => updateDecision(index, d)}
+                          labels={decisionLabels}
+                        />
+                      ))}
+                    </ChangeSection>
+                  )
+              )}
             </div>
           </div>
 
           <div className="flex shrink-0 flex-col sm:flex-row sm:justify-between items-stretch sm:items-center gap-3 p-4 border-t-2 border-black bg-white sm:px-6 lg:px-8 py-4">
-            <Button variant="outline" onClick={onReject} className="gap-2 w-full sm:w-auto justify-center">
+            <Button
+              variant="outline"
+              onClick={onReject}
+              className="gap-2 w-full sm:w-auto justify-center"
+            >
               <X className="w-4 h-4" />
               {t('tailor.diffModal.rejectButton')}
             </Button>
-            <Button 
+            <Button
               onClick={() => onConfirm(changeDecisions)}
               disabled={isSaving}
               className="gap-2 bg-[#15803D] hover:bg-[#166534] w-full sm:w-auto justify-center"
             >
-              {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+              {isSaving ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <CheckCircle className="w-4 h-4" />
+              )}
               {t('tailor.diffModal.confirmButton')}
             </Button>
           </div>
@@ -286,18 +350,44 @@ function StatCard({ label, value, variant }: { label: string; value: number; var
   );
 }
 
-function ChangeSection({ title, count, isExpanded, onToggle, onAcceptAll, acceptLabel, isAccepted, children }: any) {
+function ChangeSection({
+  title,
+  count,
+  isExpanded,
+  onToggle,
+  onAcceptAll,
+  acceptLabel,
+  isAccepted,
+  children,
+}: any) {
   return (
     <div className="border-2 border-black bg-white">
       <div className="flex flex-col sm:flex-row">
-        <button onClick={onToggle} className="flex-1 flex items-center justify-between p-3 hover:bg-gray-50 text-left">
+        <button
+          onClick={onToggle}
+          className="flex-1 flex items-center justify-between p-3 hover:bg-gray-50 text-left"
+        >
           <div className="flex items-center gap-2">
-            {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-            <span className="font-mono text-sm font-bold uppercase">{title} ({count})</span>
+            {isExpanded ? (
+              <ChevronDown className="w-4 h-4" />
+            ) : (
+              <ChevronRight className="w-4 h-4" />
+            )}
+            <span className="font-mono text-sm font-bold uppercase">
+              {title} ({count})
+            </span>
           </div>
         </button>
         <div className="p-2 sm:border-l-2 border-black">
-          <Button size="sm" variant="success" onClick={onAcceptAll} disabled={isAccepted} className="w-full">{acceptLabel}</Button>
+          <Button
+            size="sm"
+            variant="success"
+            onClick={onAcceptAll}
+            disabled={isAccepted}
+            className="w-full"
+          >
+            {acceptLabel}
+          </Button>
         </div>
       </div>
       {isExpanded && <div className="border-t-2 border-black p-4 space-y-3">{children}</div>}
@@ -306,29 +396,47 @@ function ChangeSection({ title, count, isExpanded, onToggle, onAcceptAll, accept
 }
 
 function ChangeItem({ change, decision, onDecisionChange, labels }: any) {
-    const typeColors: Record<string, string> = {
-      added: 'border-l-4 border-[#15803D] bg-[#F0FDF4]',
-      removed: 'border-l-4 border-[#DC2626] bg-[#FEF2F2]',
-      modified: 'border-l-4 border-[#1D4ED8] bg-[#EFF6FF]',
-    };
-    return (
-      <div className={`border-2 border-black p-3 ${typeColors[change.change_type]}`}>
-        <div className="flex items-start gap-2">
-          <div className="flex-1">
-            {change.original_value && <div className="line-through text-red-600 text-sm mb-1">{change.original_value}</div>}
-            <div className="text-gray-900 text-sm">{change.new_value}</div>
-          </div>
-        </div>
-        <div className="mt-3 pt-3 border-t-2 border-black flex flex-col sm:flex-row justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase">{labels.decision}:</span>
-            <span className={`px-2 py-1 text-xs font-bold uppercase border-2 border-black ${decision === 'accepted' ? 'bg-green-700 text-white' : decision === 'rejected' ? 'bg-red-700 text-white' : 'bg-gray-100'}`}>{labels[decision]}</span>
-          </div>
-          <div className="flex gap-2">
-            <Button size="sm" variant={decision === 'accepted' ? 'success' : 'outline'} onClick={() => onDecisionChange('accepted')}>{labels.accept}</Button>
-            <Button size="sm" variant={decision === 'rejected' ? 'destructive' : 'outline'} onClick={() => onDecisionChange('rejected')}>{labels.reject}</Button>
-          </div>
+  const typeColors: Record<string, string> = {
+    added: 'border-l-4 border-[#15803D] bg-[#F0FDF4]',
+    removed: 'border-l-4 border-[#DC2626] bg-[#FEF2F2]',
+    modified: 'border-l-4 border-[#1D4ED8] bg-[#EFF6FF]',
+  };
+  return (
+    <div className={`border-2 border-black p-3 ${typeColors[change.change_type]}`}>
+      <div className="flex items-start gap-2">
+        <div className="flex-1">
+          {change.original_value && (
+            <div className="line-through text-red-600 text-sm mb-1">{change.original_value}</div>
+          )}
+          <div className="text-gray-900 text-sm">{change.new_value}</div>
         </div>
       </div>
-    );
+      <div className="mt-3 pt-3 border-t-2 border-black flex flex-col sm:flex-row justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold uppercase">{labels.decision}:</span>
+          <span
+            className={`px-2 py-1 text-xs font-bold uppercase border-2 border-black ${decision === 'accepted' ? 'bg-green-700 text-white' : decision === 'rejected' ? 'bg-red-700 text-white' : 'bg-gray-100'}`}
+          >
+            {labels[decision]}
+          </span>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant={decision === 'accepted' ? 'success' : 'outline'}
+            onClick={() => onDecisionChange('accepted')}
+          >
+            {labels.accept}
+          </Button>
+          <Button
+            size="sm"
+            variant={decision === 'rejected' ? 'destructive' : 'outline'}
+            onClick={() => onDecisionChange('rejected')}
+          >
+            {labels.reject}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
 }

@@ -40,7 +40,7 @@ interface CoverLetterData {
 
 async function fetchCoverLetterData(
   resumeId: string,
-  authToken?: string,
+  authToken?: string
 ): Promise<CoverLetterData> {
   // Use 127.0.0.1 instead of localhost to avoid IPv6 issues on Windows
   const apiBase = API_BASE.replace('localhost', '127.0.0.1');
@@ -84,7 +84,7 @@ export default async function PrintCoverLetterPage({ params, searchParams }: Pag
   // Fetch cover letter data from API (same pattern as resume)
   const { coverLetter, personalInfo } = await fetchCoverLetterData(
     resolvedParams.id,
-    resolvedSearchParams?.authToken,
+    resolvedSearchParams?.authToken
   );
 
   // Standard cover letter margins

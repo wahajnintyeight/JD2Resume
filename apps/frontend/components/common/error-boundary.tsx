@@ -75,15 +75,20 @@ export class ErrorBoundary extends Component<Props, State> {
                 <AlertTriangle className="w-12 h-12" />
               </div>
               <div className="space-y-3">
-                <h2 className="font-serif text-4xl font-black uppercase tracking-tight text-black">{strings.title}</h2>
-                <p className="text-gray-700 font-mono font-bold text-sm uppercase leading-relaxed px-4">{strings.description}</p>
+                <h2 className="font-serif text-4xl font-black uppercase tracking-tight text-black">
+                  {strings.title}
+                </h2>
+                <p className="text-gray-700 font-mono font-bold text-sm uppercase leading-relaxed px-4">
+                  {strings.description}
+                </p>
               </div>
             </div>
 
             {process.env.NODE_ENV === 'development' && this.state.error && (
               <div className="mb-8 p-6 bg-red-50 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
                 <p className="font-mono text-xs text-red-700 break-all leading-relaxed font-bold uppercase">
-                  {'// ERROR: '}{this.state.error.message}
+                  {'// ERROR: '}
+                  {this.state.error.message}
                 </p>
               </div>
             )}

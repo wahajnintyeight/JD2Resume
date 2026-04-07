@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { 
-  listMasterResumes, 
-  setMasterResume, 
+import {
+  listMasterResumes,
+  setMasterResume,
   unsetMasterResume,
-  type MasterResume 
+  type MasterResume,
 } from '@/lib/api/resume';
 import { Button } from '@/components/ui/button';
 import { Card, CardTitle, CardDescription } from '@/components/ui/card';
@@ -18,7 +18,10 @@ interface MasterResumeManagerProps {
   onMasterChanged?: () => void;
 }
 
-export default function MasterResumeManager({ onClose, onMasterChanged }: MasterResumeManagerProps) {
+export default function MasterResumeManager({
+  onClose,
+  onMasterChanged,
+}: MasterResumeManagerProps) {
   const [masters, setMasters] = useState<MasterResume[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +45,7 @@ export default function MasterResumeManager({ onClose, onMasterChanged }: Master
 
   const handleUnsetMaster = async (resumeId: string) => {
     if (!confirm('Remove master status from this resume?')) return;
-    
+
     try {
       await unsetMasterResume(resumeId);
       await loadMasters();
@@ -62,7 +65,9 @@ export default function MasterResumeManager({ onClose, onMasterChanged }: Master
         <div className=" mx-auto">
           <div className="flex items-center justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-blue-700" />
-            <p className="ml-3 font-mono text-sm uppercase text-gray-600">Loading master resumes...</p>
+            <p className="ml-3 font-mono text-sm uppercase text-gray-600">
+              Loading master resumes...
+            </p>
           </div>
         </div>
       </div>
@@ -115,37 +120,31 @@ export default function MasterResumeManager({ onClose, onMasterChanged }: Master
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {masters.map((master) => (
-              <Card
-                key={master.resume_id}
-                variant="outline"
-                className="flex flex-col"
-              >
+              <Card key={master.resume_id} variant="outline" className="flex flex-col">
                 <div className="mb-4">
                   <span className="inline-block border-2 border-black bg-blue-700 px-3 py-1 font-mono text-xs font-bold uppercase text-white shadow-[2px_2px_0px_0px_#000000]">
                     {getCategoryDisplay(master.master_category)}
                   </span>
                 </div>
-                
+
                 <CardTitle className="text-xl">
                   {master.personal_info?.name || 'Unnamed Resume'}
                 </CardTitle>
-                
+
                 {master.personal_info?.title && (
                   <p className="mt-2 font-mono text-sm text-gray-600">
                     {master.personal_info.title}
                   </p>
                 )}
-                
+
                 {master.filename && (
-                  <p className="mt-2 font-mono text-xs text-gray-500">
-                    File: {master.filename}
-                  </p>
+                  <p className="mt-2 font-mono text-xs text-gray-500">File: {master.filename}</p>
                 )}
-                
+
                 <CardDescription className="mt-auto pt-4">
                   Created: {new Date(master.created_at).toLocaleDateString()}
                 </CardDescription>
-                
+
                 <div className="mt-4">
                   <Button
                     onClick={() => handleUnsetMaster(master.resume_id)}
@@ -166,8 +165,8 @@ export default function MasterResumeManager({ onClose, onMasterChanged }: Master
           <h4 className="font-mono text-sm font-bold uppercase text-blue-900">💡 Tip</h4>
           <p className="mt-2 font-mono text-sm text-blue-800">
             You can have multiple master resumes for different career paths. For example, one for
-            "Software Engineer" and another for "Data Scientist". When tailoring a resume, you'll
-            be able to choose which master to use.
+            "Software Engineer" and another for "Data Scientist". When tailoring a resume, you'll be
+            able to choose which master to use.
           </p>
         </div>
       </div>

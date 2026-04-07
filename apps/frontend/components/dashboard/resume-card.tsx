@@ -17,7 +17,10 @@ export const ResumeCard = ({ type, title, lastEdited, onClick }: ResumeCardProps
 
   if (type === 'new') {
     return (
-      <button onClick={onClick} className={`${baseClasses} items-center justify-center group bg-slate-50/50 border-dashed border-2 border-slate-200 hover:bg-white hover:border-primary/30`}>
+      <button
+        onClick={onClick}
+        className={`${baseClasses} items-center justify-center group bg-slate-50/50 border-dashed border-2 border-slate-200 hover:bg-white hover:border-primary/30`}
+      >
         <div className="w-14 h-14 rounded-2xl bg-white shadow-sm flex items-center justify-center text-slate-400 group-hover:text-primary group-hover:scale-110 transition-all">
           <Plus size={32} />
         </div>

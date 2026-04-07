@@ -24,7 +24,7 @@ interface DropdownProps {
 
 /**
  * Modern Dropdown Component
- * 
+ *
  * Design Principles:
  * - Soft rounded corners (rounded-2xl)
  * - Subtle layered shadows
@@ -80,9 +80,7 @@ export function Dropdown({
       const spaceBelow = window.innerHeight - triggerRect.bottom;
       const spaceAbove = triggerRect.top;
 
-      setOpenDirection(
-        spaceBelow < estimatedMenuHeight && spaceAbove > spaceBelow ? 'up' : 'down'
-      );
+      setOpenDirection(spaceBelow < estimatedMenuHeight && spaceAbove > spaceBelow ? 'up' : 'down');
     };
 
     updateDirection();
@@ -105,7 +103,8 @@ export function Dropdown({
 
       {description && (
         <p className="text-sm text-slate-500 font-medium px-1 leading-relaxed italic">
-          {'// '}{description}
+          {'// '}
+          {description}
         </p>
       )}
 
@@ -124,9 +123,7 @@ export function Dropdown({
           <div className="flex-1 text-left min-w-0">
             {selectedOption ? (
               <div className="flex flex-col">
-                <span className="font-bold text-slate-900 truncate">
-                  {selectedOption.label}
-                </span>
+                <span className="font-bold text-slate-900 truncate">{selectedOption.label}</span>
                 {selectedOption.description && (
                   <span className="text-[11px] text-slate-500 mt-0.5 font-medium truncate">
                     {selectedOption.description}
@@ -152,7 +149,9 @@ export function Dropdown({
           <div
             className={cn(
               'absolute left-0 right-0 z-[120] bg-white/95 backdrop-blur-xl border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-3xl overflow-hidden animate-in fade-in zoom-in-95 duration-200',
-              openDirection === 'down' ? 'top-full mt-2 origin-top' : 'bottom-full mb-2 origin-bottom'
+              openDirection === 'down'
+                ? 'top-full mt-2 origin-top'
+                : 'bottom-full mb-2 origin-bottom'
             )}
           >
             <div className="p-2 max-h-[320px] overflow-y-auto custom-scrollbar">
@@ -168,31 +167,35 @@ export function Dropdown({
                       type="button"
                       className={cn(
                         'w-full text-left px-4 py-3 rounded-2xl transition-all duration-200 group relative flex items-center justify-between',
-                        option.id === value 
-                          ? 'bg-primary text-white shadow-lg shadow-primary/20' 
+                        option.id === value
+                          ? 'bg-primary text-white shadow-lg shadow-primary/20'
                           : 'hover:bg-slate-50 text-slate-700 hover:text-primary'
                       )}
                       onClick={() => handleSelect(option.id)}
                     >
                       <div className="flex-1 min-w-0 pr-4">
-                        <div className={cn(
-                          'font-bold text-sm truncate tracking-tight',
-                          option.id === value ? 'text-white' : 'text-slate-900 group-hover:text-primary'
-                        )}>
+                        <div
+                          className={cn(
+                            'font-bold text-sm truncate tracking-tight',
+                            option.id === value
+                              ? 'text-white'
+                              : 'text-slate-900 group-hover:text-primary'
+                          )}
+                        >
                           {option.label}
                         </div>
                         {option.description && (
-                          <div className={cn(
-                            'text-[11px] mt-0.5 font-medium truncate',
-                            option.id === value ? 'text-white/80' : 'text-slate-500'
-                          )}>
+                          <div
+                            className={cn(
+                              'text-[11px] mt-0.5 font-medium truncate',
+                              option.id === value ? 'text-white/80' : 'text-slate-500'
+                            )}
+                          >
                             {option.description}
                           </div>
                         )}
                       </div>
-                      {option.id === value && (
-                        <Check className="w-4 h-4 text-white shrink-0" />
-                      )}
+                      {option.id === value && <Check className="w-4 h-4 text-white shrink-0" />}
                     </button>
                   ))}
                 </div>

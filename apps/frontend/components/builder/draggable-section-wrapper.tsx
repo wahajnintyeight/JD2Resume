@@ -39,7 +39,7 @@ export const DraggableSectionWrapper: React.FC<DraggableSectionWrapperProps> = (
   };
 
   return (
-    <div ref={setNodeRef} style={style} className={cn("relative group", isDragging && "z-50")}>
+    <div ref={setNodeRef} style={style} className={cn('relative group', isDragging && 'z-50')}>
       {/* Drag Handle - Modern Floating Design */}
       {!disabled && (
         <div

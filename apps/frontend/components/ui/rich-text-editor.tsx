@@ -59,7 +59,8 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: 'text-blue-700 underline decoration-blue-300 underline-offset-2 font-medium transition-colors hover:text-blue-800',
+          class:
+            'text-blue-700 underline decoration-blue-300 underline-offset-2 font-medium transition-colors hover:text-blue-800',
         },
       }),
       Placeholder.configure({

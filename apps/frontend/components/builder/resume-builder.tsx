@@ -687,7 +687,9 @@ const ResumeBuilderContent = () => {
                   atelier
                 </span>
                 <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 font-sans text-[10px] font-bold uppercase tracking-[0.35em] text-cyan-100">
-                  {resumeId ? `${t('nav.builder')} · ${resumeId.slice(0, 8)}` : t('builder.unsavedDraft')}
+                  {resumeId
+                    ? `${t('nav.builder')} · ${resumeId.slice(0, 8)}`
+                    : t('builder.unsavedDraft')}
                 </span>
               </div>
               <div>
@@ -763,8 +765,8 @@ const ResumeBuilderContent = () => {
       <main className="relative z-10 flex flex-1 overflow-hidden">
         <div
           className={cn(
-            "flex h-full flex-col border-r border-white/10 bg-slate-950/45 backdrop-blur-xl transition-all duration-500",
-            isFullscreenPreview ? "w-0 opacity-0 invisible" : "w-full lg:w-[520px] xl:w-[620px]"
+            'flex h-full flex-col border-r border-white/10 bg-slate-950/45 backdrop-blur-xl transition-all duration-500',
+            isFullscreenPreview ? 'w-0 opacity-0 invisible' : 'w-full lg:w-[520px] xl:w-[620px]'
           )}
         >
           <div className="border-b border-white/10 px-6 py-5 lg:px-8">
@@ -808,9 +810,21 @@ const ResumeBuilderContent = () => {
                 <RetroTabs
                   tabs={[
                     { id: 'resume', label: t('builder.previewTabs.resume') },
-                    { id: 'cover-letter', label: t('builder.previewTabs.coverLetter'), disabled: !coverLetter },
-                    { id: 'outreach', label: t('builder.previewTabs.outreach'), disabled: !outreachMessage },
-                    { id: 'jd-match', label: t('builder.previewTabs.jdMatch'), disabled: !jobDescription },
+                    {
+                      id: 'cover-letter',
+                      label: t('builder.previewTabs.coverLetter'),
+                      disabled: !coverLetter,
+                    },
+                    {
+                      id: 'outreach',
+                      label: t('builder.previewTabs.outreach'),
+                      disabled: !outreachMessage,
+                    },
+                    {
+                      id: 'jd-match',
+                      label: t('builder.previewTabs.jdMatch'),
+                      disabled: !jobDescription,
+                    },
                   ]}
                   activeTab={activeTab}
                   onTabChange={(id) => setActiveTab(id as TabId)}
@@ -865,8 +879,8 @@ const ResumeBuilderContent = () => {
             <div className="mx-auto flex h-full max-w-6xl flex-col rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.44),rgba(15,23,42,0.24))] p-2 shadow-[0_30px_80px_rgba(2,6,23,0.4)] sm:p-4">
               <div
                 className={cn(
-                  "flex-1 transition-all duration-500 transform",
-                  activeTab === 'resume' ? "scale-100 opacity-100" : "scale-95 opacity-0 hidden"
+                  'flex-1 transition-all duration-500 transform',
+                  activeTab === 'resume' ? 'scale-100 opacity-100' : 'scale-95 opacity-0 hidden'
                 )}
               >
                 <div className="mx-auto overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/5 p-2">
@@ -979,7 +993,11 @@ const ResumeBuilderContent = () => {
                         disabled={!outreachMessage}
                         className="h-10 rounded-full border-white/10 bg-white/5 px-4 font-sans text-xs font-bold uppercase tracking-[0.2em] text-slate-100"
                       >
-                        {isCopied ? <Check className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
+                        {isCopied ? (
+                          <Check className="mr-2 h-4 w-4" />
+                        ) : (
+                          <Copy className="mr-2 h-4 w-4" />
+                        )}
                         {isCopied ? 'Copied' : 'Copy'}
                       </Button>
                     </div>
@@ -998,10 +1016,7 @@ const ResumeBuilderContent = () => {
                       JD Match
                     </h3>
                   </div>
-                  <JDComparisonView
-                    resumeData={resumeData}
-                    jobDescription={jobDescription}
-                  />
+                  <JDComparisonView resumeData={resumeData} jobDescription={jobDescription} />
                 </div>
               )}
             </div>

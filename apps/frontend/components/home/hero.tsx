@@ -122,21 +122,27 @@ export default function Hero() {
                   <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
                     <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Target role</p>
                     <p className="mt-2 text-sm font-semibold text-white">Backend Engineer</p>
-                    <p className="mt-1 text-sm text-slate-400">Title normalized from internal naming</p>
+                    <p className="mt-1 text-sm text-slate-400">
+                      Title normalized from internal naming
+                    </p>
                   </div>
                   <div className="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
-                    <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Keyword coverage</p>
+                    <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                      Keyword coverage
+                    </p>
                     <p className="mt-2 text-sm font-semibold text-white">Redis · Go · RabbitMQ</p>
                     <p className="mt-1 text-sm text-slate-400">Critical skills surfaced earlier</p>
                   </div>
                 </div>
 
                 <div className="rounded-2xl border border-white/10 bg-slate-950/50 p-5">
-                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">Improved bullet</p>
+                  <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                    Improved bullet
+                  </p>
                   <p className="mt-3 text-sm leading-6 text-slate-200">
                     Built Go services for live GPS stream processing using RabbitMQ, Redis, and
-                    Elasticsearch, improving low-latency event handling and making distributed-systems
-                    ownership obvious in recruiter screens.
+                    Elasticsearch, improving low-latency event handling and making
+                    distributed-systems ownership obvious in recruiter screens.
                   </p>
                 </div>
 

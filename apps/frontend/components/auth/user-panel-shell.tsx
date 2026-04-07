@@ -42,9 +42,7 @@ function NavLink({
       onClick={onClick}
       className={cn(
         'group relative flex items-center overflow-hidden transition-all duration-300 ease-out',
-        isCollapsed
-          ? 'h-12 w-12 justify-center rounded-xl'
-          : 'h-11 w-full rounded-xl px-3',
+        isCollapsed ? 'h-12 w-12 justify-center rounded-xl' : 'h-11 w-full rounded-xl px-3',
         isActive
           ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
           : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
@@ -61,9 +59,7 @@ function NavLink({
       <span
         className={cn(
           'whitespace-nowrap text-sm font-bold transition-all duration-300',
-          isCollapsed
-            ? 'w-0 translate-x-4 opacity-0'
-            : 'w-auto translate-x-0 opacity-100'
+          isCollapsed ? 'w-0 translate-x-4 opacity-0' : 'w-auto translate-x-0 opacity-100'
         )}
       >
         {children}
@@ -118,9 +114,7 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
     return (
       <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-100 dark:bg-[#050505] p-6">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_15%,rgba(99,102,241,0.08),transparent)] dark:bg-[radial-gradient(circle_at_15%_15%,rgba(99,102,241,0.15),transparent)]" />
-        <Card
-          className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#0A0A0A] p-0 shadow-2xl"
-        >
+        <Card className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#0A0A0A] p-0 shadow-2xl">
           <div className="relative space-y-8 p-10 text-center md:p-12">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-lg shadow-indigo-500/30">
               <Zap className="h-7 w-7" />
@@ -134,7 +128,8 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
                   Access Required<span className="text-indigo-600">.</span>
                 </h2>
                 <p className="mx-auto max-w-sm font-sans text-sm leading-6 text-slate-600 dark:text-slate-400">
-                  Authenticate to access your resume pipeline, builder workspace, and AI-powered tailoring system.
+                  Authenticate to access your resume pipeline, builder workspace, and AI-powered
+                  tailoring system.
                 </p>
               </div>
             </div>
@@ -171,8 +166,12 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
             <Zap className="h-5 w-5" />
           </div>
           <div>
-            <div className="font-sans text-base font-bold italic tracking-tight text-slate-900 dark:text-white">JD2Resume</div>
-            <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-500">Workspace</div>
+            <div className="font-sans text-base font-bold italic tracking-tight text-slate-900 dark:text-white">
+              JD2Resume
+            </div>
+            <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-500">
+              Workspace
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -209,12 +208,7 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
           {isCollapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
         </button>
 
-        <div
-          className={cn(
-            'flex h-full w-full flex-col gap-6 p-5',
-            isCollapsed && 'items-center'
-          )}
-        >
+        <div className={cn('flex h-full w-full flex-col gap-6 p-5', isCollapsed && 'items-center')}>
           <div
             className={cn(
               'flex items-center gap-3 transition-all duration-500',
@@ -226,7 +220,9 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
             </div>
             {!isCollapsed && (
               <div className="flex flex-col transition-all duration-500">
-                <span className="text-lg font-bold italic tracking-tight text-slate-900 dark:text-white">JD2Resume</span>
+                <span className="text-lg font-bold italic tracking-tight text-slate-900 dark:text-white">
+                  JD2Resume
+                </span>
                 <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-500 dark:text-slate-500">
                   Professional Engine
                 </span>
@@ -237,9 +233,7 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
           <div
             className={cn(
               'relative group flex items-center overflow-hidden border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 transition-all duration-500',
-              isCollapsed
-                ? 'h-12 w-12 justify-center rounded-xl'
-                : 'h-16 w-full rounded-xl px-3'
+              isCollapsed ? 'h-12 w-12 justify-center rounded-xl' : 'h-16 w-full rounded-xl px-3'
             )}
           >
             <div className="relative shrink-0">
@@ -352,7 +346,9 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
                   <div className="truncate font-sans text-sm font-bold text-slate-900 dark:text-white">
                     {user.name || user.email?.split('@')[0]}
                   </div>
-                  <div className="truncate text-xs text-slate-600 dark:text-slate-400">{user.email}</div>
+                  <div className="truncate text-xs text-slate-600 dark:text-slate-400">
+                    {user.email}
+                  </div>
                 </div>
               </div>
             </div>

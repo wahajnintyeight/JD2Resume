@@ -170,7 +170,7 @@ export function ATSApplyPreviewModal({
                 {change.context && (
                   <p className="font-mono text-xs text-gray-500">{change.context}</p>
                 )}
-                
+
                 {change.change_type === 'added' && (
                   <div className="flex items-start gap-2">
                     <span className="font-mono text-xs text-green-700 font-bold">+</span>
@@ -235,7 +235,9 @@ export function ATSApplyPreviewModal({
               <div className="font-mono text-xs text-gray-600">Skills Added</div>
             </div>
             <div className="border-2 border-black bg-white p-3 text-center">
-              <div className="text-2xl font-bold text-yellow-700">{diffSummary.descriptions_modified}</div>
+              <div className="text-2xl font-bold text-yellow-700">
+                {diffSummary.descriptions_modified}
+              </div>
               <div className="font-mono text-xs text-gray-600">Descriptions Updated</div>
             </div>
             <div className="border-2 border-black bg-white p-3 text-center">
@@ -255,8 +257,8 @@ export function ATSApplyPreviewModal({
                   Review Skills Before Applying
                 </h4>
                 <p className="font-mono text-xs text-orange-800">
-                  {diffSummary.skills_added} skill(s) will be added to your resume. 
-                  Please review to ensure they accurately reflect your experience.
+                  {diffSummary.skills_added} skill(s) will be added to your resume. Please review to
+                  ensure they accurately reflect your experience.
                 </p>
               </div>
             </div>
