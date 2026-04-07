@@ -89,8 +89,8 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
   return (
     <div
       className={cn(
-        "space-y-0 p-8 bg-white border border-slate-200 rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.04)] transition-all duration-300",
-        isHidden && "opacity-50 grayscale bg-slate-50/50 border-dashed"
+        "space-y-0 rounded-2xl border border-slate-200 bg-white p-8 shadow-sm transition-all duration-300",
+        isHidden && "border-dashed bg-slate-50/50 opacity-50 grayscale"
       )}
     >
       {/* Section Header - Modern Design */}

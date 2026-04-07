@@ -58,7 +58,7 @@ export const GenericListForm: React.FC<GenericListFormProps> = ({
         onChange={(e) => handleChange(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={finalPlaceholder}
-        className="min-h-[150px] text-black rounded-none border-black bg-white focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-blue-700"
+        className="min-h-[150px] rounded-lg border border-slate-200 bg-white text-black shadow-sm focus-visible:border-blue-700 focus-visible:ring-0 focus-visible:ring-offset-0"
       />
     </div>
   );

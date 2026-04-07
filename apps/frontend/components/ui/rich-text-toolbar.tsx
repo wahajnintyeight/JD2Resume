@@ -9,15 +9,21 @@ import { cn } from '@/lib/utils';
 interface RichTextToolbarProps {
   editor: Editor;
   onLinkClick: () => void;
+  compact?: boolean;
 }
 
 /**
  * Rich Text Toolbar Component
  *
- * Swiss International Style formatting toolbar with B/I/U/Link buttons.
- * Active states shown with Hyper Blue background.
+ * Modern formatting toolbar with B/I/U/Link buttons.
+ * Active states shown with blue background.
+ * Supports compact mode for bubble menu.
  */
-export const RichTextToolbar: React.FC<RichTextToolbarProps> = ({ editor, onLinkClick }) => {
+export const RichTextToolbar: React.FC<RichTextToolbarProps> = ({ 
+  editor, 
+  onLinkClick,
+  compact = false 
+}) => {
   const tools = [
     {
       icon: Bold,
@@ -49,8 +55,38 @@ export const RichTextToolbar: React.FC<RichTextToolbarProps> = ({ editor, onLink
     },
   ];
 
+  if (compact) {
+    // Compact mode for bubble menu - no container
+    return (
+      <>
+        {tools.map((tool) => (
+          <Button
+            key={tool.label}
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={(e) => {
+              e.preventDefault();
+              tool.action();
+            }}
+            title={`${tool.label} (${tool.shortcut})`}
+            className={cn(
+              'h-7 w-7 rounded-md transition-colors',
+              tool.isActive 
+                ? 'bg-blue-700 text-white hover:bg-blue-800 hover:text-white' 
+                : 'hover:bg-slate-100'
+            )}
+          >
+            <tool.icon className="w-4 h-4" />
+          </Button>
+        ))}
+      </>
+    );
+  }
+
+  // Full mode with container (legacy support)
   return (
-    <div className="flex items-center gap-1 p-1 border border-black bg-[#E5E5E0]">
+    <div className="flex items-center gap-1 p-1.5 border border-slate-200 bg-slate-50 rounded-t-lg shadow-sm">
       {tools.map((tool) => (
         <Button
           key={tool.label}
@@ -63,8 +99,10 @@ export const RichTextToolbar: React.FC<RichTextToolbarProps> = ({ editor, onLink
           }}
           title={`${tool.label} (${tool.shortcut})`}
           className={cn(
-            'h-7 w-7 rounded-none',
-            tool.isActive && 'bg-blue-700 text-white hover:bg-blue-800 hover:text-white'
+            'h-7 w-7 rounded-md transition-colors',
+            tool.isActive 
+              ? 'bg-blue-700 text-white hover:bg-blue-800 hover:text-white' 
+              : 'hover:bg-slate-200'
           )}
         >
           <tool.icon className="w-4 h-4" />

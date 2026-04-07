@@ -4,7 +4,7 @@ import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { RichTextEditor } from '@/components/ui/rich-text-editor';
+import { Textarea } from '@/components/ui/textarea';
 import { Project } from '@/components/dashboard/resume-component';
 import { Plus, Trash2, Github, Globe } from 'lucide-react';
 import { useTranslations } from '@/lib/i18n';
@@ -92,7 +92,7 @@ export const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) =>
           variant="outline"
           size="sm"
           onClick={handleAdd}
-          className="rounded-none border-black hover:bg-black hover:text-white transition-colors"
+          className="rounded-xl border-slate-200 bg-white text-slate-700 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
         >
           <Plus className="w-4 h-4 mr-2" /> {t('builder.forms.projects.addProject')}
         </Button>
@@ -100,11 +100,14 @@ export const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) =>
 
       <div className="space-y-8">
         {data.map((item) => (
-          <div key={item.id} className="p-6 border border-black bg-gray-50 relative group">
+          <div
+            key={item.id}
+            className="relative group rounded-2xl bg-white p-6"
+          >
             <Button
               variant="ghost"
               size="icon"
-              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
+              className="absolute top-3 right-3 opacity-0 transition-opacity text-slate-400 hover:text-destructive hover:bg-destructive/10 group-hover:opacity-100"
               onClick={() => handleRemove(item.id)}
             >
               <Trash2 className="w-4 h-4" />
@@ -112,95 +115,96 @@ export const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) =>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 pr-8">
               <div className="space-y-2">
-                <Label className="font-mono text-xs uppercase tracking-wider text-gray-500">
+                <Label className="font-mono text-xs uppercase tracking-wider text-slate-500">
                   {t('builder.forms.projects.fields.projectName')}
                 </Label>
                 <Input
                   value={item.name || ''}
                   onChange={(e) => handleChange(item.id, 'name', e.target.value)}
                   placeholder={t('builder.forms.projects.placeholders.projectName')}
-                  className="rounded-none border-black bg-white"
+                  className="rounded-xl border-slate-200 bg-slate-50"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="font-mono text-xs uppercase tracking-wider text-gray-500">
+                <Label className="font-mono text-xs uppercase tracking-wider text-slate-500">
                   {t('builder.forms.projects.fields.role')}
                 </Label>
                 <Input
                   value={item.role || ''}
                   onChange={(e) => handleChange(item.id, 'role', e.target.value)}
                   placeholder={t('builder.forms.projects.placeholders.role')}
-                  className="rounded-none border-black bg-white"
+                  className="rounded-xl border-slate-200 bg-slate-50"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="font-mono text-xs uppercase tracking-wider text-gray-500">
+                <Label className="font-mono text-xs uppercase tracking-wider text-slate-500">
                   {t('builder.genericItemForm.fields.years')}{' '}
-                  <span className="text-gray-400">({t('common.optional')})</span>
+                  <span className="text-slate-400">({t('common.optional')})</span>
                 </Label>
                 <Input
                   value={item.years || ''}
                   onChange={(e) => handleChange(item.id, 'years', e.target.value)}
                   placeholder={t('builder.forms.projects.placeholders.years')}
-                  className="rounded-none border-black bg-white"
+                  className="rounded-xl border-slate-200 bg-slate-50"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="font-mono text-xs uppercase tracking-wider text-gray-500">
+                <Label className="font-mono text-xs uppercase tracking-wider text-slate-500">
                   <Github className="w-3 h-3 inline mr-1" />
-                  GitHub <span className="text-gray-400">({t('common.optional')})</span>
+                  GitHub <span className="text-slate-400">({t('common.optional')})</span>
                 </Label>
                 <Input
                   value={item.github || ''}
                   onChange={(e) => handleChange(item.id, 'github', e.target.value)}
                   placeholder={t('builder.forms.projects.placeholders.github')}
-                  className="rounded-none border-black bg-white"
+                  className="rounded-xl border-slate-200 bg-slate-50"
                 />
               </div>
               <div className="space-y-2 md:col-span-2">
-                <Label className="font-mono text-xs uppercase tracking-wider text-gray-500">
+                <Label className="font-mono text-xs uppercase tracking-wider text-slate-500">
                   <Globe className="w-3 h-3 inline mr-1" />
                   {t('builder.forms.projects.fields.website')}{' '}
-                  <span className="text-gray-400">({t('common.optional')})</span>
+                  <span className="text-slate-400">({t('common.optional')})</span>
                 </Label>
                 <Input
                   value={item.website || ''}
                   onChange={(e) => handleChange(item.id, 'website', e.target.value)}
                   placeholder={t('builder.forms.projects.placeholders.website')}
-                  className="rounded-none border-black bg-white"
+                  className="rounded-xl border-slate-200 bg-slate-50"
                 />
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3 rounded-xl bg-slate-50/60 p-4">
               <div className="flex justify-between items-center">
-                <Label className="font-mono text-xs uppercase tracking-wider text-gray-500">
+                <Label className="font-mono text-xs uppercase tracking-wider text-slate-500">
                   {t('builder.genericItemForm.fields.descriptionPoints')}
                 </Label>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => handleAddDescription(item.id)}
-                  className="h-6 text-xs text-blue-700 hover:text-blue-800 hover:bg-blue-50"
+                  className="h-8 rounded-lg text-xs text-blue-700 hover:text-blue-800 hover:bg-blue-50"
                 >
                   <Plus className="w-3 h-3 mr-1" /> {t('builder.genericItemForm.actions.addPoint')}
                 </Button>
               </div>
               {item.description?.map((desc, idx) => (
-                <div key={idx} className="flex gap-2">
-                  <div className="flex-1">
-                    <RichTextEditor
-                      value={desc}
-                      onChange={(html) => handleDescriptionChange(item.id, idx, html)}
-                      placeholder={t('builder.forms.projects.placeholders.description')}
-                      minHeight="60px"
-                    />
-                  </div>
+                <div
+                  key={idx}
+                  className="flex gap-2 rounded-xl bg-white p-3"
+                >
+                  <Textarea
+                    value={desc}
+                    onChange={(e) => handleDescriptionChange(item.id, idx, e.target.value)}
+                    placeholder={t('builder.forms.projects.placeholders.description')}
+                    className="flex-1 min-h-[80px] rounded-lg border-slate-200 bg-slate-50 resize-none"
+                  />
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => handleRemoveDescription(item.id, idx)}
-                    className="h-[60px] w-8 text-muted-foreground hover:text-destructive self-end"
+                    className="h-[80px] w-8 self-start rounded-lg text-slate-400 hover:text-destructive hover:bg-destructive/10"
                   >
                     <Trash2 className="w-3 h-3" />
                   </Button>
@@ -211,15 +215,15 @@ export const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) =>
         ))}
 
         {data.length === 0 && (
-          <div className="text-center py-12 bg-gray-50 border border-dashed border-black">
-            <p className="font-mono text-sm text-gray-500 mb-4">
+          <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/50 py-12 text-center shadow-sm">
+            <p className="mb-4 font-mono text-sm text-slate-500">
               {t('builder.genericItemForm.noEntries', { label: t('resume.sections.projects') })}
             </p>
             <Button
               variant="outline"
               size="sm"
               onClick={handleAdd}
-              className="rounded-none border-black"
+              className="rounded-xl border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50"
             >
               <Plus className="w-4 h-4 mr-2" /> {t('builder.forms.projects.addFirstProject')}
             </Button>

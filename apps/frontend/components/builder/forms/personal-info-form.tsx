@@ -22,7 +22,7 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ data, onChan
   };
 
   return (
-    <div className="space-y-8 p-8 bg-white border border-slate-200 rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.04)]">
+    <div className="space-y-8 rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
       <div className="flex items-center gap-4 border-b border-slate-100 pb-6">
         <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center shadow-sm">
           <span className="font-serif text-xl font-black">P</span>

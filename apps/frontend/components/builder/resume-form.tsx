@@ -381,7 +381,7 @@ export const ResumeForm: React.FC<ResumeFormProps> = ({ resumeData, onUpdate }) 
         items={sortedAllSections.map((s) => s.id)}
         strategy={verticalListSortingStrategy}
       >
-        <div className="space-y-6 pb-20">
+        <div className="space-y-8 pb-20">
           {sortedAllSections.map((section, index) => {
             const isFirst = index === 0 || section.id === 'personalInfo';
             const isLast = index === sortedAllSections.length - 1;
@@ -399,7 +399,9 @@ export const ResumeForm: React.FC<ResumeFormProps> = ({ resumeData, onUpdate }) 
           })}
 
           {/* Add Section Button */}
-          <AddSectionButton onAdd={handleAddSection} />
+          <div className="flex justify-center pt-4">
+            <AddSectionButton onAdd={handleAddSection} />
+          </div>
         </div>
       </SortableContext>
     </DndContext>

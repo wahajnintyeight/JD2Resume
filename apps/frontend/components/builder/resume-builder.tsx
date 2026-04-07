@@ -766,13 +766,13 @@ const ResumeBuilderContent = () => {
           </div>
 
           {/* Preview Content Area */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
             <div className="mx-auto flex h-full max-w-5xl flex-col">
               <div className={cn(
                 "flex-1 transition-all duration-500 transform",
                 activeTab === 'resume' ? "scale-100 opacity-100" : "scale-95 opacity-0 hidden"
               )}>
-                <div className="mx-auto shadow-[0_20px_50px_rgba(0,0,0,0.1)] border border-slate-200 rounded-sm overflow-hidden">
+                <div className="mx-auto overflow-hidden">
                   <PaginatedPreview
                     resumeData={localizedResumeDataForPreview}
                     settings={templateSettings}

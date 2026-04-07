@@ -35,7 +35,7 @@ export const SummaryForm: React.FC<SummaryFormProps> = ({ value, onChange }) => 
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={t('builder.placeholders.summary')}
-          className="min-h-[150px] text-black rounded-none border-black focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-blue-700 bg-white"
+          className="min-h-[150px] rounded-lg border border-slate-200 bg-white text-black shadow-sm focus-visible:border-blue-700 focus-visible:ring-0 focus-visible:ring-offset-0"
         />
       </div>
     </div>

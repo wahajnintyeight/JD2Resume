@@ -45,7 +45,7 @@ export const GenericTextForm: React.FC<GenericTextFormProps> = ({
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={finalPlaceholder}
-        className="min-h-[150px] text-black rounded-none border-black focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-blue-700 bg-white"
+        className="min-h-[150px] rounded-lg border border-slate-200 bg-white text-black shadow-sm focus-visible:border-blue-700 focus-visible:ring-0 focus-visible:ring-offset-0"
       />
     </div>
   );

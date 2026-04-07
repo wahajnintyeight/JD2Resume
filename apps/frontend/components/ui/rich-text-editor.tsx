@@ -5,7 +5,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Underline from '@tiptap/extension-underline';
-import { RichTextToolbar } from './rich-text-toolbar';
+import Placeholder from '@tiptap/extension-placeholder';
 import { LinkDialog } from './link-dialog';
 import { cn } from '@/lib/utils';
 
@@ -25,7 +25,7 @@ interface RichTextEditorProps {
 /**
  * Rich Text Editor Component
  *
- * Swiss International Style WYSIWYG editor with formatting toolbar.
+ * Modern WYSIWYG editor with inline formatting.
  * Supports bold, italic, underline, and links.
  *
  * Uses Tiptap (ProseMirror) under the hood for reliable editing.
@@ -33,9 +33,9 @@ interface RichTextEditorProps {
 export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   value,
   onChange,
-  placeholder = 'Enter text...',
+  placeholder = 'Write your achievement...',
   className,
-  minHeight = '60px',
+  minHeight = '80px',
 }) => {
   const [showLinkDialog, setShowLinkDialog] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -55,13 +55,16 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         horizontalRule: false,
         hardBreak: false,
       }),
-      Underline.configure({}),  // Configure to prevent duplicate warnings
+      Underline,
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          target: '_blank',
-          rel: 'noopener noreferrer',
+          class: 'text-blue-700 underline decoration-blue-300 underline-offset-2 font-medium transition-colors hover:text-blue-800',
         },
+      }),
+      Placeholder.configure({
+        placeholder,
+        emptyEditorClass: 'is-editor-empty',
       }),
     ],
     content: value || '',
@@ -79,10 +82,12 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     editorProps: {
       attributes: {
         class: cn(
-          'outline-none prose prose-sm max-w-none',
-          'prose-strong:font-bold prose-em:italic prose-a:text-blue-700 prose-a:underline'
+          'outline-none prose prose-sm max-w-none transition-all duration-300',
+          'prose-p:leading-relaxed prose-p:text-slate-700',
+          'prose-strong:text-slate-900 prose-strong:font-semibold',
+          'prose-em:italic prose-a:text-blue-700 prose-a:underline'
         ),
-        style: `min-height: calc(${minHeight} - 24px)`,
+        style: `min-height: ${minHeight}`,
       },
       handleKeyDown: (view, event) => {
         // Allow Enter key to work (stopPropagation per coding standards)
@@ -124,54 +129,39 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [editor]);
 
-  const handleLinkClick = useCallback(() => {
-    setShowLinkDialog(true);
-  }, []);
-
   const handleLinkDialogClose = useCallback(() => {
     setShowLinkDialog(false);
     editor?.chain().focus().run();
   }, [editor]);
 
   // Show loading state during SSR
-  if (!isMounted) {
-    return (
-      <div className={cn('space-y-1', className)}>
-        <div className="flex items-center gap-1 p-1 border border-black bg-[#E5E5E0] h-9" />
-        <div
-          className={cn(
-            'w-full border border-black bg-white',
-            'px-3 py-2 text-sm text-gray-400 rounded-none'
-          )}
-          style={{ minHeight }}
-        >
-          {placeholder}
-        </div>
-      </div>
-    );
-  }
-
-  if (!editor) {
+  if (!isMounted || !editor) {
     return null;
   }
 
   return (
-    <div className={cn('space-y-1', className)}>
-      <RichTextToolbar editor={editor} onLinkClick={handleLinkClick} />
+    <div className={cn('group relative w-full', className)}>
+      {/* Main Editor Surface */}
       <div
         className={cn(
-          'w-full border border-black bg-white',
-          'px-3 py-2 text-sm text-black rounded-none',
-          'focus-within:ring-1 focus-within:ring-blue-700',
-          '[&_.ProseMirror]:outline-none [&_.ProseMirror]:min-h-[36px]',
-          '[&_.ProseMirror_p]:m-0',
-          '[&_.ProseMirror_a]:text-blue-700 [&_.ProseMirror_a]:underline'
+          'relative w-full rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm transition-all duration-300',
+          'hover:border-slate-300 focus-within:border-blue-700 focus-within:ring-1 focus-within:ring-blue-700',
+          '[&_.is-editor-empty:before]:content-[attr(data-placeholder)] [&_.is-editor-empty:before]:text-slate-400 [&_.is-editor-empty:before]:float-left [&_.is-editor-empty:before]:pointer-events-none [&_.is-editor-empty:before]:h-0',
+          '[&_.ProseMirror]:outline-none [&_.ProseMirror_p]:m-0'
         )}
-        style={{ minHeight }}
       >
         <EditorContent editor={editor} />
       </div>
+
       {showLinkDialog && <LinkDialog editor={editor} onClose={handleLinkDialogClose} />}
+
+      {/* Selection helper hint */}
+      <div className="mt-1.5 flex items-center gap-1.5 px-1 opacity-0 transition-opacity duration-300 group-focus-within:opacity-100">
+        <div className="h-1 w-1 rounded-full bg-blue-400" />
+        <span className="text-[10px] font-medium uppercase tracking-widest text-slate-400">
+          Use Ctrl+B (bold), Ctrl+I (italic), Ctrl+U (underline), Ctrl+K (link)
+        </span>
+      </div>
     </div>
   );
 };

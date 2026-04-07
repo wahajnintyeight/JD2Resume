@@ -28,9 +28,9 @@ export function PaginatedPreview({ resumeData, settings, isFullscreen }: Paginat
   const { t } = useTranslations();
   const measurementRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [zoom, setZoom] = useState(0.6);
+  const [zoom, setZoom] = useState(1.0);
   const [showMargins, setShowMargins] = useState(false);
-  const [autoZoom, setAutoZoom] = useState(true);
+  const [autoZoom, setAutoZoom] = useState(false);
 
   // Jump to 1.4 zoom when entering fullscreen
   useEffect(() => {
@@ -175,7 +175,7 @@ export function PaginatedPreview({ resumeData, settings, isFullscreen }: Paginat
       {/* Scrollable preview area */}
       <div
         ref={containerRef}
-        className="flex-1 overflow-auto p-6"
+        className="flex-1 overflow-auto p-2"
       >
         {/* Hidden measurement container - renders content at actual size */}
         <div
@@ -199,7 +199,7 @@ export function PaginatedPreview({ resumeData, settings, isFullscreen }: Paginat
         </div>
 
         {/* Visible pages */}
-        <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-2">
           {pages.map((page, index) => (
             <React.Fragment key={page.pageNumber}>
               {index > 0 && (

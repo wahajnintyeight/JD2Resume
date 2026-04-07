@@ -37,12 +37,12 @@ export const AdditionalForm: React.FC<AdditionalFormProps> = ({ data, onChange }
   };
 
   return (
-    <div className="space-y-6">
-      <p className="font-mono text-xs text-blue-700 border-l-2 border-blue-700 pl-3">
+    <div className="space-y-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <p className="border-l-2 border-blue-700 pl-3 font-mono text-xs text-blue-700">
         {t('builder.additionalForm.instructions')}
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="space-y-2">
           <Label
             htmlFor="technicalSkills"
@@ -56,7 +56,7 @@ export const AdditionalForm: React.FC<AdditionalFormProps> = ({ data, onChange }
             onChange={(e) => handleArrayChange('technicalSkills', e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={t('builder.additionalForm.placeholders.technicalSkills')}
-            className="min-h-[120px] text-black rounded-none border-black bg-white focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-blue-700"
+            className="min-h-[120px] rounded-lg border border-slate-200 bg-white text-black shadow-sm focus-visible:border-blue-700 focus-visible:ring-0 focus-visible:ring-offset-0"
           />
         </div>
         <div className="space-y-2">
@@ -72,7 +72,7 @@ export const AdditionalForm: React.FC<AdditionalFormProps> = ({ data, onChange }
             onChange={(e) => handleArrayChange('languages', e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={t('builder.additionalForm.placeholders.languages')}
-            className="min-h-[120px] text-black rounded-none border-black bg-white focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-blue-700"
+            className="min-h-[120px] rounded-lg border border-slate-200 bg-white text-black shadow-sm focus-visible:border-blue-700 focus-visible:ring-0 focus-visible:ring-offset-0"
           />
         </div>
         <div className="space-y-2">
@@ -88,7 +88,7 @@ export const AdditionalForm: React.FC<AdditionalFormProps> = ({ data, onChange }
             onChange={(e) => handleArrayChange('certificationsTraining', e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={t('builder.additionalForm.placeholders.certifications')}
-            className="min-h-[120px] text-black rounded-none border-black bg-white focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-blue-700"
+            className="min-h-[120px] rounded-lg border border-slate-200 bg-white text-black shadow-sm focus-visible:border-blue-700 focus-visible:ring-0 focus-visible:ring-offset-0"
           />
         </div>
         <div className="space-y-2">
@@ -104,7 +104,7 @@ export const AdditionalForm: React.FC<AdditionalFormProps> = ({ data, onChange }
             onChange={(e) => handleArrayChange('awards', e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder={t('builder.additionalForm.placeholders.awards')}
-            className="min-h-[120px] text-black rounded-none border-black bg-white focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-blue-700"
+            className="min-h-[120px] rounded-lg border border-slate-200 bg-white text-black shadow-sm focus-visible:border-blue-700 focus-visible:ring-0 focus-visible:ring-offset-0"
           />
         </div>
       </div>
