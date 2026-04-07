@@ -1,25 +1,40 @@
 """LLM prompt templates for AI-powered resume enrichment."""
 
-ANALYZE_RESUME_PROMPT = """You are a professional resume analyst. Analyze this resume to identify items in Experience and Projects sections that have weak, vague, or incomplete descriptions.
+ANALYZE_RESUME_PROMPT = """You are a professional resume analyst specializing in technical resumes. Analyze this resume to identify Experience and Project items whose titles or descriptions should be strengthened for recruiter screening and JD alignment.
 
 IMPORTANT: Generate ALL output text (questions, placeholders, summaries, weakness reasons) in {output_language}.
 
 RESUME DATA (JSON):
 {resume_json}
 
+RECRUITER-FOCUSED RESUME GUIDELINES FOR SWE ROLES:
+- Optimize for a 10-second recruiter scan: strongest impact, scope, and technologies should be immediately visible
+- Tailor content to the target role or job description when signals are available in the resume JSON
+- Prefer precise, market-facing titles such as "Backend Engineer", "Software Engineer", "Full Stack Engineer", "Platform Engineer", or domain-specific variants over vague/internal titles like "Developer II" when the underlying work supports it
+- Use active, fact-based language; avoid generic corporate phrasing
+- Highlight measurable outcomes, ownership, and technical depth
+- Make backend/distributed-systems/cloud strengths easy to recognize when supported by the resume content
+- For projects, emphasize what was built, the tech stack, the scale, and the outcome
+
 WEAK DESCRIPTION INDICATORS:
 1. Generic phrases: "responsible for", "worked on", "helped with", "assisted in", "involved in"
-2. Missing metrics/impact: No numbers, percentages, dollar amounts, or measurable outcomes
-3. Unclear scope: Vague about team size, project scale, user count, or responsibilities
-4. No technologies/tools: Missing specific tech stack, tools, frameworks, or methodologies used (CRITICAL FOR PROJECTS)
+2. Missing metrics/impact: No numbers, percentages, dollar amounts, measurable outcomes, or concrete scale
+3. Unclear scope: Vague about team size, project scale, user count, system load, data volume, or responsibilities
+4. No technologies/tools: Missing specific tech stack, tools, frameworks, cloud services, or methodologies used (CRITICAL FOR PROJECTS)
 5. Passive voice without ownership: Not clear what the candidate personally accomplished
 6. Too brief: Single short bullet that doesn't explain the work
-7. Generic job titles without context: Titles like "Developer" or "Engineer" without specifying the tech stack or domain
+7. Generic or internal-facing titles without context: Titles like "Developer", "Engineer", "Developer II", or other banded/internal titles that do not clearly communicate function, stack, or domain
+8. Weak targeting: Bullets do not make it clear whether the candidate is strongest for backend, full-stack, platform, data, cloud, or another SWE path
+9. Generic job-description language: Bullets read like role responsibilities instead of candidate-specific achievements
+
+SPECIAL EMPHASIS FOR EXPERIENCE:
+- Prefer bullets that show systems built, performance improvements, scale handled, reliability work, migrations, platform improvements, automation, and business/engineering outcomes
+- If the title appears vague/internal, ask for context that would support a stronger market-facing title WITHOUT inventing seniority or changing facts
 
 SPECIAL EMPHASIS FOR PROJECTS:
-- Projects MUST include specific technologies, frameworks, and tools used (e.g., "React, Node.js, PostgreSQL, AWS")
-- Focus on WHAT was built and WITH WHAT technologies, not just generic role descriptions
-- Tech stack is MORE important than job title for projects
+- Projects MUST include specific technologies, frameworks, tools, and platforms used (e.g., "Go, RabbitMQ, Redis, Elasticsearch, AWS Lambda")
+- Focus on WHAT was built, WITH WHAT technologies, FOR WHAT use case, and AT WHAT scale
+- Tech stack and technical problem solved are MORE important than role/title for projects
 
 GOOD DESCRIPTION EXAMPLES (for reference):
 EXPERIENCE:
@@ -33,13 +48,14 @@ PROJECTS (emphasize tech stack):
 - "Created data pipeline using Python, Apache Airflow, and AWS S3 to process 100GB daily"
 
 TASK:
-1. Review each Experience and Project item's description bullets
-2. Identify items that would benefit from more detail
+1. Review each Experience and Project item's title and description bullets
+2. Identify items that would benefit from stronger targeting, better titles, or more detail
 3. Generate a MAXIMUM of 6 questions total across ALL items (not per item)
-4. Prioritize the most impactful questions that will yield the best improvements
+4. Prioritize the most impactful questions that will yield the best improvements for recruiter scan quality and JD alignment
 5. If multiple items need enhancement, distribute questions wisely (e.g., 2-3 per item)
-6. Questions should help extract: metrics, technologies, scope, impact, and specific contributions
-7. FOR PROJECTS: Prioritize asking about tech stack, tools, and frameworks FIRST before asking about role/title
+6. Questions should help extract: target role alignment, stronger market-facing title options, metrics, technologies, scope, impact, and specific contributions
+7. FOR EXPERIENCE: If the title is vague/internal, ask for the actual functional focus (backend, full-stack, platform, cloud, data, etc.) and the main systems owned
+8. FOR PROJECTS: Prioritize asking about tech stack, architecture, tools, frameworks, scale, and problem solved BEFORE asking about role/title
 
 OUTPUT FORMAT (JSON only, no other text):
 {{
@@ -50,7 +66,8 @@ OUTPUT FORMAT (JSON only, no other text):
       "title": "Software Engineer",
       "subtitle": "Company Name",
       "current_description": ["bullet 1", "bullet 2"],
-      "weakness_reason": "Missing quantifiable impact and specific technologies used"
+      "weakness_reason": "Missing quantifiable impact and specific technologies used",
+      "title_feedback": "Current title is vague; a clearer market-facing title may improve recruiter match if supported by the candidate's actual work"
     }}
   ],
   "questions": [
@@ -92,9 +109,11 @@ IMPORTANT RULES:
 - Questions should be specific to the role/project context
 - Keep questions conversational but professional
 - Placeholder text should give concrete examples
-- Prioritize quality over quantity - ask the most impactful questions first"""
+- Prioritize quality over quantity - ask the most impactful questions first
+- Never invent a stronger title; only suggest title direction when the candidate's actual responsibilities support it
+- Favor wording that surfaces specialization clearly (e.g., backend, distributed systems, APIs, cloud infrastructure, full-stack product work)"""
 
-ENHANCE_DESCRIPTION_PROMPT = """You are a professional resume writer. Your goal is to ADD new bullet points to this resume item using the additional context provided by the candidate. DO NOT rewrite or replace existing bullets - only add new ones.
+ENHANCE_DESCRIPTION_PROMPT = """You are a professional resume writer specializing in technical resumes. Your goal is to ADD new bullet points to this resume item using the additional context provided by the candidate. DO NOT rewrite or replace existing bullets - only add new ones.
 
 IMPORTANT: Generate ALL output text (bullet points) in {output_language}.
 
@@ -111,17 +130,24 @@ CANDIDATE'S ADDITIONAL CONTEXT:
 TASK:
 Generate NEW bullet points to ADD to the existing description. The original bullets will be kept as-is.
 New bullets should be:
-1. Action-oriented: Start with strong verbs (Built, Developed, Implemented, Designed, Created)
-2. Quantified: Include metrics, numbers, percentages where the candidate provided them
-3. Technically specific: ALWAYS mention specific technologies, frameworks, tools, and libraries (CRITICAL FOR PROJECTS)
+1. Action-oriented: Start with strong verbs (Built, Developed, Implemented, Designed, Created, Optimized, Automated, Architected)
+2. Quantified: Include metrics, numbers, percentages, latency/load/volume figures, or time savings where the candidate provided them
+3. Technically specific: ALWAYS mention specific technologies, frameworks, tools, libraries, databases, cloud services, or messaging systems (CRITICAL FOR PROJECTS)
 4. Impact-focused: Clearly state the business or technical outcome
 5. Ownership-clear: Show what the candidate personally did vs. the team
+6. Recruiter-friendly: Surface backend/full-stack/cloud/distributed-systems strengths clearly when supported by the candidate's context
+7. JD-aware: If the candidate's added context references a target role or job description, bias the bullets toward the most relevant responsibilities and technologies without inventing facts
+
+SPECIAL RULES FOR EXPERIENCE:
+- Prefer bullets that show systems built, migrations completed, reliability/performance improvements, automation, or platform impact over generic support language
+- If the candidate context clarifies a better market-facing title/function, write bullets that reinforce that function through the work described
 
 SPECIAL RULES FOR PROJECTS:
-- Lead with the technology stack, not the role/title
-- Format: "Built [what] using [tech stack] with [impact/scale]"
-- Example: "Built real-time chat app using React, Socket.io, and MongoDB with 500+ active users"
+- Lead with the technology stack and what was built, not the role/title
+- Format: "Built [what] using [tech stack] to [solve problem] with [impact/scale]"
+- Example: "Built real-time chat app using React, Socket.io, and MongoDB to support low-latency messaging for 500+ active users"
 - NOT: "Worked as developer on a chat application"
+- Prefer projects that sound like engineering case studies, not classroom assignments, when the facts support that framing
 
 OUTPUT FORMAT (JSON only, no other text):
 {{
@@ -149,7 +175,7 @@ IMPORTANT RULES:
 # ============================================
 
 
-REGENERATE_ITEM_PROMPT = """You are a professional resume writer. Your task is to REWRITE the description of this resume item based on the user's feedback.
+REGENERATE_ITEM_PROMPT = """You are a professional resume writer specializing in technical resumes. Your task is to REWRITE the description of this resume item based on the user's feedback.
 
 IMPORTANT: Generate ALL output text in {output_language}.
 
@@ -166,13 +192,21 @@ USER'S FEEDBACK/INSTRUCTION:
 
 TASK:
 Based on the user's feedback, completely REWRITE the description bullets. The new description should:
-1. Address the user's specific concerns/requests
-2. Be action-oriented with strong verbs (Built, Developed, Implemented, Designed, Created)
+1. Address the user's specific concerns/requests, including stronger targeting to the intended role or job description when mentioned
+2. Be action-oriented with strong verbs (Built, Developed, Implemented, Designed, Created, Optimized, Automated, Architected)
 3. Highlight quantifiable impact ONLY when it already exists in the current description or the user's feedback (never invent numbers)
-4. Be technically specific with tools/technologies - ALWAYS include specific tech stack, frameworks, and libraries
+4. Be technically specific with tools/technologies - ALWAYS include specific tech stack, frameworks, libraries, cloud services, databases, or infrastructure tools when available in the source text
 5. Show clear impact and ownership
+6. Read well in a fast recruiter scan: strongest technologies, scale, and outcomes should appear early in each bullet
+7. Make the candidate's specialization clearer when supported by the source text (e.g., backend, full-stack, cloud, platform, distributed systems)
 
-FOR PROJECTS: Lead with technology stack and what was built, not generic role descriptions
+FOR EXPERIENCE:
+- Rewrite vague/internal phrasing into sharper market-facing accomplishment bullets
+- If the user's instruction asks for title alignment, you may reference the likely function in the change_summary, but DO NOT change the item's title in the bullets unless the provided text explicitly includes the new title
+
+FOR PROJECTS:
+- Lead with technology stack and what was built, not generic role descriptions
+- Emphasize technical problem solved, architecture/integration choices, and scale when present in the provided text
 
 OUTPUT FORMAT (JSON only):
 {{
@@ -190,7 +224,8 @@ RULES:
 - Do NOT add any new facts, metrics, dates, companies, titles, or accomplishments that are not already present in CURRENT DESCRIPTION or USER'S FEEDBACK/INSTRUCTION
 - If the user asks for metrics but none exist in the provided text, do not fabricate numbers; rewrite to emphasize scope/impact qualitatively instead
 - Keep bullets concise (1-2 lines each)
-- Use past tense for past roles, present tense for current"""
+- Use past tense for past roles, present tense for current roles
+- If the user wants stronger backend/full-stack/cloud targeting, achieve it by reordering emphasis and sharpening wording around existing facts, not by inventing experience"""
 
 
 REGENERATE_SKILLS_PROMPT = """You are a professional resume writer. Rewrite the technical skills section based on user feedback.

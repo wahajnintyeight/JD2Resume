@@ -8,19 +8,32 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant = 'default', noPadding = false, ...props }, ref) => {
-    const baseStyles = 'rounded-2xl flex flex-col relative overflow-hidden transition-all duration-300';
+    const baseStyles = cn(
+      'relative flex flex-col overflow-hidden',
+      'rounded-[1.75rem] transition-all duration-300 ease-out'
+    );
 
     const variants = {
-      default: 'bg-card shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-border/50',
-      interactive: cn(
-        'bg-card border border-border/50',
-        'shadow-[0_8px_30px_rgb(0,0,0,0.04)]',
-        'cursor-pointer group',
-        'hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] hover:-translate-y-1 hover:border-primary/20'
+      default: cn(
+        'border border-white/75 bg-white/86 backdrop-blur-xl',
+        'shadow-[0_18px_46px_rgba(15,23,42,0.08)]',
+        "before:pointer-events-none before:absolute before:inset-x-6 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-sky-200/90 before:to-transparent before:content-['']"
       ),
-      outline: 'bg-transparent border-2 border-border shadow-sm',
-      ghost: 'bg-transparent border-none shadow-none',
-      glass: 'bg-white/70 backdrop-blur-md border border-white/20 shadow-xl',
+      interactive: cn(
+        'group cursor-pointer border border-white/75 bg-white/86 backdrop-blur-xl',
+        'shadow-[0_18px_46px_rgba(15,23,42,0.08)]',
+        "before:pointer-events-none before:absolute before:inset-x-6 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-sky-200/90 before:to-transparent before:content-['']",
+        'hover:-translate-y-1 hover:border-white hover:bg-white/94 hover:shadow-[0_28px_60px_rgba(15,23,42,0.14)]'
+      ),
+      outline: cn(
+        'border border-slate-200/80 bg-white/70 shadow-[0_10px_24px_rgba(15,23,42,0.05)]'
+      ),
+      ghost: 'border-none bg-transparent shadow-none',
+      glass: cn(
+        'border border-white/70 bg-white/60 backdrop-blur-2xl',
+        'shadow-[0_24px_70px_rgba(15,23,42,0.12)]',
+        "before:pointer-events-none before:absolute before:inset-x-8 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/95 before:to-transparent before:content-['']"
+      ),
     };
 
     return (
@@ -36,7 +49,7 @@ Card.displayName = 'Card';
 
 const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('flex flex-col space-y-1.5 mb-6', className)} {...props} />
+    <div ref={ref} className={cn('mb-6 flex flex-col space-y-1.5', className)} {...props} />
   )
 );
 CardHeader.displayName = 'CardHeader';
@@ -45,7 +58,7 @@ const CardTitle = React.forwardRef<HTMLHeadingElement, React.HTMLAttributes<HTML
   ({ className, ...props }, ref) => (
     <h3
       ref={ref}
-      className={cn('font-sans text-2xl font-bold tracking-tight text-foreground', className)}
+      className={cn('font-sans text-2xl font-semibold tracking-tight text-foreground', className)}
       {...props}
     />
   )
@@ -56,7 +69,11 @@ const CardDescription = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, ...props }, ref) => (
-  <p ref={ref} className={cn('text-sm text-muted-foreground font-sans font-medium', className)} {...props} />
+  <p
+    ref={ref}
+    className={cn('font-sans text-sm leading-6 text-muted-foreground', className)}
+    {...props}
+  />
 ));
 CardDescription.displayName = 'CardDescription';
 
@@ -67,7 +84,11 @@ CardContent.displayName = 'CardContent';
 
 const CardFooter = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('flex items-center pt-6 mt-auto border-t border-border/50', className)} {...props} />
+    <div
+      ref={ref}
+      className={cn('mt-auto flex items-center border-t border-white/60 pt-6', className)}
+      {...props}
+    />
   )
 );
 CardFooter.displayName = 'CardFooter';

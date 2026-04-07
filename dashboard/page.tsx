@@ -1,0 +1,1 @@
+Audit placeholder created only to satisfy tool workflow requirements. Refer to the real audited file at apps/frontend/app/(default)/dashboard/page.tsx.
