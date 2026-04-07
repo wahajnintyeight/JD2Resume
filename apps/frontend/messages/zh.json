@@ -504,6 +504,8 @@
     "subtitle": "为特定职位优化您的简历",
     "heroTitle": "定制您的简历",
     "selectResume": "选择简历",
+    "selectMasterLabel": "选择主简历",
+    "selectMasterPlaceholder": "请选择您的主简历",
     "pasteJobDescription": "粘贴职位描述",
     "pasteJobDescriptionBelow": "在下方粘贴职位描述",
     "jobDescriptionPlaceholder": "在此粘贴职位描述...",

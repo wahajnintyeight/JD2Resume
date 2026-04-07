@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
 import { useTranslations } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
@@ -44,6 +44,7 @@ export function Dropdown({
 }: DropdownProps) {
   const { t } = useTranslations();
   const [isOpen, setIsOpen] = useState(false);
+  const [openDirection, setOpenDirection] = useState<'down' | 'up'>('down');
   const containerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -67,6 +68,32 @@ export function Dropdown({
     onChange(optionId);
     setIsOpen(false);
   };
+
+  useLayoutEffect(() => {
+    if (!isOpen || !buttonRef.current || typeof window === 'undefined') return;
+
+    const updateDirection = () => {
+      const triggerRect = buttonRef.current?.getBoundingClientRect();
+      if (!triggerRect) return;
+
+      const estimatedMenuHeight = Math.min(options.length * 72 + 16, 320) + 8;
+      const spaceBelow = window.innerHeight - triggerRect.bottom;
+      const spaceAbove = triggerRect.top;
+
+      setOpenDirection(
+        spaceBelow < estimatedMenuHeight && spaceAbove > spaceBelow ? 'up' : 'down'
+      );
+    };
+
+    updateDirection();
+    window.addEventListener('resize', updateDirection);
+    window.addEventListener('scroll', updateDirection, true);
+
+    return () => {
+      window.removeEventListener('resize', updateDirection);
+      window.removeEventListener('scroll', updateDirection, true);
+    };
+  }, [isOpen, options.length]);
 
   return (
     <div className={cn('space-y-3', className)} ref={containerRef}>
@@ -122,7 +149,12 @@ export function Dropdown({
 
         {/* Dropdown Menu */}
         {isOpen && (
-          <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-white/90 backdrop-blur-xl border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-3xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top">
+          <div
+            className={cn(
+              'absolute left-0 right-0 z-[120] bg-white/95 backdrop-blur-xl border border-slate-100 shadow-[0_20px_50px_rgba(0,0,0,0.1)] rounded-3xl overflow-hidden animate-in fade-in zoom-in-95 duration-200',
+              openDirection === 'down' ? 'top-full mt-2 origin-top' : 'bottom-full mb-2 origin-bottom'
+            )}
+          >
             <div className="p-2 max-h-[320px] overflow-y-auto custom-scrollbar">
               {options.length === 0 ? (
                 <div className="px-4 py-8 text-center text-slate-400 font-sans text-sm italic">

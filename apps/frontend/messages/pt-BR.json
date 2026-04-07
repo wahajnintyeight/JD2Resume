@@ -504,6 +504,8 @@
     "subtitle": "Otimize seu currículo para uma vaga específica",
     "heroTitle": "Personalize Seu Currículo",
     "selectResume": "Selecionar Currículo",
+    "selectMasterLabel": "Selecionar currículo principal",
+    "selectMasterPlaceholder": "Escolha seu currículo principal",
     "pasteJobDescription": "Colar Descrição da Vaga",
     "pasteJobDescriptionBelow": "Cole a Descrição da Vaga Abaixo",
     "jobDescriptionPlaceholder": "Cole a descrição da vaga aqui...",

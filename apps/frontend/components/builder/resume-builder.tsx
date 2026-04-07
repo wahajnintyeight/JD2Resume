@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, Suspense, useCallback, useMemo } from 'react';
-import Image from 'next/image';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { type ResumeData } from '@/components/dashboard/resume-component';
 import { cn } from '@/lib/utils';
@@ -767,7 +766,7 @@ const ResumeBuilderContent = () => {
           </div>
 
           {/* Preview Content Area */}
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-12">
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
             <div className="mx-auto flex h-full max-w-5xl flex-col">
               <div className={cn(
                 "flex-1 transition-all duration-500 transform",
@@ -784,7 +783,11 @@ const ResumeBuilderContent = () => {
 
               {activeTab === 'cover-letter' && coverLetter && (
                 <div className="animate-in fade-in zoom-in-95 duration-300">
-                  <CoverLetterPreview content={coverLetter} personalInfo={resumeData.personalInfo} pageSize={templateSettings.pageSize} />
+                  <CoverLetterPreview
+                    content={coverLetter}
+                    personalInfo={resumeData.personalInfo ?? {}}
+                    pageSize={templateSettings.pageSize}
+                  />
                 </div>
               )}
 
@@ -818,40 +821,6 @@ const ResumeBuilderContent = () => {
           </div>
         </div>
       </main>
-
-      {/* Footer */}
-      <div
-        className={cn(
-          'p-4 bg-[#F0F0E8] flex justify-between items-center font-mono text-xs text-blue-700 border-t border-black no-print',
-          isFullscreenPreview && 'hidden'
-        )}
-      >
-        <span className="uppercase font-bold flex items-center gap-2">
-          <Image
-            src="/logo.svg"
-            alt="Resume Matcher"
-            width={20}
-            height={20}
-            className="w-5 h-5"
-          />
-          {t('builder.footer.moduleLabel')}
-        </span>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-700"></div>
-            <span className="uppercase">
-              {templateSettings.template === 'swiss-single' ||
-              templateSettings.template === 'modern'
-                ? t('builder.footer.singleColumn')
-                : t('builder.footer.twoColumn')}
-            </span>
-          </div>
-          <span className="text-gray-400">|</span>
-          <span className="uppercase">
-            {templateSettings.pageSize === 'A4' ? 'A4' : t('builder.pageSize.usLetter')}
-          </span>
-        </div>
-      </div>
 
       {/* Regenerate Confirmation Dialog */}
       <ConfirmDialog

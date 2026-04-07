@@ -213,11 +213,13 @@ export default function ResumeViewerPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F0F0E8]">
-        <Loader2 className="w-10 h-10 animate-spin text-blue-700 mb-4" />
-        <p className="font-mono text-sm font-bold uppercase text-blue-700">
-          {t('resumeViewer.loading')}
-        </p>
+      <div className="flex min-h-screen flex-col items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.10),_transparent_32%),linear-gradient(180deg,_#f8fafc_0%,_#eef2ff_100%)]">
+        <div className="rounded-[2rem] border border-white/70 bg-white/80 px-8 py-7 shadow-[0_24px_80px_-36px_rgba(15,23,42,0.35)] backdrop-blur-xl">
+          <Loader2 className="mx-auto mb-4 h-10 w-10 animate-spin text-blue-600" />
+          <p className="text-center text-sm font-semibold tracking-[0.18em] text-slate-600">
+            {t('resumeViewer.loading')}
+          </p>
+        </div>
       </div>
     );
   }
@@ -227,51 +229,78 @@ export default function ResumeViewerPage() {
     const isFailed = processingStatus === 'failed';
 
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F0F0E8] p-4">
+      <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.10),_transparent_32%),linear-gradient(180deg,_#f8fafc_0%,_#eef2ff_100%)] p-4">
         <div
-          className={`border p-6 text-center max-w-md shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] ${
+          className={cn(
+            'w-full max-w-lg rounded-[2rem] border px-6 py-7 text-center shadow-[0_24px_80px_-36px_rgba(15,23,42,0.35)] backdrop-blur-xl sm:px-8',
             isProcessing
-              ? 'bg-blue-50 border-blue-200'
+              ? 'border-blue-200/70 bg-white/85'
               : isFailed
-                ? 'bg-orange-50 border-orange-200'
-                : 'bg-red-50 border-red-200'
-          }`}
+                ? 'border-orange-200/70 bg-white/85'
+                : 'border-red-200/70 bg-white/85'
+          )}
         >
-          <div className="flex justify-center mb-4">
-            {isProcessing ? (
-              <Loader2 className="w-8 h-8 animate-spin text-blue-700" />
-            ) : isFailed ? (
-              <AlertCircle className="w-8 h-8 text-orange-600" />
-            ) : (
-              <AlertCircle className="w-8 h-8 text-red-600" />
-            )}
+          <div className="mb-4 flex justify-center">
+            <div
+              className={cn(
+                'flex h-14 w-14 items-center justify-center rounded-2xl',
+                isProcessing
+                  ? 'bg-blue-50 text-blue-600'
+                  : isFailed
+                    ? 'bg-orange-50 text-orange-500'
+                    : 'bg-red-50 text-red-500'
+              )}
+            >
+              {isProcessing ? (
+                <Loader2 className="h-8 w-8 animate-spin" />
+              ) : (
+                <AlertCircle className="h-8 w-8" />
+              )}
+            </div>
           </div>
           <p
-            className={`font-bold mb-4 ${
-              isProcessing ? 'text-blue-700' : isFailed ? 'text-orange-700' : 'text-red-700'
-            }`}
+            className={cn(
+              'mb-6 text-base font-semibold leading-7',
+              isProcessing
+                ? 'text-blue-700'
+                : isFailed
+                  ? 'text-orange-700'
+                  : 'text-red-700'
+            )}
           >
             {error || t('resumeViewer.resumeNotFound')}
           </p>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-3">
             {isFailed && (
               <>
-                <Button onClick={handleRetryProcessing} disabled={isRetrying}>
+                <Button
+                  onClick={handleRetryProcessing}
+                  disabled={isRetrying}
+                  className="h-11 rounded-2xl bg-slate-900 text-white hover:bg-slate-800"
+                >
                   {isRetrying ? (
                     <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       {t('common.processing')}
                     </>
                   ) : (
                     t('resumeViewer.retryProcessing')
                   )}
                 </Button>
-                <Button variant="destructive" onClick={() => setShowDeleteDialog(true)}>
+                <Button
+                  variant="destructive"
+                  onClick={() => setShowDeleteDialog(true)}
+                  className="h-11 rounded-2xl"
+                >
                   {t('resumeViewer.deleteAndStartOver')}
                 </Button>
               </>
             )}
-            <Button variant="outline" onClick={() => router.push('/dashboard')}>
+            <Button
+              variant="outline"
+              onClick={() => router.push('/dashboard')}
+              className="h-11 rounded-2xl border-slate-200 bg-white hover:bg-slate-50"
+            >
               {t('resumeViewer.returnToDashboard')}
             </Button>
           </div>
@@ -281,151 +310,154 @@ export default function ResumeViewerPage() {
   }
 
   return (
-    <div className="flex min-h-full w-full flex-col bg-[#F0F0E8] font-sans">
-      <div className="mx-auto w-full max-w-6xl flex-1 border-x-2 border-black bg-white p-6 md:p-12 lg:p-16 shadow-[20px_0px_60px_-15px_rgba(0,0,0,0.05)]">
-        {/* Header Actions */}
-        <div className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 no-print">
-          <Button 
-            variant="ghost" 
-            onClick={() => router.push('/dashboard')}
-            className="font-mono text-xs font-bold uppercase tracking-widest hover:bg-gray-100 rounded-none border-2 border-transparent hover:border-black transition-all"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            {t('nav.backToDashboard')}
-          </Button>
-
-          <div className="flex flex-wrap gap-3">
-            {isMasterResume && (
-              <Button 
-                onClick={() => setShowEnrichmentModal(true)} 
-                className="h-12 px-6 border-2 border-black bg-blue-700 text-white font-bold uppercase tracking-widest hover:bg-blue-800 transition-all active:translate-x-1 active:translate-y-1 active:shadow-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-              >
-                <Sparkles className="w-4 h-4 mr-2" />
-                {t('resumeViewer.enhanceResume')}
-              </Button>
-            )}
-            {!isMasterResume && (
-              <Button 
-                onClick={() => setShowATSScanDialog(true)} 
-                variant="outline" 
-                className="h-12 px-6 border-2 border-black bg-white text-black font-bold uppercase tracking-widest hover:bg-gray-100 transition-all active:translate-x-1 active:translate-y-1 active:shadow-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-              >
-                <Target className="w-4 h-4 mr-2" />
-                ATS Scan
-              </Button>
-            )}
-            <Button 
-              variant="outline" 
-              onClick={handleEdit}
-              className="h-12 px-6 border-2 border-black bg-white text-black font-bold uppercase tracking-widest hover:bg-gray-100 transition-all active:translate-x-1 active:translate-y-1 active:shadow-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-            >
-              <Edit className="w-4 h-4 mr-2" />
-              {t('dashboard.editResume')}
-            </Button>
-            <Button 
-              variant="default" 
-              onClick={handleDownload}
-              className="h-12 px-6 border-2 border-black bg-black text-white font-bold uppercase tracking-widest hover:bg-gray-900 transition-all active:translate-x-1 active:translate-y-1 active:shadow-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              {t('resumeViewer.downloadResume')}
-            </Button>
-          </div>
-        </div>
-
-        {/* Editable Title (tailored resumes only) */}
-        {!isMasterResume && (
-          <div className="mb-10 no-print flex justify-center">
-            <div className="w-full max-w-2xl text-center">
-              {isEditingTitle ? (
-                <div className="relative group">
-                  <input
-                    type="text"
-                    value={editingTitleValue}
-                    onChange={(e) => setEditingTitleValue(e.target.value)}
-                    onBlur={handleTitleSave}
-                    onKeyDown={handleTitleKeyDown}
-                    autoFocus
-                    maxLength={80}
-                    placeholder={t('resumeViewer.titlePlaceholder')}
-                    className="w-full font-serif text-3xl md:text-4xl font-black uppercase tracking-tight border-b-4 border-black bg-transparent outline-none py-2 text-center"
-                  />
-                  <div className="absolute -bottom-1 left-0 w-full h-1 bg-blue-600 origin-left scale-x-0 group-focus-within:scale-x-100 transition-transform duration-500" />
-                </div>
-              ) : (
-                <button
-                  onClick={() => {
-                    setEditingTitleValue(resumeTitle || '');
-                    setIsEditingTitle(true);
-                  }}
-                  className="group relative inline-flex items-center gap-4 px-6 py-2 transition-all"
+    <div className="flex min-h-full w-full flex-col bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_transparent_30%),linear-gradient(180deg,_#f8fafc_0%,_#eef2ff_100%)] font-sans">
+      <div className="mx-auto flex w-full max-w-[1400px] flex-1 flex-col gap-8 px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
+        <div className="overflow-hidden rounded-[2rem] border border-white/70 bg-white/78 shadow-[0_28px_90px_-40px_rgba(15,23,42,0.35)] backdrop-blur-xl">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.12),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(168,85,247,0.10),_transparent_28%)]" />
+          <div className="relative p-5 sm:p-6 lg:p-8">
+            {/* Header Actions */}
+            <div className="mb-8 flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between no-print">
+              <div className="space-y-4">
+                <Button
+                  variant="ghost"
+                  onClick={() => router.push('/dashboard')}
+                  className="h-10 rounded-full border border-white/80 bg-white/80 px-4 text-sm font-medium text-slate-700 shadow-sm hover:bg-white"
                 >
-                  <h2
-                    className={cn(
-                      "font-serif text-3xl md:text-4xl font-black uppercase tracking-tight text-black border-b-4 border-transparent group-hover:border-black transition-all",
-                      !resumeTitle && "text-gray-300 italic"
-                    )}
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  {t('nav.backToDashboard')}
+                </Button>
+
+                <div className="space-y-3">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-blue-200/70 bg-blue-50/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-700">
+                    {!isMasterResume ? <Target className="h-3.5 w-3.5" /> : <Sparkles className="h-3.5 w-3.5" />}
+                    <span>{isMasterResume ? t('resumeViewer.enhanceResume') : 'Tailored resume'}</span>
+                  </div>
+
+                  {!isMasterResume && (
+                    <div className="w-full max-w-3xl">
+                      {isEditingTitle ? (
+                        <div className="rounded-[1.5rem] border border-blue-200/70 bg-white/90 px-5 py-4 shadow-sm">
+                          <input
+                            type="text"
+                            value={editingTitleValue}
+                            onChange={(e) => setEditingTitleValue(e.target.value)}
+                            onBlur={handleTitleSave}
+                            onKeyDown={handleTitleKeyDown}
+                            autoFocus
+                            maxLength={80}
+                            placeholder={t('resumeViewer.titlePlaceholder')}
+                            className="w-full bg-transparent text-center font-serif text-3xl font-semibold tracking-tight text-slate-900 outline-none md:text-4xl"
+                          />
+                        </div>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            setEditingTitleValue(resumeTitle || '');
+                            setIsEditingTitle(true);
+                          }}
+                          className="group inline-flex max-w-full items-center gap-3 rounded-[1.5rem] border border-transparent px-1 py-1 text-left transition-all hover:border-white/70"
+                        >
+                          <h2
+                            className={cn(
+                              'truncate font-serif text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl',
+                              !resumeTitle && 'italic text-slate-300'
+                            )}
+                          >
+                            {resumeTitle || t('resumeViewer.titlePlaceholder')}
+                          </h2>
+                          <Pencil
+                            className={cn(
+                              'h-5 w-5 shrink-0 text-slate-400 transition-all duration-300',
+                              resumeTitle ? 'opacity-0 group-hover:opacity-100 group-hover:text-slate-600' : 'opacity-50'
+                            )}
+                          />
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                {isMasterResume && (
+                  <Button
+                    onClick={() => setShowEnrichmentModal(true)}
+                    className="h-11 rounded-2xl bg-slate-900 px-5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800"
                   >
-                    {resumeTitle || t('resumeViewer.titlePlaceholder')}
-                  </h2>
-                  <Pencil
-                    className={cn(
-                      "w-5 h-5 transition-all duration-300",
-                      resumeTitle ? "opacity-0 group-hover:opacity-100 group-hover:scale-110" : "opacity-40"
-                    )}
+                    <Sparkles className="mr-2 h-4 w-4" />
+                    {t('resumeViewer.enhanceResume')}
+                  </Button>
+                )}
+                {!isMasterResume && (
+                  <Button
+                    onClick={() => setShowATSScanDialog(true)}
+                    variant="outline"
+                    className="h-11 rounded-2xl border-slate-200 bg-white/90 px-5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                  >
+                    <Target className="mr-2 h-4 w-4" />
+                    ATS Scan
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  onClick={handleEdit}
+                  className="h-11 rounded-2xl border-slate-200 bg-white/90 px-5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                >
+                  <Edit className="mr-2 h-4 w-4" />
+                  {t('dashboard.editResume')}
+                </Button>
+                <Button
+                  variant="default"
+                  onClick={handleDownload}
+                  className="h-11 rounded-2xl bg-blue-600 px-5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
+                >
+                  <Download className="mr-2 h-4 w-4" />
+                  {t('resumeViewer.downloadResume')}
+                </Button>
+              </div>
+            </div>
+
+            {/* Resume Viewer */}
+            <div className="flex justify-center pb-6">
+              <div className="relative w-full max-w-[230mm] rounded-[2rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.88),rgba(248,250,252,0.96))] p-3 shadow-[0_30px_80px_-40px_rgba(15,23,42,0.35)] sm:p-4 lg:p-5">
+                <div className="resume-print relative mx-auto w-full max-w-[210mm] overflow-hidden rounded-[1.5rem] bg-white shadow-[0_24px_60px_-32px_rgba(15,23,42,0.35)] ring-1 ring-slate-200/70">
+                  <Resume
+                    resumeData={localizedResumeData || resumeData}
+                    additionalSectionLabels={{
+                      technicalSkills: t('resume.additionalLabels.technicalSkills'),
+                      languages: t('resume.additionalLabels.languages'),
+                      certifications: t('resume.additionalLabels.certifications'),
+                      awards: t('resume.additionalLabels.awards'),
+                    }}
+                    sectionHeadings={{
+                      summary: t('resume.sections.summary'),
+                      experience: t('resume.sections.experience'),
+                      education: t('resume.sections.education'),
+                      projects: t('resume.sections.projects'),
+                      certifications: t('resume.sections.certifications'),
+                      skills: t('resume.sections.skillsOnly'),
+                      languages: t('resume.sections.languages'),
+                      awards: t('resume.sections.awards'),
+                      links: t('resume.sections.links'),
+                    }}
+                    fallbackLabels={{ name: t('resume.defaults.name') }}
                   />
-                  <div className="absolute -inset-2 border-2 border-black opacity-0 group-hover:opacity-10 transition-opacity pointer-events-none" />
-                </button>
-              )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-center pt-2 no-print">
+              <Button
+                variant="ghost"
+                onClick={() => setShowDeleteDialog(true)}
+                className="rounded-full px-6 py-2 text-sm font-medium text-red-600 hover:bg-red-50 hover:text-red-700"
+              >
+                {isMasterResume
+                  ? t('confirmations.deleteMasterResumeTitle')
+                  : t('dashboard.deleteResume')}
+              </Button>
             </div>
           </div>
-        )}
-
-        {/* Resume Viewer */}
-        <div className="flex justify-center pb-12">
-          <div className="relative group">
-            {/* Decorative Corner Accents */}
-            <div className="absolute -top-4 -left-4 w-12 h-12 border-l-4 border-t-4 border-black pointer-events-none z-10" />
-            <div className="absolute -top-4 -right-4 w-12 h-12 border-r-4 border-t-4 border-black pointer-events-none z-10" />
-            <div className="absolute -bottom-4 -left-4 w-12 h-12 border-l-4 border-b-4 border-black pointer-events-none z-10" />
-            <div className="absolute -bottom-4 -right-4 w-12 h-12 border-r-4 border-b-4 border-black pointer-events-none z-10" />
-            
-            <div className="resume-print w-full max-w-[210mm] border-1 rounded-sm border-black bg-white shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] relative transition-transform duration-500 group-hover:translate-x-[-4px] group-hover:translate-y-[-4px] group-hover:shadow-[20px_20px_0px_0px_rgba(0,0,0,1)]">
-              <Resume
-                resumeData={localizedResumeData || resumeData}
-                additionalSectionLabels={{
-                  technicalSkills: t('resume.additionalLabels.technicalSkills'),
-                  languages: t('resume.additionalLabels.languages'),
-                  certifications: t('resume.additionalLabels.certifications'),
-                  awards: t('resume.additionalLabels.awards'),
-                }}
-                sectionHeadings={{
-                  summary: t('resume.sections.summary'),
-                  experience: t('resume.sections.experience'),
-                  education: t('resume.sections.education'),
-                  projects: t('resume.sections.projects'),
-                  certifications: t('resume.sections.certifications'),
-                  skills: t('resume.sections.skillsOnly'),
-                  languages: t('resume.sections.languages'),
-                  awards: t('resume.sections.awards'),
-                  links: t('resume.sections.links'),
-                }}
-                fallbackLabels={{ name: t('resume.defaults.name') }}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="flex justify-center pt-8 no-print">
-          <Button 
-            variant="ghost" 
-            onClick={() => setShowDeleteDialog(true)}
-            className="font-mono text-xs font-bold uppercase tracking-widest text-red-600 hover:bg-red-50 hover:text-red-700 rounded-none border-2 border-transparent hover:border-red-600 transition-all px-8 py-6"
-          >
-            {isMasterResume
-              ? t('confirmations.deleteMasterResumeTitle')
-              : t('dashboard.deleteResume')}
-          </Button>
         </div>
       </div>
 

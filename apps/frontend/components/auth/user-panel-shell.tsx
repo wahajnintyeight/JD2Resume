@@ -41,34 +41,45 @@ function NavLink({
       href={href}
       onClick={onClick}
       className={cn(
-        'group relative flex w-full items-center gap-3 overflow-hidden rounded-[1.35rem] border px-4 py-3.5 text-sm font-semibold tracking-[-0.015em] transition-all duration-300 ease-out',
+        'group relative flex items-center overflow-hidden transition-all duration-500 ease-in-out',
+        isCollapsed
+          ? 'h-[64px] w-[64px] justify-center rounded-[1.8rem]'
+          : 'h-14 w-full rounded-[1.4rem] px-3',
         isActive
-          ? 'border-transparent bg-[linear-gradient(135deg,rgba(37,99,235,0.96),rgba(99,102,241,0.92),rgba(168,85,247,0.88))] text-white shadow-[0_22px_50px_rgba(79,70,229,0.28)] ring-1 ring-white/25'
-          : 'border-white/70 bg-white/72 text-slate-600 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl hover:-translate-y-0.5 hover:border-white hover:bg-white/88 hover:text-slate-900 hover:shadow-[0_18px_38px_rgba(15,23,42,0.12)]'
+          ? 'bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-600 text-white shadow-xl'
+          : 'border border-white/60 bg-white/40 text-slate-500 hover:bg-white/80 hover:text-slate-900'
       )}
     >
-      <span
+      <div
         className={cn(
-          'pointer-events-none absolute inset-y-0 left-0 w-14 rounded-r-full opacity-0 blur-2xl transition duration-300',
+          'flex shrink-0 items-center justify-center transition-all duration-500',
+          isCollapsed ? 'h-11 w-11' : 'mr-3 h-10 w-10',
           isActive
-            ? 'bg-white/40 opacity-70'
-            : 'bg-sky-200/50 group-hover:opacity-60'
-        )}
-      />
-      <span
-        className={cn(
-          'relative flex shrink-0 items-center justify-center rounded-2xl transition-all duration-300',
-          isCollapsed ? 'h-11 w-11' : 'h-10 w-10',
-          isActive
-            ? 'bg-white/18 text-white shadow-inner shadow-white/10'
-            : 'bg-slate-100/80 text-slate-500 group-hover:bg-sky-50 group-hover:text-primary'
+            ? 'rounded-2xl bg-white/20'
+            : 'rounded-2xl bg-slate-100/50 group-hover:bg-white'
         )}
       >
-        <Icon className={cn('shrink-0', isCollapsed ? 'h-5.5 w-5.5' : 'h-5 w-5')} />
+        <Icon
+          className={cn(
+            'transition-transform duration-500',
+            isCollapsed ? 'h-6 w-6' : 'h-5 w-5'
+          )}
+        />
+      </div>
+
+      <span
+        className={cn(
+          'whitespace-nowrap text-sm font-semibold transition-all duration-500',
+          isCollapsed
+            ? 'w-0 translate-x-4 scale-95 opacity-0'
+            : 'w-auto translate-x-0 scale-100 opacity-100'
+        )}
+      >
+        {children}
       </span>
-      {!isCollapsed && <span className="relative truncate">{children}</span>}
+
       {isActive && !isCollapsed && (
-        <span className="relative ml-auto h-2.5 w-2.5 rounded-full bg-white shadow-[0_0_18px_rgba(255,255,255,0.9)]" />
+        <div className="ml-auto h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
       )}
     </Link>
   );
@@ -201,35 +212,37 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
 
       <aside
         className={cn(
-          'relative z-20 hidden h-full shrink-0 flex-col border-r border-white/55 bg-white/62 backdrop-blur-2xl transition-all duration-500 ease-out md:flex',
-          isCollapsed ? 'w-28' : 'w-[21rem]'
+          'relative z-20 hidden h-full shrink-0 flex-col border-r border-white/40 bg-white/40 backdrop-blur-3xl transition-all duration-500 ease-in-out md:flex',
+          isCollapsed ? 'w-28 items-center' : 'w-80'
         )}
       >
-        <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-white/55 to-transparent" />
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute -right-4 top-10 z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/75 bg-white/90 text-slate-500 shadow-[0_14px_34px_rgba(15,23,42,0.12)] transition-all duration-300 hover:scale-105 hover:text-primary"
+          className="absolute -right-4 top-12 z-40 flex h-8 w-8 items-center justify-center rounded-full border border-white/80 bg-white shadow-lg text-slate-400 transition-colors hover:text-indigo-600"
         >
-          {isCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
+          {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
         </button>
 
-        <div className="relative flex flex-1 flex-col gap-7 p-6">
+        <div
+          className={cn(
+            'flex h-full w-full flex-col gap-8 p-5',
+            isCollapsed && 'items-center'
+          )}
+        >
           <div
             className={cn(
-              'flex items-center gap-3 transition-all duration-300',
-              isCollapsed ? 'justify-center' : 'px-1'
+              'flex items-center gap-3 transition-all duration-500',
+              isCollapsed ? 'justify-center' : 'px-2'
             )}
           >
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.6rem] bg-[linear-gradient(135deg,#2563eb,#6366f1,#a855f7)] text-white shadow-[0_24px_50px_rgba(79,70,229,0.26)]">
-              <Zap className="h-6 w-6 fill-current" />
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-violet-600 text-white shadow-lg">
+              <Zap size={24} fill="currentColor" />
             </div>
             {!isCollapsed && (
-              <div className="min-w-0">
-                <span className="block font-sans text-2xl font-bold tracking-tight text-slate-950">
-                  JD2Resume
-                </span>
-                <span className="block text-xs font-medium tracking-[0.18em] text-slate-400 uppercase">
-                  Focused career studio
+              <div className="flex flex-col transition-all duration-500">
+                <span className="text-xl font-bold tracking-tight text-slate-900">JD2Resume</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                  Career Studio
                 </span>
               </div>
             )}
@@ -237,53 +250,48 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
 
           <div
             className={cn(
-              'relative overflow-hidden rounded-[1.9rem] border border-white/80 bg-white/64 shadow-[0_18px_46px_rgba(15,23,42,0.08)] backdrop-blur-xl',
-              isCollapsed ? 'p-3' : 'p-4'
+              'relative group flex items-center overflow-hidden border border-white/60 bg-white/50 shadow-sm backdrop-blur-md transition-all duration-500',
+              isCollapsed
+                ? 'h-16 w-16 justify-center rounded-[1.8rem]'
+                : 'h-20 w-full rounded-[1.5rem] px-4'
             )}
           >
-            <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-sky-300/90 to-transparent" />
-            <div
-              className={cn(
-                'relative flex items-center gap-3',
-                isCollapsed ? 'flex-col text-center' : 'flex-row'
-              )}
-            >
-              <div className="relative shrink-0">
-                {user.picture ? (
-                  <img
-                    src={user.picture}
-                    alt="avatar"
-                    className="h-14 w-14 rounded-[1.25rem] border border-white/80 object-cover shadow-[0_14px_30px_rgba(15,23,42,0.12)]"
-                  />
-                ) : (
-                  <div className="flex h-14 w-14 items-center justify-center rounded-[1.25rem] border border-white/80 bg-white/90 shadow-[0_14px_30px_rgba(15,23,42,0.08)]">
-                    <UserIcon className="h-6 w-6 text-slate-400" />
-                  </div>
-                )}
-                <span className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-white bg-emerald-400 shadow-[0_0_18px_rgba(52,211,153,0.55)]" />
-              </div>
-
-              {!isCollapsed && (
-                <div className="min-w-0 flex-1">
-                  <div className="truncate font-sans text-[1rem] font-semibold text-slate-950">
-                    {user.name || user.email?.split('@')[0]}
-                  </div>
-                  <div className="truncate text-sm text-slate-500">{user.email}</div>
-                  <div className="mt-2 inline-flex rounded-full border border-emerald-100 bg-emerald-50 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-emerald-700">
-                    Professional
-                  </div>
+            <div className="relative shrink-0">
+              {user.picture ? (
+                <img
+                  src={user.picture}
+                  alt="Profile"
+                  className={cn(
+                    'rounded-2xl object-cover transition-all duration-500',
+                    isCollapsed ? 'h-11 w-11' : 'h-12 w-12'
+                  )}
+                />
+              ) : (
+                <div
+                  className={cn(
+                    'flex items-center justify-center rounded-2xl bg-white/90 transition-all duration-500',
+                    isCollapsed ? 'h-11 w-11' : 'h-12 w-12'
+                  )}
+                >
+                  <UserIcon className="h-5 w-5 text-slate-400" />
                 </div>
               )}
-
-              {isCollapsed && (
-                <div className="inline-flex rounded-full border border-emerald-100 bg-emerald-50 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.22em] text-emerald-700">
-                  Pro
-                </div>
-              )}
+              <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500 shadow-sm" />
             </div>
+
+            {!isCollapsed && (
+              <div className="ml-3 flex min-w-0 flex-col transition-all duration-500">
+                <span className="truncate text-sm font-bold text-slate-900">
+                  {user.name || user.email?.split('@')[0]}
+                </span>
+                <span className="mt-1 w-fit rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-600">
+                  PRO
+                </span>
+              </div>
+            )}
           </div>
 
-          <nav className="flex flex-1 flex-col gap-2.5">
+          <nav className="flex flex-1 flex-col gap-3">
             {navItems.map((item) => (
               <NavLink
                 key={item.href}
@@ -301,12 +309,14 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
             onClick={handleLogout}
             variant="ghost"
             className={cn(
-              'w-full rounded-[1.35rem] border border-white/65 bg-white/68 font-semibold text-slate-500 shadow-[0_14px_34px_rgba(15,23,42,0.06)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-rose-50 hover:text-rose-600 hover:shadow-[0_20px_44px_rgba(244,63,94,0.14)]',
-              isCollapsed ? 'justify-center px-0' : 'justify-start gap-3 px-4'
+              'border border-white/60 bg-white/40 transition-all duration-500 hover:border-rose-100 hover:bg-rose-50 hover:text-rose-600',
+              isCollapsed
+                ? 'h-14 w-14 rounded-2xl p-0'
+                : 'h-12 w-full justify-start gap-3 rounded-2xl px-4'
             )}
           >
-            <LogOut className="h-5 w-5 shrink-0" />
-            {!isCollapsed && <span>Log out</span>}
+            <LogOut size={20} />
+            {!isCollapsed && <span className="text-sm font-semibold">Sign Out</span>}
           </Button>
         </div>
       </aside>

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { Card, CardDescription, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useResumePreview } from '@/components/common/resume_previewer_context';
@@ -20,7 +21,15 @@ import {
 import { fetchPromptConfig, type PromptOption } from '@/lib/api/config';
 import { Dropdown } from '@/components/ui/dropdown';
 import { useStatusCache } from '@/lib/context/status-cache';
-import { Loader2, ArrowLeft, AlertTriangle, Settings, Sparkles } from 'lucide-react';
+import {
+  Loader2,
+  ArrowLeft,
+  AlertTriangle,
+  Settings,
+  Sparkles,
+  FileText,
+  Wand2,
+} from 'lucide-react';
 import { useTranslations } from '@/lib/i18n';
 import { DiffPreviewModal } from '@/components/tailor/diff-preview-modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
@@ -67,7 +76,6 @@ export default function TailorPage() {
   const isLlmConfigured = !statusLoading && systemStatus?.llm_configured;
 
   useEffect(() => {
-    // Try to load last used master from localStorage
     const storedId = localStorage.getItem('last_used_master_resume_id');
     if (storedId) {
       setMasterResumeId(storedId);
@@ -172,12 +180,9 @@ export default function TailorPage() {
 
   const runGenerate = async (resumeId: string, description: string) => {
     try {
-      // 1. Upload Job Description
-      // The API expects an array of strings
       const jobId = await uploadJobDescriptions([description], resumeId);
-      incrementJobs(); // Update cached counter
+      incrementJobs();
 
-      // 2. Preview Resume
       const result = await previewImproveResume(resumeId, jobId, selectedPromptId);
 
       if (!result?.data?.diff_summary || !result?.data?.detailed_changes) {
@@ -191,14 +196,12 @@ export default function TailorPage() {
         return;
       }
 
-      // 3. Show diff preview modal
       setDiffConfirmError(null);
       setMissingDiffError(null);
       setPendingResult(result);
       setShowDiffModal(true);
     } catch (err) {
       console.error(err);
-      // Check for common error patterns
       const errorMessage = err instanceof Error ? err.message : '';
       if (
         errorMessage.toLowerCase().includes('api key') ||
@@ -236,9 +239,7 @@ export default function TailorPage() {
     }
   };
 
-  // User confirms changes
   const handleConfirmChanges = async (decisions?: Record<number, ChangeDecision>) => {
-    // Guard against double-clicks - isLoading already tracks confirm in progress
     if (!pendingResult || isLoading) return;
 
     setIsLoading(true);
@@ -259,7 +260,6 @@ export default function TailorPage() {
     }
   };
 
-  // User rejects changes
   const handleRejectChanges = () => {
     setShowDiffModal(false);
     setPendingResult(null);
@@ -319,268 +319,338 @@ export default function TailorPage() {
     }
   };
 
-  return (
-    <div className="flex h-full w-full flex-col bg-[#F0F0E8] font-sans">
-      <div className="relative mx-auto w-full flex-1 border-x-2 border-black bg-white p-6 md:p-12 lg:p-16 shadow-[20px_0px_60px_-15px_rgba(0,0,0,0.05)]">
-        {/* Back Button */}
-        <Button 
-          variant="ghost" 
-          className="absolute top-6 left-6 md:top-8 md:left-8 font-mono text-xs font-bold uppercase tracking-widest hover:bg-gray-100 rounded-none border-2 border-transparent hover:border-black transition-all" 
-          onClick={() => router.back()}
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          {t('common.back')}
-        </Button>
+  const isGenerateDisabled =
+    isLoading || statusLoading || !jobDescription.trim() || !isLlmConfigured;
+  const currentLength = mounted ? jobDescription.length : 0;
+  const lengthProgress = Math.min((currentLength / MAX_JD_LENGTH) * 100, 100);
 
-        <div className="mb-12 mt-8 text-center">
-          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-black uppercase tracking-tighter mb-4 text-black">
-            {t('tailor.heroTitle')}
-          </h1>
-          <div className="inline-block border-2 border-black bg-blue-700 px-4 py-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-            <p className="font-mono text-xs md:text-sm text-white font-bold uppercase tracking-widest">
-              {'// '}
-              {t('tailor.pasteJobDescriptionBelow')}
-            </p>
+  return (
+    <div className="min-h-full w-full bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.10),_transparent_32%),linear-gradient(180deg,_#f8fafc_0%,_#f1f5f9_100%)]">
+      <div className="mx-auto flex w-full  flex-1 flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
+        <div className="flex items-center justify-between gap-3">
+          <Button
+            variant="ghost"
+            className="h-10 rounded-full border border-white/70 bg-white/80 px-4 text-sm font-medium text-slate-700 shadow-sm backdrop-blur-sm hover:bg-white"
+            onClick={() => router.back()}
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            {t('common.back')}
+          </Button>
+
+          <div className="hidden items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1.5 text-xs font-medium text-slate-500 shadow-sm backdrop-blur-sm sm:flex">
+            <Sparkles className="h-3.5 w-3.5 text-blue-500" />
+            <span>{t('tailor.pasteJobDescriptionBelow')}</span>
           </div>
         </div>
 
-        {/* LLM Not Configured Warning */}
-        {!statusLoading && !isLlmConfigured && (
-          <div className="mb-10 border-1 rounded-sm border-black bg-amber-50 p-6 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] animate-in fade-in slide-in-from-top-4 duration-500">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 border-2 border-black bg-amber-400 flex items-center justify-center shrink-0 shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                <AlertTriangle className="w-6 h-6 text-black" />
+        <Card className="overflow-hidden border-white/80 bg-white/85 shadow-[0_20px_60px_-30px_rgba(15,23,42,0.35)] backdrop-blur-xl">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.14),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(168,85,247,0.10),_transparent_28%)]" />
+          <div className="relative flex flex-col gap-5 p-5 sm:p-6 lg:p-7">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="max-w-3xl space-y-3">
+                <div className="inline-flex items-center gap-2 rounded-full border border-blue-200/70 bg-blue-50/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-700">
+                  <Wand2 className="h-3.5 w-3.5" />
+                  {t('tailor.pasteJobDescriptionBelow')}
+                </div>
+                <div className="space-y-2">
+                  <CardTitle className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
+                    {t('tailor.heroTitle')}
+                  </CardTitle>
+                  <CardDescription className="max-w-2xl text-sm leading-6 text-slate-600 sm:text-[15px]">
+                    {t('tailor.promptDescription')}
+                  </CardDescription>
+                </div>
               </div>
-              <div className="flex-1">
-                <p className="font-mono text-sm font-black uppercase tracking-tight text-black">
-                  {t('tailor.setupRequiredTitle')}
-                </p>
-                <p className="font-mono text-xs text-amber-900 mt-2 font-bold leading-relaxed">
-                  {t('tailor.noApiKeyMessage')}
-                </p>
-                <Link
-                  href="/settings"
-                  className="inline-flex items-center gap-2 mt-4 text-black hover:text-blue-700 transition-colors group"
-                >
-                  <Settings className="w-4 h-4 group-hover:rotate-90 transition-transform duration-500" />
-                  <span className="font-mono text-xs font-black uppercase underline decoration-2 underline-offset-4">
-                    {t('tailor.configureApiKey')}
-                  </span>
-                </Link>
-              </div>
-            </div>
-          </div>
-        )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-          {/* Left Column: Selectors */}
-          <div className="lg:col-span-5 space-y-8">
-            <div className="space-y-8 sticky top-8">
-              <MasterResumeSelector
-                selectedResumeId={masterResumeId}
-                onSelect={(resumeId, category) => {
-                  setMasterResumeId(resumeId);
-                  setMasterCategory(category);
-                  localStorage.setItem('last_used_master_resume_id', resumeId);
-                }}
-                label={t('tailor.selectMasterLabel') || "Select Master Resume"}
-                required={true}
-              />
-
-              <Dropdown
-                options={
-                  promptOptions.length > 0
-                    ? promptOptions.map((opt) => ({
-                        id: opt.id,
-                        label: t(`tailor.promptOptions.${opt.id}.label`),
-                        description: t(`tailor.promptOptions.${opt.id}.description`),
-                      }))
-                    : [
-                        {
-                          id: 'keywords',
-                          label: t('tailor.promptOptions.keywords.label'),
-                          description: t('tailor.promptOptions.keywords.description'),
-                        },
-                        {
-                          id: 'full',
-                          label: t('tailor.promptOptions.full.label'),
-                          description: t('tailor.promptOptions.full.description'),
-                        },
-                      ]
-                }
-                value={selectedPromptId}
-                onChange={(value) => {
-                  hasUserSelectedPrompt.current = true;
-                  setSelectedPromptId(value);
-                }}
-                label={t('tailor.promptLabel')}
-                description={t('tailor.promptDescription')}
-                disabled={isLoading || promptLoading}
-              />
-
-              <div className="pt-4 hidden lg:block">
-                <Button
-                  size="lg"
-                  onClick={handleGenerate}
-                  disabled={isLoading || statusLoading || !jobDescription.trim() || !isLlmConfigured}
-                  className={cn(
-                    "w-full h-20 border-2 border-black font-serif text-xl font-black uppercase tracking-widest transition-all active:translate-x-1 active:translate-y-1 active:shadow-none shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]",
-                    isLoading || statusLoading || !jobDescription.trim() || !isLlmConfigured
-                      ? "bg-gray-100 text-gray-400 border-gray-300 shadow-none cursor-not-allowed"
-                      : "bg-blue-700 text-white hover:bg-blue-800"
-                  )}
-                >
-                  {isLoading ? (
-                    <div className="flex items-center justify-center gap-3">
-                      <Loader2 className="w-6 h-6 animate-spin" />
-                      <span>{t('common.processing')}</span>
-                    </div>
-                  ) : statusLoading ? (
-                    <div className="flex items-center justify-center gap-3">
-                      <Loader2 className="w-6 h-6 animate-spin" />
-                      <span>{t('common.checking')}</span>
-                    </div>
-                  ) : !isLlmConfigured ? (
-                    <span className="text-lg">{t('tailor.configureApiKeyFirst')}</span>
-                  ) : (
-                    <div className="flex items-center justify-center gap-3">
-                      <Sparkles className="w-6 h-6" />
-                      <span>{t('tailor.generateTailored')}</span>
-                    </div>
-                  )}
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column: Textarea */}
-          <div className="lg:col-span-7 space-y-4">
-            <div className="relative group">
-              {/* Floating Label */}
-              <div className="absolute -top-3 left-6 z-10">
-                <span className="inline-flex items-center gap-2 bg-black text-white px-3 py-1.5 font-mono text-[10px] font-black uppercase tracking-widest">
-                  <span className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" />
-                  Job Description
-                </span>
-              </div>
-              
-              {/* Decorative Corner Accents */}
-              <div className="absolute top-0 left-0 w-6 h-6 border-l-4 border-t-4 border-black pointer-events-none" />
-              <div className="absolute top-0 right-0 w-6 h-6 border-r-4 border-t-4 border-black pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-6 h-6 border-l-4 border-b-4 border-black pointer-events-none" />
-              <div className="absolute bottom-0 right-0 w-6 h-6 border-r-4 border-b-4 border-black pointer-events-none" />
-              
-              {/* Glow Effect on Focus */}
-              <div className="absolute -inset-0.5 bg-gradient-to-br from-blue-600/20 via-transparent to-blue-600/20 rounded-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 pointer-events-none blur-sm" />
-              
-              <Textarea
-                placeholder={t('tailor.jobDescriptionPlaceholder')}
-                className={cn(
-                  "min-h-[400px] lg:min-h-[500px] font-sans text-base leading-relaxed",
-                  "bg-gradient-to-br from-white via-white to-gray-50/80",
-                  "border-2 border-black",
-                  "focus:border-blue-700 focus:ring-0 focus:outline-none",
-                  "resize-none p-8 pt-10",
-                  "rounded-xl",
-                  "shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]",
-                  "hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]",
-                  "focus:shadow-[4px_4px_0px_0px_rgba(29,78,216,1)]",
-                  "transition-all duration-300 ease-out",
-                  "placeholder:text-gray-400 placeholder:font-light placeholder:italic",
-                  isLoading && "opacity-60 cursor-not-allowed"
-                )}
-                value={jobDescription}
-                onChange={(e) => setJobDescription(e.target.value)}
-                onKeyDown={handleTextareaKeyDown}
-                disabled={isLoading}
-              />
-              
-              {/* Character Counter - Modernized */}
-              <div className="absolute bottom-4 right-4 flex items-center gap-3">
-                {/* Progress Bar */}
-                <div className="hidden sm:flex items-center gap-2">
-                  <div className="w-24 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                    <div 
-                      className={cn(
-                        "h-full rounded-full transition-all duration-300",
-                        mounted && jobDescription.length > MAX_JD_LENGTH
-                          ? "bg-red-500"
-                          : mounted && jobDescription.length > JD_LENGTH_WARNING_THRESHOLD
-                            ? "bg-amber-500"
-                            : "bg-blue-600"
-                      )}
-                      style={{ width: `${Math.min((jobDescription.length / MAX_JD_LENGTH) * 100, 100)}%` }}
-                    />
+              <div className="grid grid-cols-2 gap-3 sm:w-auto">
+                <div className="rounded-2xl border border-white/75 bg-white/80 px-4 py-3 shadow-sm">
+                  <div className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-500">
+                    {t('tailor.selectMasterLabel')}
+                  </div>
+                  <div className="mt-1 text-sm font-semibold text-slate-900">
+                    {masterResumeId ? 'Selected' : 'Required'}
                   </div>
                 </div>
-                
-                {/* Counter Badge */}
+                <div className="rounded-2xl border border-white/75 bg-white/80 px-4 py-3 shadow-sm">
+                  <div className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-500">
+                    {t('tailor.promptLabel')}
+                  </div>
+                  <div className="mt-1 text-sm font-semibold capitalize text-slate-900">
+                    {selectedPromptId}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {!statusLoading && !isLlmConfigured && (
+              <div className="rounded-[1.5rem] border border-amber-200/80 bg-gradient-to-r from-amber-50 to-orange-50 p-4 shadow-sm sm:p-5">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700 ring-1 ring-amber-200/80">
+                    <AlertTriangle className="h-5 w-5" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-slate-900">
+                      {t('tailor.setupRequiredTitle')}
+                    </p>
+                    <p className="mt-1 text-sm leading-6 text-slate-600">
+                      {t('tailor.noApiKeyMessage')}
+                    </p>
+                    <Link
+                      href="/settings"
+                      className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-amber-700 transition hover:text-amber-800"
+                    >
+                      <Settings className="h-4 w-4" />
+                      <span>{t('tailor.configureApiKey')}</span>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </Card>
+
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+          <div className="lg:col-span-4">
+            <div className="sticky top-6 space-y-4">
+              <Card
+                variant="interactive"
+                className="border-white/80 bg-white/85 p-4 shadow-[0_18px_50px_-32px_rgba(15,23,42,0.35)] sm:p-5"
+              >
+                <div className="space-y-5">
+                  <div className="space-y-1">
+                    <CardTitle className="text-lg font-semibold tracking-tight text-slate-900">
+                      {t('tailor.selectMasterLabel')}
+                    </CardTitle>
+                    <CardDescription className="text-sm text-slate-600">
+                      {t('tailor.promptDescription')}
+                    </CardDescription>
+                  </div>
+
+                  <MasterResumeSelector
+                    selectedResumeId={masterResumeId}
+                    onSelect={(resumeId, category) => {
+                      setMasterResumeId(resumeId);
+                      setMasterCategory(category);
+                      localStorage.setItem('last_used_master_resume_id', resumeId);
+                    }}
+                    label={t('tailor.selectMasterLabel') || 'Select Master Resume'}
+                    required={true}
+                  />
+
+                  <div className="rounded-2xl border border-slate-200/70 bg-slate-50/80 p-3">
+                    <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                      <FileText className="h-3.5 w-3.5" />
+                      {t('tailor.promptLabel')}
+                    </div>
+                    <Dropdown
+                      options={
+                        promptOptions.length > 0
+                          ? promptOptions.map((opt) => ({
+                              id: opt.id,
+                              label: t(`tailor.promptOptions.${opt.id}.label`),
+                              description: t(`tailor.promptOptions.${opt.id}.description`),
+                            }))
+                          : [
+                              {
+                                id: 'keywords',
+                                label: t('tailor.promptOptions.keywords.label'),
+                                description: t('tailor.promptOptions.keywords.description'),
+                              },
+                              {
+                                id: 'full',
+                                label: t('tailor.promptOptions.full.label'),
+                                description: t('tailor.promptOptions.full.description'),
+                              },
+                            ]
+                      }
+                      value={selectedPromptId}
+                      onChange={(value) => {
+                        hasUserSelectedPrompt.current = true;
+                        setSelectedPromptId(value);
+                      }}
+                      label={t('tailor.promptLabel')}
+                      description={t('tailor.promptDescription')}
+                      disabled={isLoading || promptLoading}
+                    />
+                  </div>
+
+                  {masterCategory && (
+                    <div className="rounded-2xl border border-blue-100 bg-blue-50/70 px-3 py-2 text-sm text-blue-800">
+                      <span className="font-medium">{masterCategory}</span>
+                    </div>
+                  )}
+
+                  <div className="hidden lg:block">
+                    <Button
+                      size="lg"
+                      onClick={handleGenerate}
+                      disabled={isGenerateDisabled}
+                      className={cn(
+                        'h-12 w-full rounded-2xl text-sm font-semibold shadow-sm transition-all',
+                        isGenerateDisabled
+                          ? 'cursor-not-allowed bg-slate-200 text-slate-500 shadow-none'
+                          : 'bg-slate-900 text-white hover:bg-slate-800'
+                      )}
+                    >
+                      {isLoading ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>{t('common.processing')}</span>
+                        </div>
+                      ) : statusLoading ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>{t('common.checking')}</span>
+                        </div>
+                      ) : !isLlmConfigured ? (
+                        <span>{t('tailor.configureApiKeyFirst')}</span>
+                      ) : (
+                        <div className="flex items-center justify-center gap-2">
+                          <Sparkles className="h-4 w-4" />
+                          <span>{t('tailor.generateTailored')}</span>
+                        </div>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
+
+          <div className="space-y-4 lg:col-span-8">
+            <Card className="border-white/80 bg-white/85 p-4 shadow-[0_18px_50px_-32px_rgba(15,23,42,0.35)] sm:p-5 lg:p-6">
+              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <CardTitle className="text-lg font-semibold tracking-tight text-slate-900">
+                    Job description
+                  </CardTitle>
+                  <CardDescription className="mt-1 text-sm text-slate-600">
+                    {t('tailor.jobDescriptionPlaceholder')}
+                  </CardDescription>
+                </div>
+
                 <div
                   className={cn(
-                    "px-3 py-1.5 font-mono text-[10px] font-black uppercase tracking-wider rounded-lg border-2 transition-all duration-300",
-                    mounted && jobDescription.length > MAX_JD_LENGTH
-                      ? "bg-red-500 text-white border-red-600 animate-pulse"
-                      : mounted && jobDescription.length > JD_LENGTH_WARNING_THRESHOLD
-                        ? "bg-amber-500 text-black border-amber-600"
-                        : "bg-black text-white border-black"
+                    'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium shadow-sm',
+                    currentLength > MAX_JD_LENGTH
+                      ? 'border-red-200 bg-red-50 text-red-700'
+                      : currentLength > JD_LENGTH_WARNING_THRESHOLD
+                        ? 'border-amber-200 bg-amber-50 text-amber-700'
+                        : 'border-slate-200 bg-slate-50 text-slate-600'
                   )}
                   suppressHydrationWarning
                 >
-                  {mounted ? jobDescription.length.toLocaleString() : 0}
-                  <span className="text-white/60 ml-1">/ {MAX_JD_LENGTH.toLocaleString()}</span>
+                  <span>{currentLength.toLocaleString()}</span>
+                  <span className="text-slate-400">/ {MAX_JD_LENGTH.toLocaleString()}</span>
                 </div>
               </div>
-              
-              {/* Typing Indicator */}
-              {jobDescription.length > 0 && jobDescription.length < 50 && (
-                <div className="absolute bottom-4 left-4 flex items-center gap-2 text-gray-400">
-                  <span className="font-mono text-[10px] uppercase tracking-wider">Keep typing...</span>
-                  <span className="flex gap-0.5">
-                    <span className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <span className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <span className="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </span>
+
+              <div className="space-y-4">
+                <div className="overflow-hidden rounded-[1.5rem] border border-slate-200/80 bg-white shadow-inner shadow-slate-100/60">
+                  <Textarea
+                    placeholder={t('tailor.jobDescriptionPlaceholder')}
+                    className={cn(
+                      'min-h-[360px] resize-none border-0 bg-transparent px-4 py-4 text-[15px] leading-7 text-slate-700 shadow-none focus-visible:ring-0 sm:px-5 sm:py-5 lg:min-h-[460px]',
+                      'placeholder:text-slate-400',
+                      isLoading && 'cursor-not-allowed opacity-60'
+                    )}
+                    value={jobDescription}
+                    onChange={(e) => setJobDescription(e.target.value)}
+                    onKeyDown={handleTextareaKeyDown}
+                    disabled={isLoading}
+                  />
                 </div>
-              )}
-            </div>
+
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="order-2 space-y-2 sm:order-1 sm:flex-1">
+                    <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                      <div
+                        className={cn(
+                          'h-full rounded-full transition-all duration-300',
+                          currentLength > MAX_JD_LENGTH
+                            ? 'bg-red-500'
+                            : currentLength > JD_LENGTH_WARNING_THRESHOLD
+                              ? 'bg-amber-500'
+                              : 'bg-blue-500'
+                        )}
+                        style={{ width: `${lengthProgress}%` }}
+                      />
+                    </div>
+
+                    {jobDescription.length > 0 && jobDescription.length < 50 && (
+                      <div className="flex items-center gap-2 text-xs text-slate-500">
+                        <span>Keep typing...</span>
+                        <span className="flex gap-1">
+                          <span
+                            className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400"
+                            style={{ animationDelay: '0ms' }}
+                          />
+                          <span
+                            className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400"
+                            style={{ animationDelay: '150ms' }}
+                          />
+                          <span
+                            className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400"
+                            style={{ animationDelay: '300ms' }}
+                          />
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="order-1 lg:hidden">
+                    <Button
+                      size="lg"
+                      onClick={handleGenerate}
+                      disabled={isGenerateDisabled}
+                      className={cn(
+                        'h-11 w-full rounded-2xl px-5 text-sm font-semibold shadow-sm transition-all sm:w-auto',
+                        isGenerateDisabled
+                          ? 'cursor-not-allowed bg-slate-200 text-slate-500 shadow-none'
+                          : 'bg-slate-900 text-white hover:bg-slate-800'
+                      )}
+                    >
+                      {isLoading ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>{t('common.processing')}</span>
+                        </div>
+                      ) : statusLoading ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>{t('common.checking')}</span>
+                        </div>
+                      ) : !isLlmConfigured ? (
+                        <span>{t('tailor.configureApiKeyFirst')}</span>
+                      ) : (
+                        <div className="flex items-center justify-center gap-2">
+                          <Sparkles className="h-4 w-4" />
+                          <span>{t('tailor.generateTailored')}</span>
+                        </div>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </Card>
 
             {error && (
-              <div className="p-6 border-2 border-black bg-red-50 text-red-700 font-sans text-sm font-bold uppercase tracking-tight flex items-center gap-4 animate-in shake-1 duration-500 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] rounded-2xl">
-                <div className="w-8 h-8 border-2 border-black bg-red-600 text-white flex items-center justify-center shrink-0 rounded-lg">!</div>
-                <span>{error}</span>
-              </div>
+              <Card className="border-red-200/80 bg-red-50/90 p-4 shadow-[0_18px_50px_-36px_rgba(220,38,38,0.45)]">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-700 ring-1 ring-red-200">
+                    <AlertTriangle className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-red-900">Error</p>
+                    <p className="mt-1 text-sm text-red-700">{error}</p>
+                  </div>
+                </div>
+              </Card>
             )}
-
-            <div className="lg:hidden">
-              <Button
-                size="lg"
-                onClick={handleGenerate}
-                disabled={isLoading || statusLoading || !jobDescription.trim() || !isLlmConfigured}
-                className={cn(
-                  "w-full h-20 border-2 border-black font-serif text-xl font-black uppercase tracking-widest transition-all active:translate-x-1 active:translate-y-1 active:shadow-none shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]",
-                  isLoading || statusLoading || !jobDescription.trim() || !isLlmConfigured
-                    ? "bg-gray-100 text-gray-400 border-gray-300 shadow-none cursor-not-allowed"
-                    : "bg-blue-700 text-white hover:bg-blue-800"
-                )}
-              >
-                {isLoading ? (
-                  <div className="flex items-center justify-center gap-3">
-                    <Loader2 className="w-6 h-6 animate-spin" />
-                    <span>{t('common.processing')}</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-center gap-3">
-                    <Sparkles className="w-6 h-6" />
-                    <span>{t('tailor.generateTailored')}</span>
-                  </div>
-                )}
-              </Button>
-            </div>
           </div>
         </div>
       </div>
 
-      {/* Diff preview modal */}
       {showDiffModal && pendingResult && (
         <DiffPreviewModal
           isOpen={showDiffModal}

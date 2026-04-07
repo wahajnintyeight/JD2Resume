@@ -504,6 +504,8 @@
     "subtitle": "特定の求人に合わせて履歴書を最適化",
     "heroTitle": "履歴書をカスタマイズ",
     "selectResume": "履歴書を選択",
+    "selectMasterLabel": "マスター履歴書を選択",
+    "selectMasterPlaceholder": "マスター履歴書を選択してください",
     "pasteJobDescription": "求人内容を貼り付け",
     "pasteJobDescriptionBelow": "下に求人内容を貼り付け",
     "jobDescriptionPlaceholder": "求人内容をここに貼り付けてください...",

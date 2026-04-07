@@ -108,7 +108,7 @@ export function DiffPreviewModal({
     return (
       <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
         <DialogContent className="fixed inset-0 m-0 flex h-screen w-screen max-w-none flex-col overflow-hidden bg-black/40 p-0 outline-none backdrop-blur-sm gap-0">
-          <div className="mx-auto flex h-full w-full max-w-7xl flex-col border-black bg-[#F0F0E8] shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] md:border-x">
+          <div className="mx-auto flex h-full w-full flex-col border-black bg-[#F0F0E8] shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] md:border-x">
             <DialogHeader className="border-b-2 border-black pb-4 bg-white px-4 sm:px-6 pt-4 sm:pt-6 text-left">
               <DialogTitle className="font-serif text-xl sm:text-2xl font-bold uppercase tracking-tight">
                 {t('tailor.missingDiffDialog.title')}
@@ -152,7 +152,7 @@ export function DiffPreviewModal({
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="fixed inset-0 m-0 flex h-screen w-screen max-w-none flex-col overflow-hidden bg-black/40 p-0 outline-none backdrop-blur-sm gap-0">
-        <div className="mx-auto flex h-full w-full max-w-7xl flex-col border-black bg-[#F0F0E8] shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] md:border-x">
+        <div className="mx-auto flex h-full w-full flex-col border-black bg-[#F0F0E8] shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] md:border-x">
           <DialogHeader className="shrink-0 border-b-2 border-black bg-white p-4 text-left sm:p-6 lg:p-8">
             <DialogTitle className="font-serif text-xl font-bold uppercase tracking-tight sm:text-2xl">
               {t('tailor.diffModal.title')}

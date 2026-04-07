@@ -504,6 +504,8 @@
     "subtitle": "Optimiza tu currículum para un trabajo específico",
     "heroTitle": "Personaliza tu currículum",
     "selectResume": "Seleccionar Currículum",
+    "selectMasterLabel": "Seleccionar currículum maestro",
+    "selectMasterPlaceholder": "Elige tu currículum maestro",
     "pasteJobDescription": "Pegar Descripción del Trabajo",
     "pasteJobDescriptionBelow": "Pega la descripción del trabajo abajo",
     "jobDescriptionPlaceholder": "Pega la descripción del trabajo aquí...",

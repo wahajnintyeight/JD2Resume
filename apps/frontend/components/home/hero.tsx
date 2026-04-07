@@ -33,7 +33,7 @@ export default function Hero() {
       />
       <div className="absolute left-1/2 top-24 h-72 w-72 -translate-x-1/2 rounded-full bg-violet-500/20 blur-3xl" />
 
-      <div className="relative mx-auto flex min-h-screen max-w-7xl items-center px-6 py-16 sm:px-8 lg:px-12">
+      <div className="relative mx-auto flex min-h-screen  items-center px-6 py-16 sm:px-8 lg:px-12">
         <div className="grid w-full gap-10 lg:grid-cols-[minmax(0,1.1fr)_420px] lg:items-center">
           <div className="max-w-4xl">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-violet-400/25 bg-violet-400/10 px-4 py-2 text-xs font-medium uppercase tracking-[0.24em] text-violet-200">

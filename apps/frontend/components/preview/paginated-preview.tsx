@@ -175,12 +175,7 @@ export function PaginatedPreview({ resumeData, settings, isFullscreen }: Paginat
       {/* Scrollable preview area */}
       <div
         ref={containerRef}
-        className="flex-1 overflow-auto bg-[#D5D5D0] p-6"
-        style={{
-          backgroundImage:
-            'linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px)',
-          backgroundSize: '20px 20px',
-        }}
+        className="flex-1 overflow-auto p-6"
       >
         {/* Hidden measurement container - renders content at actual size */}
         <div
