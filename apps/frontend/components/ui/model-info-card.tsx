@@ -48,37 +48,37 @@ export function ModelInfoCard({
     : description;
 
   return (
-    <div className={`mt-3 rounded border-2 border-black bg-[#F0F0E8] p-3 ${className}`}>
+    <div className={`mt-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 p-4 ${className}`}>
       {/* Header with label and token info */}
       <div className="flex flex-wrap items-center gap-2 mb-2">
         <div className="flex items-center gap-1.5">
-          <Info className="w-3.5 h-3.5 text-blue-600" />
-          <span className="text-xs font-bold uppercase tracking-wider text-gray-700 font-mono">
+          <Info className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 font-mono">
             {label}
           </span>
         </div>
         {hasTokenInfo && (
-          <div className="flex items-center gap-1.5 text-xs font-mono text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+          <div className="flex items-center gap-1.5 text-xs font-mono text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-500/20">
             <span>{tokenInfo}</span>
           </div>
         )}
       </div>
 
       {/* Model ID */}
-      <p className="font-mono text-sm text-black font-semibold break-all mb-2">
+      <p className="font-mono text-sm text-slate-900 dark:text-white font-semibold break-all mb-2">
         {value}
       </p>
 
       {/* Description */}
       {description && (
-        <div className="text-sm text-gray-600 leading-relaxed">
+        <div className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
           <p className={!isExpanded ? 'line-clamp-3' : ''}>
             {displayDescription}
           </p>
           {shouldTruncate && (
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="mt-2 flex items-center gap-1 text-xs font-mono text-blue-600 hover:text-blue-700 transition-colors"
+              className="mt-2 flex items-center gap-1 text-xs font-mono text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors font-bold"
             >
               {isExpanded ? (
                 <>

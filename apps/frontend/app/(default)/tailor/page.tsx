@@ -29,13 +29,18 @@ import {
   Sparkles,
   FileText,
   Wand2,
+  Orbit,
+  Bot,
+  ScanSearch,
+  ShieldCheck,
+  PanelTop,
+  Radar,
 } from 'lucide-react';
 import { useTranslations } from '@/lib/i18n';
 import { DiffPreviewModal } from '@/components/tailor/diff-preview-modal';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import MasterResumeSelector from '@/components/dashboard/master-resume-selector';
 
-// LLM-012: Job description length limits (from env, must match backend)
 const MAX_JD_LENGTH = parseInt(process.env.NEXT_PUBLIC_MAX_JD_LENGTH || '3000', 10);
 const JD_LENGTH_WARNING_THRESHOLD = Math.floor(MAX_JD_LENGTH * 0.75);
 
@@ -53,7 +58,6 @@ export default function TailorPage() {
   const hasUserSelectedPrompt = useRef(false);
   const missingDiffConfirmInFlight = useRef(false);
 
-  // Diff preview modal state
   const [showDiffModal, setShowDiffModal] = useState(false);
   const [pendingResult, setPendingResult] = useState<ImprovedResult | null>(null);
   const [diffConfirmError, setDiffConfirmError] = useState<string | null>(null);
@@ -72,7 +76,6 @@ export default function TailorPage() {
     incrementResumes,
   } = useStatusCache();
 
-  // Check if LLM is configured
   const isLlmConfigured = !statusLoading && systemStatus?.llm_configured;
 
   useEffect(() => {
@@ -325,79 +328,123 @@ export default function TailorPage() {
   const lengthProgress = Math.min((currentLength / MAX_JD_LENGTH) * 100, 100);
 
   return (
-    <div className="min-h-full w-full bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.10),_transparent_32%),linear-gradient(180deg,_#f8fafc_0%,_#f1f5f9_100%)]">
-      <div className="mx-auto flex w-full  flex-1 flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
+    <div
+      className="min-h-full w-full bg-[#071018] text-[#f3ead7]"
+      style={
+        {
+          ['--tailor-paper' as string]: '#f3ead7',
+          ['--tailor-ink' as string]: '#071018',
+          ['--tailor-copper' as string]: '#f59e0b',
+          ['--tailor-mint' as string]: '#6ee7d8',
+          ['--tailor-rose' as string]: '#fb7185',
+          ['--tailor-grid' as string]: 'rgba(243, 234, 215, 0.08)',
+        } as React.CSSProperties
+      }
+    >
+      <div className="fixed inset-0 -z-10 bg-[radial-gradient(circle_at_12%_18%,rgba(245,158,11,0.18),transparent_24%),radial-gradient(circle_at_87%_14%,rgba(110,231,216,0.14),transparent_26%),radial-gradient(circle_at_72%_75%,rgba(251,113,133,0.10),transparent_20%),linear-gradient(180deg,#04070d_0%,#09141d_55%,#05070d_100%)]" />
+      <div
+        className="fixed inset-0 -z-10 opacity-30"
+        style={{
+          backgroundImage:
+            'linear-gradient(var(--tailor-grid) 1px, transparent 1px), linear-gradient(90deg, var(--tailor-grid) 1px, transparent 1px)',
+          backgroundSize: '38px 38px',
+        }}
+      />
+      <div className="fixed left-[-5rem] top-24 -z-10 h-72 w-72 rounded-full bg-[#f59e0b]/10 blur-3xl" />
+      <div className="fixed right-[-4rem] top-12 -z-10 h-80 w-80 rounded-full bg-[#6ee7d8]/10 blur-3xl" />
+
+      <div className="mx-auto flex w-full max-w-[1520px] flex-1 flex-col gap-6 px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
         <div className="flex items-center justify-between gap-3">
           <Button
             variant="ghost"
-            className="h-10 rounded-full border border-white/70 bg-white/80 px-4 text-sm font-medium text-slate-700 shadow-sm backdrop-blur-sm hover:bg-white"
+            className="h-10 rounded-full border border-[#f3ead7]/12 bg-white/[0.04] px-4 text-sm font-medium text-[#eadfc7] shadow-sm backdrop-blur-sm hover:bg-white/[0.08] hover:text-white"
             onClick={() => router.back()}
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             {t('common.back')}
           </Button>
 
-          <div className="hidden items-center gap-2 rounded-full border border-white/70 bg-white/70 px-3 py-1.5 text-xs font-medium text-slate-500 shadow-sm backdrop-blur-sm sm:flex">
-            <Sparkles className="h-3.5 w-3.5 text-blue-500" />
+          <div className="hidden items-center gap-2 rounded-full border border-[#6ee7d8]/20 bg-[#6ee7d8]/10 px-3 py-1.5 text-xs font-medium text-[#dffcf8] shadow-sm backdrop-blur-sm sm:flex">
+            <Sparkles className="h-3.5 w-3.5 text-[#6ee7d8]" />
             <span>{t('tailor.pasteJobDescriptionBelow')}</span>
           </div>
         </div>
 
-        <Card className="overflow-hidden border-white/80 bg-white/85 shadow-[0_20px_60px_-30px_rgba(15,23,42,0.35)] backdrop-blur-xl">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.14),_transparent_34%),radial-gradient(circle_at_bottom_right,_rgba(168,85,247,0.10),_transparent_28%)]" />
-          <div className="relative flex flex-col gap-5 p-5 sm:p-6 lg:p-7">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-              <div className="max-w-3xl space-y-3">
-                <div className="inline-flex items-center gap-2 rounded-full border border-blue-200/70 bg-blue-50/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-700">
-                  <Wand2 className="h-3.5 w-3.5" />
-                  {t('tailor.pasteJobDescriptionBelow')}
+        <Card className="overflow-hidden border-[#f3ead7]/10 bg-[rgba(7,16,24,0.82)] shadow-[0_28px_120px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.04),transparent_20%,transparent_76%,rgba(255,255,255,0.03))]" />
+          <div className="relative flex flex-col gap-6 p-5 sm:p-6 lg:p-7">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+              <div className="max-w-4xl space-y-4">
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-[#f59e0b]/20 bg-[#f59e0b]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#ffd89c]">
+                    <Wand2 className="h-3.5 w-3.5" />
+                    tailoring bay
+                  </div>
+                  <div className="inline-flex items-center gap-2 rounded-full border border-[#6ee7d8]/20 bg-[#6ee7d8]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.24em] text-[#dffcf8]">
+                    <Orbit className="h-3.5 w-3.5" />
+                    guided generation
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <CardTitle className="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">
-                    {t('tailor.heroTitle')}
+
+                <div className="space-y-3">
+                  <CardTitle
+                    className="text-3xl font-black uppercase tracking-[-0.08em] text-[#f7efdd] sm:text-5xl"
+                    style={{ fontFamily: 'var(--font-playfair-display), "Times New Roman", serif' }}
+                  >
+                    Tailor a resume
+                    <span className="block bg-[linear-gradient(90deg,#f7efdd_0%,#f59e0b_34%,#6ee7d8_100%)] bg-clip-text text-transparent">
+                      for the target role
+                    </span>
                   </CardTitle>
-                  <CardDescription className="max-w-2xl text-sm leading-6 text-slate-600 sm:text-[15px]">
-                    {t('tailor.promptDescription')}
+                  <CardDescription className="max-w-2xl text-sm leading-7 text-[#cabfa8] sm:text-[15px]">
+                    Paste the job description, choose the right source resume, and generate a
+                    reviewable draft with clearer sections and discussion-friendly structure.
                   </CardDescription>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 sm:w-auto">
-                <div className="rounded-2xl border border-white/75 bg-white/80 px-4 py-3 shadow-sm">
-                  <div className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-500">
-                    {t('tailor.selectMasterLabel')}
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:w-[460px]">
+                <div className="rounded-[1.35rem] border border-[#f3ead7]/10 bg-white/[0.03] px-4 py-3 shadow-sm">
+                  <div className="text-[10px] font-medium uppercase tracking-[0.22em] text-[#9a9079]">
+                    source resume
                   </div>
-                  <div className="mt-1 text-sm font-semibold text-slate-900">
+                  <div className="mt-1 text-sm font-semibold text-[#f7efdd]">
                     {masterResumeId ? 'Selected' : 'Required'}
                   </div>
                 </div>
-                <div className="rounded-2xl border border-white/75 bg-white/80 px-4 py-3 shadow-sm">
-                  <div className="text-[11px] font-medium uppercase tracking-[0.16em] text-slate-500">
-                    {t('tailor.promptLabel')}
+                <div className="rounded-[1.35rem] border border-[#f3ead7]/10 bg-white/[0.03] px-4 py-3 shadow-sm">
+                  <div className="text-[10px] font-medium uppercase tracking-[0.22em] text-[#9a9079]">
+                    prompt mode
                   </div>
-                  <div className="mt-1 text-sm font-semibold capitalize text-slate-900">
+                  <div className="mt-1 text-sm font-semibold capitalize text-[#f7efdd]">
                     {selectedPromptId}
                   </div>
+                </div>
+                <div className="rounded-[1.35rem] border border-[#f3ead7]/10 bg-white/[0.03] px-4 py-3 shadow-sm">
+                  <div className="text-[10px] font-medium uppercase tracking-[0.22em] text-[#9a9079]">
+                    discussion flow
+                  </div>
+                  <div className="mt-1 text-sm font-semibold text-[#f7efdd]">Sectioned</div>
                 </div>
               </div>
             </div>
 
             {!statusLoading && !isLlmConfigured && (
-              <div className="rounded-[1.5rem] border border-amber-200/80 bg-gradient-to-r from-amber-50 to-orange-50 p-4 shadow-sm sm:p-5">
+              <div className="rounded-[1.6rem] border border-[#f59e0b]/20 bg-[linear-gradient(90deg,rgba(245,158,11,0.12),rgba(255,255,255,0.03))] p-4 shadow-sm sm:p-5">
                 <div className="flex items-start gap-4">
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700 ring-1 ring-amber-200/80">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[1rem] border border-[#f59e0b]/20 bg-[#f59e0b]/10 text-[#ffd89c]">
                     <AlertTriangle className="h-5 w-5" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold text-slate-900">
+                    <p className="text-sm font-semibold text-[#fff2d3]">
                       {t('tailor.setupRequiredTitle')}
                     </p>
-                    <p className="mt-1 text-sm leading-6 text-slate-600">
+                    <p className="mt-1 text-sm leading-6 text-[#e3d8bf]">
                       {t('tailor.noApiKeyMessage')}
                     </p>
                     <Link
                       href="/settings"
-                      className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-amber-700 transition hover:text-amber-800"
+                      className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-[#ffd89c] transition hover:text-[#fff2d3]"
                     >
                       <Settings className="h-4 w-4" />
                       <span>{t('tailor.configureApiKey')}</span>
@@ -412,35 +459,46 @@ export default function TailorPage() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
           <div className="lg:col-span-4">
             <div className="sticky top-6 space-y-4">
-              <Card
-                variant="interactive"
-                className="border-white/80 bg-white/85 p-4 shadow-[0_18px_50px_-32px_rgba(15,23,42,0.35)] sm:p-5"
-              >
+              <Card className="border-[#f3ead7]/10 bg-[rgba(7,16,24,0.82)] p-4 shadow-[0_20px_60px_rgba(0,0,0,0.32)] sm:p-5">
                 <div className="space-y-5">
-                  <div className="space-y-1">
-                    <CardTitle className="text-lg font-semibold tracking-tight text-slate-900">
-                      {t('tailor.selectMasterLabel')}
+                  <div className="space-y-2">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-[#6ee7d8]/18 bg-[#6ee7d8]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#dffcf8]">
+                      <PanelTop className="h-3.5 w-3.5" />
+                      control panel
+                    </div>
+                    <CardTitle
+                      className="text-2xl font-black uppercase tracking-[-0.06em] text-[#f7efdd]"
+                      style={{ fontFamily: 'var(--font-playfair-display), "Times New Roman", serif' }}
+                    >
+                      Source and strategy
                     </CardTitle>
-                    <CardDescription className="text-sm text-slate-600">
-                      {t('tailor.promptDescription')}
+                    <CardDescription className="text-sm leading-6 text-[#cabfa8]">
+                      Keep the setup readable: first pick the source resume, then choose the
+                      prompt style that best matches the role.
                     </CardDescription>
                   </div>
 
-                  <MasterResumeSelector
-                    selectedResumeId={masterResumeId}
-                    onSelect={(resumeId, category) => {
-                      setMasterResumeId(resumeId);
-                      setMasterCategory(category);
-                      localStorage.setItem('last_used_master_resume_id', resumeId);
-                    }}
-                    label={t('tailor.selectMasterLabel') || 'Select Master Resume'}
-                    required={true}
-                  />
+                  <div className="rounded-[1.35rem] border border-[#f3ead7]/10 bg-white/[0.03] p-3">
+                    <div className="mb-3 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#9a9079]">
+                      <ShieldCheck className="h-3.5 w-3.5 text-[#6ee7d8]" />
+                      resume source
+                    </div>
+                    <MasterResumeSelector
+                      selectedResumeId={masterResumeId}
+                      onSelect={(resumeId, category) => {
+                        setMasterResumeId(resumeId);
+                        setMasterCategory(category);
+                        localStorage.setItem('last_used_master_resume_id', resumeId);
+                      }}
+                      label={t('tailor.selectMasterLabel') || 'Select Master Resume'}
+                      required={true}
+                    />
+                  </div>
 
-                  <div className="rounded-2xl border border-slate-200/70 bg-slate-50/80 p-3">
-                    <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                      <FileText className="h-3.5 w-3.5" />
-                      {t('tailor.promptLabel')}
+                  <div className="rounded-[1.35rem] border border-[#f3ead7]/10 bg-white/[0.03] p-3">
+                    <div className="mb-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#9a9079]">
+                      <Bot className="h-3.5 w-3.5 text-[#f59e0b]" />
+                      prompt strategy
                     </div>
                     <Dropdown
                       options={
@@ -475,10 +533,30 @@ export default function TailorPage() {
                   </div>
 
                   {masterCategory && (
-                    <div className="rounded-2xl border border-blue-100 bg-blue-50/70 px-3 py-2 text-sm text-blue-800">
-                      <span className="font-medium">{masterCategory}</span>
+                    <div className="rounded-[1.2rem] border border-[#6ee7d8]/18 bg-[#6ee7d8]/10 px-3 py-3 text-sm text-[#dffcf8]">
+                      <span className="text-[10px] uppercase tracking-[0.22em] text-[#9feee3]">
+                        category
+                      </span>
+                      <div className="mt-1 font-medium">{masterCategory}</div>
                     </div>
                   )}
+
+                  <div className="grid gap-3 rounded-[1.35rem] border border-[#f3ead7]/10 bg-[linear-gradient(180deg,rgba(245,158,11,0.08),rgba(255,255,255,0.02))] p-4">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[0.9rem] border border-[#f59e0b]/20 bg-[#f59e0b]/10 text-[#ffd89c]">
+                        <Radar className="h-4 w-4" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] uppercase tracking-[0.22em] text-[#b29d73]">
+                          workflow
+                        </p>
+                        <p className="mt-1 text-sm leading-6 text-[#e5d8bb]">
+                          A clearer layout for discussing changes: setup on the left, role brief on
+                          the right, preview decisions after generation.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
 
                   <div className="hidden lg:block">
                     <Button
@@ -486,10 +564,10 @@ export default function TailorPage() {
                       onClick={handleGenerate}
                       disabled={isGenerateDisabled}
                       className={cn(
-                        'h-12 w-full rounded-2xl text-sm font-semibold shadow-sm transition-all',
+                        'h-12 w-full rounded-[1.25rem] text-sm font-semibold shadow-sm transition-all',
                         isGenerateDisabled
-                          ? 'cursor-not-allowed bg-slate-200 text-slate-500 shadow-none'
-                          : 'bg-slate-900 text-white hover:bg-slate-800'
+                          ? 'cursor-not-allowed bg-white/10 text-[#9b9078] shadow-none'
+                          : 'border border-[#6ee7d8]/20 bg-[#6ee7d8]/12 text-[#ddfdf8] hover:bg-[#6ee7d8]/20'
                       )}
                     >
                       {isLoading ? (
@@ -518,14 +596,22 @@ export default function TailorPage() {
           </div>
 
           <div className="space-y-4 lg:col-span-8">
-            <Card className="border-white/80 bg-white/85 p-4 shadow-[0_18px_50px_-32px_rgba(15,23,42,0.35)] sm:p-5 lg:p-6">
-              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <Card className="border-[#f3ead7]/10 bg-[rgba(7,16,24,0.82)] p-4 shadow-[0_20px_60px_rgba(0,0,0,0.32)] sm:p-5 lg:p-6">
+              <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <CardTitle className="text-lg font-semibold tracking-tight text-slate-900">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-[#f59e0b]/18 bg-[#f59e0b]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#ffd89c]">
+                    <FileText className="h-3.5 w-3.5" />
+                    target role brief
+                  </div>
+                  <CardTitle
+                    className="mt-3 text-2xl font-black uppercase tracking-[-0.06em] text-[#f7efdd]"
+                    style={{ fontFamily: 'var(--font-playfair-display), "Times New Roman", serif' }}
+                  >
                     Job description
                   </CardTitle>
-                  <CardDescription className="mt-1 text-sm text-slate-600">
-                    {t('tailor.jobDescriptionPlaceholder')}
+                  <CardDescription className="mt-1 text-sm leading-6 text-[#cabfa8]">
+                    Paste the role details here. The input area is intentionally separated so the
+                    brief can be reviewed and discussed before generation.
                   </CardDescription>
                 </div>
 
@@ -533,25 +619,25 @@ export default function TailorPage() {
                   className={cn(
                     'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium shadow-sm',
                     currentLength > MAX_JD_LENGTH
-                      ? 'border-red-200 bg-red-50 text-red-700'
+                      ? 'border-[#fb7185]/20 bg-[#fb7185]/10 text-[#ffd0d8]'
                       : currentLength > JD_LENGTH_WARNING_THRESHOLD
-                        ? 'border-amber-200 bg-amber-50 text-amber-700'
-                        : 'border-slate-200 bg-slate-50 text-slate-600'
+                        ? 'border-[#f59e0b]/20 bg-[#f59e0b]/10 text-[#ffd89c]'
+                        : 'border-[#f3ead7]/12 bg-white/[0.03] text-[#d8ccb4]'
                   )}
                   suppressHydrationWarning
                 >
                   <span>{currentLength.toLocaleString()}</span>
-                  <span className="text-slate-400">/ {MAX_JD_LENGTH.toLocaleString()}</span>
+                  <span className="text-[#968b74]">/ {MAX_JD_LENGTH.toLocaleString()}</span>
                 </div>
               </div>
 
               <div className="space-y-4">
-                <div className="overflow-hidden rounded-[1.5rem] border border-slate-200/80 bg-white shadow-inner shadow-slate-100/60">
+                <div className="overflow-hidden rounded-[1.6rem] border border-[#f3ead7]/10 bg-[rgba(255,255,255,0.03)] shadow-inner">
                   <Textarea
                     placeholder={t('tailor.jobDescriptionPlaceholder')}
                     className={cn(
-                      'min-h-[360px] resize-none border-0 bg-transparent px-4 py-4 text-[15px] leading-7 text-slate-700 shadow-none focus-visible:ring-0 sm:px-5 sm:py-5 lg:min-h-[460px]',
-                      'placeholder:text-slate-400',
+                      'min-h-[360px] resize-none border-0 bg-transparent px-4 py-4 text-[15px] leading-7 text-[#efe6d3] shadow-none focus-visible:ring-0 sm:px-5 sm:py-5 lg:min-h-[460px]',
+                      'placeholder:text-[#8f846f]',
                       isLoading && 'cursor-not-allowed opacity-60'
                     )}
                     value={jobDescription}
@@ -561,36 +647,36 @@ export default function TailorPage() {
                   />
                 </div>
 
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="order-2 space-y-2 sm:order-1 sm:flex-1">
-                    <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_260px]">
+                  <div className="space-y-2">
+                    <div className="h-2 overflow-hidden rounded-full bg-white/10">
                       <div
                         className={cn(
                           'h-full rounded-full transition-all duration-300',
                           currentLength > MAX_JD_LENGTH
-                            ? 'bg-red-500'
+                            ? 'bg-[#fb7185]'
                             : currentLength > JD_LENGTH_WARNING_THRESHOLD
-                              ? 'bg-amber-500'
-                              : 'bg-blue-500'
+                              ? 'bg-[#f59e0b]'
+                              : 'bg-[#6ee7d8]'
                         )}
                         style={{ width: `${lengthProgress}%` }}
                       />
                     </div>
 
                     {jobDescription.length > 0 && jobDescription.length < 50 && (
-                      <div className="flex items-center gap-2 text-xs text-slate-500">
+                      <div className="flex items-center gap-2 text-xs text-[#a99d85]">
                         <span>Keep typing...</span>
                         <span className="flex gap-1">
                           <span
-                            className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400"
+                            className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#8f846f]"
                             style={{ animationDelay: '0ms' }}
                           />
                           <span
-                            className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400"
+                            className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#8f846f]"
                             style={{ animationDelay: '150ms' }}
                           />
                           <span
-                            className="h-1.5 w-1.5 animate-bounce rounded-full bg-slate-400"
+                            className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#8f846f]"
                             style={{ animationDelay: '300ms' }}
                           />
                         </span>
@@ -598,51 +684,70 @@ export default function TailorPage() {
                     )}
                   </div>
 
-                  <div className="order-1 lg:hidden">
-                    <Button
-                      size="lg"
-                      onClick={handleGenerate}
-                      disabled={isGenerateDisabled}
-                      className={cn(
-                        'h-11 w-full rounded-2xl px-5 text-sm font-semibold shadow-sm transition-all sm:w-auto',
-                        isGenerateDisabled
-                          ? 'cursor-not-allowed bg-slate-200 text-slate-500 shadow-none'
-                          : 'bg-slate-900 text-white hover:bg-slate-800'
-                      )}
-                    >
-                      {isLoading ? (
-                        <div className="flex items-center justify-center gap-2">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          <span>{t('common.processing')}</span>
-                        </div>
-                      ) : statusLoading ? (
-                        <div className="flex items-center justify-center gap-2">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          <span>{t('common.checking')}</span>
-                        </div>
-                      ) : !isLlmConfigured ? (
-                        <span>{t('tailor.configureApiKeyFirst')}</span>
-                      ) : (
-                        <div className="flex items-center justify-center gap-2">
-                          <Sparkles className="h-4 w-4" />
-                          <span>{t('tailor.generateTailored')}</span>
-                        </div>
-                      )}
-                    </Button>
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
+                    <div className="rounded-[1.25rem] border border-[#f3ead7]/10 bg-white/[0.03] px-4 py-3">
+                      <p className="text-[10px] uppercase tracking-[0.22em] text-[#9a9079]">
+                        section clarity
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-[#f7efdd]">
+                        Separate brief and controls
+                      </p>
+                    </div>
+                    <div className="rounded-[1.25rem] border border-[#f3ead7]/10 bg-white/[0.03] px-4 py-3">
+                      <p className="text-[10px] uppercase tracking-[0.22em] text-[#9a9079]">
+                        output intent
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-[#f7efdd]">
+                        Easier review in diff modal
+                      </p>
+                    </div>
                   </div>
+                </div>
+
+                <div className="lg:hidden">
+                  <Button
+                    size="lg"
+                    onClick={handleGenerate}
+                    disabled={isGenerateDisabled}
+                    className={cn(
+                      'h-11 w-full rounded-[1.2rem] px-5 text-sm font-semibold shadow-sm transition-all sm:w-auto',
+                      isGenerateDisabled
+                        ? 'cursor-not-allowed bg-white/10 text-[#9b9078] shadow-none'
+                        : 'border border-[#6ee7d8]/20 bg-[#6ee7d8]/12 text-[#ddfdf8] hover:bg-[#6ee7d8]/20'
+                    )}
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>{t('common.processing')}</span>
+                      </div>
+                    ) : statusLoading ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>{t('common.checking')}</span>
+                      </div>
+                    ) : !isLlmConfigured ? (
+                      <span>{t('tailor.configureApiKeyFirst')}</span>
+                    ) : (
+                      <div className="flex items-center justify-center gap-2">
+                        <ScanSearch className="h-4 w-4" />
+                        <span>{t('tailor.generateTailored')}</span>
+                      </div>
+                    )}
+                  </Button>
                 </div>
               </div>
             </Card>
 
             {error && (
-              <Card className="border-red-200/80 bg-red-50/90 p-4 shadow-[0_18px_50px_-36px_rgba(220,38,38,0.45)]">
+              <Card className="border-[#fb7185]/20 bg-[#fb7185]/10 p-4 shadow-[0_18px_50px_-36px_rgba(251,113,133,0.45)]">
                 <div className="flex items-start gap-3">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-100 text-red-700 ring-1 ring-red-200">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#fb7185]/20 bg-[#fb7185]/12 text-[#ffd1d8]">
                     <AlertTriangle className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-red-900">Error</p>
-                    <p className="mt-1 text-sm text-red-700">{error}</p>
+                    <p className="text-sm font-semibold text-[#fff0f3]">Error</p>
+                    <p className="mt-1 text-sm text-[#ffd1d8]">{error}</p>
                   </div>
                 </div>
               </Card>

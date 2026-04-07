@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Education } from '@/components/dashboard/resume-component';
-import { Plus, Trash2, GraduationCap, Calendar, School } from 'lucide-react';
+import { Plus, Trash2, GraduationCap, Calendar, School, NotebookPen } from 'lucide-react';
 import { useTranslations } from '@/lib/i18n';
 import {
   DndContext,
@@ -24,12 +24,17 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { DraggableListItem } from '../draggable-list-item';
-import { cn } from '@/lib/utils';
 
 interface EducationFormProps {
   data: Education[];
   onChange: (data: Education[]) => void;
 }
+
+const inputClassName =
+  'h-12 rounded-[1.1rem] border border-white/10 bg-white/5 px-4 text-sm text-white placeholder:text-slate-500 transition-all focus-visible:border-cyan-300/40 focus-visible:bg-slate-900/80 focus-visible:ring-2 focus-visible:ring-cyan-300/10';
+
+const textareaClassName =
+  'min-h-[110px] resize-none rounded-[1.25rem] border border-white/10 bg-white/5 p-4 text-sm text-white placeholder:text-slate-500 transition-all focus-visible:border-cyan-300/40 focus-visible:bg-slate-900/80 focus-visible:ring-2 focus-visible:ring-cyan-300/10';
 
 export const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) => {
   const { t } = useTranslations();
@@ -61,70 +66,93 @@ export const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) 
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {data.length > 0 && (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <SortableContext items={data.map((item) => item.id)} strategy={verticalListSortingStrategy}>
-            <div className="space-y-12">
-              {data.map((item) => (
+          <SortableContext
+            items={data.map((item) => item.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="space-y-6">
+              {data.map((item, index) => (
                 <DraggableListItem key={item.id} id={item.id}>
-                  <div className="group relative">
-                    <div className="absolute -left-12 top-2 flex flex-col gap-2 opacity-0 transition-all duration-300 group-hover:opacity-100">
+                  <div className="group relative overflow-hidden rounded-[1.9rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.76),rgba(15,23,42,0.54))] p-5 shadow-[0_20px_50px_rgba(2,6,23,0.28)] transition-all duration-300 hover:border-white/15 sm:p-6">
+                    <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(56,189,248,0.10),transparent_22%),radial-gradient(circle_at_bottom_left,rgba(251,191,36,0.10),transparent_18%)]" />
+
+                    <div className="relative mb-5 flex flex-wrap items-start justify-between gap-4 border-b border-white/10 pb-5">
+                      <div className="flex items-center gap-4">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-[1.2rem] border border-white/10 bg-[linear-gradient(135deg,rgba(96,165,250,0.18),rgba(34,211,238,0.12))] text-cyan-100">
+                          <GraduationCap className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <p className="font-sans text-[10px] font-bold uppercase tracking-[0.32em] text-cyan-200/80">
+                            academic chapter {String(index + 1).padStart(2, '0')}
+                          </p>
+                          <h4 className="mt-2 font-serif text-2xl font-black uppercase tracking-[0.08em] text-white">
+                            {item.institution || t('builder.forms.education.fields.institution')}
+                          </h4>
+                        </div>
+                      </div>
+
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => onChange(data.filter((i) => i.id !== item.id))}
-                        className="h-8 w-8 rounded-full bg-white text-rose-500 shadow-md hover:bg-rose-50"
+                        className="h-10 w-10 rounded-full border border-rose-300/15 bg-rose-300/10 text-rose-200 opacity-70 transition-all hover:bg-rose-300/20 hover:opacity-100"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2">
-                      <div className="space-y-2">
-                        <Label className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
-                          <School className="h-3 w-3" /> {t('builder.forms.education.fields.institution')}
+                    <div className="relative grid grid-cols-1 gap-4 md:grid-cols-2">
+                      <div className="rounded-[1.4rem] border border-white/10 bg-white/[0.035] p-3">
+                        <Label className="mb-3 flex items-center gap-2 px-1 font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-slate-400">
+                          <School className="h-3.5 w-3.5 text-cyan-200/80" />
+                          {t('builder.forms.education.fields.institution')}
                         </Label>
                         <Input
                           value={item.institution}
                           onChange={(e) => handleChange(item.id, 'institution', e.target.value)}
                           placeholder="e.g. Stanford University"
-                          className="h-12 border-none bg-slate-50 px-4 text-base ring-offset-transparent transition-all focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-indigo-500/20"
+                          className={inputClassName}
                         />
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
-                          <GraduationCap className="h-3 w-3" /> {t('builder.forms.education.fields.degree')}
+                      <div className="rounded-[1.4rem] border border-white/10 bg-white/[0.035] p-3">
+                        <Label className="mb-3 flex items-center gap-2 px-1 font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-slate-400">
+                          <GraduationCap className="h-3.5 w-3.5 text-fuchsia-200/80" />
+                          {t('builder.forms.education.fields.degree')}
                         </Label>
                         <Input
                           value={item.degree}
                           onChange={(e) => handleChange(item.id, 'degree', e.target.value)}
                           placeholder="e.g. Bachelor of Science in CS"
-                          className="h-12 border-none bg-slate-50 px-4 text-base ring-offset-transparent transition-all focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-indigo-500/20"
+                          className={inputClassName}
                         />
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-slate-400">
-                          <Calendar className="h-3 w-3" /> {t('builder.genericItemForm.fields.years')}
+                      <div className="rounded-[1.4rem] border border-white/10 bg-white/[0.035] p-3 md:col-span-2">
+                        <Label className="mb-3 flex items-center gap-2 px-1 font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-slate-400">
+                          <Calendar className="h-3.5 w-3.5 text-amber-200/80" />
+                          {t('builder.genericItemForm.fields.years')}
                         </Label>
                         <Input
                           value={item.years}
                           onChange={(e) => handleChange(item.id, 'years', e.target.value)}
                           placeholder="2018 — 2022"
-                          className="h-12 border-none bg-slate-50 px-4 text-base ring-offset-transparent transition-all focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-indigo-500/20"
+                          className={inputClassName}
                         />
                       </div>
 
-                      <div className="space-y-2 md:col-span-2">
-                        <Label className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
+                      <div className="rounded-[1.4rem] border border-white/10 bg-white/[0.035] p-3 md:col-span-2">
+                        <Label className="mb-3 flex items-center gap-2 px-1 font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-slate-400">
+                          <NotebookPen className="h-3.5 w-3.5 text-emerald-200/80" />
                           {t('builder.forms.education.fields.descriptionOptional')}
                         </Label>
                         <Textarea
                           value={item.description}
                           onChange={(e) => handleChange(item.id, 'description', e.target.value)}
-                          className="min-h-[100px] resize-none border-none bg-slate-50 p-4 text-base ring-offset-transparent transition-all focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-indigo-500/20"
+                          className={textareaClassName}
                           placeholder={t('builder.forms.education.placeholders.description')}
                         />
                       </div>
@@ -140,23 +168,28 @@ export const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) 
       {data.length === 0 ? (
         <button
           onClick={handleAdd}
-          className="group flex w-full flex-col items-center justify-center rounded-[2rem] border-2 border-dashed border-slate-200 bg-white py-16 transition-all hover:border-indigo-300 hover:bg-indigo-50/30"
+          className="group relative flex w-full flex-col items-center justify-center overflow-hidden rounded-[2rem] border border-dashed border-cyan-300/25 bg-[linear-gradient(180deg,rgba(15,23,42,0.72),rgba(15,23,42,0.48))] px-6 py-16 text-center transition-all hover:border-cyan-300/40 hover:bg-[linear-gradient(180deg,rgba(15,23,42,0.82),rgba(15,23,42,0.58))]"
         >
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50 text-slate-400 transition-colors group-hover:bg-indigo-100 group-hover:text-indigo-600">
-            <Plus className="h-6 w-6" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.12),transparent_30%),radial-gradient(circle_at_bottom,rgba(251,191,36,0.10),transparent_28%)]" />
+          <div className="relative mb-5 flex h-16 w-16 items-center justify-center rounded-[1.6rem] border border-white/10 bg-white/5 text-cyan-100 transition-all group-hover:scale-105 group-hover:bg-cyan-300/10">
+            <Plus className="h-7 w-7" />
           </div>
-          <p className="text-sm font-semibold text-slate-500 group-hover:text-indigo-600">
+          <p className="relative font-sans text-[10px] font-bold uppercase tracking-[0.34em] text-slate-400">
+            education archive
+          </p>
+          <p className="relative mt-3 text-base font-semibold text-white">
             {t('builder.forms.education.addFirstSchool')}
           </p>
         </button>
       ) : (
-        <div className="flex justify-center pt-4">
+        <div className="flex justify-center pt-2">
           <Button
             onClick={handleAdd}
             variant="ghost"
-            className="h-12 gap-2 rounded-2xl bg-white px-6 font-semibold text-indigo-600 shadow-sm border border-slate-100 hover:bg-indigo-50"
+            className="h-12 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-6 font-sans text-xs font-bold uppercase tracking-[0.24em] text-cyan-100 transition-all hover:border-cyan-300/35 hover:bg-cyan-300/15"
           >
-            <Plus className="h-4 w-4" /> {t('builder.forms.education.addSchool')}
+            <Plus className="mr-2 h-4 w-4" />
+            {t('builder.forms.education.addSchool')}
           </Button>
         </div>
       )}

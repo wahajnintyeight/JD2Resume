@@ -50,13 +50,9 @@ interface ResumeFormProps {
 export const ResumeForm: React.FC<ResumeFormProps> = ({ resumeData, onUpdate }) => {
   const { t } = useTranslations();
 
-  // Get section metadata, falling back to defaults
   const allSections = getSectionMeta(resumeData);
-  // Use getAllSections for form - shows ALL sections including hidden ones
-  // (Hidden sections are editable but marked with visual indicator)
   const sortedAllSections = getAllSections(resumeData);
 
-  // Handle section metadata updates
   const handleSectionMetaUpdate = (sections: SectionMeta[]) => {
     onUpdate({
       ...resumeData,
@@ -64,16 +60,13 @@ export const ResumeForm: React.FC<ResumeFormProps> = ({ resumeData, onUpdate }) 
     });
   };
 
-  // Handle adding a new custom section
   const handleAddSection = (displayName: string, sectionType: SectionType) => {
     const newSection = createCustomSection(allSections, displayName, sectionType);
 
-    // Initialize section metadata if not present
     const currentMeta = resumeData.sectionMeta?.length
       ? resumeData.sectionMeta
       : DEFAULT_SECTION_META;
 
-    // Initialize custom section data
     const newCustomSection: CustomSection = {
       sectionType,
       text: sectionType === 'text' ? '' : undefined,
@@ -91,7 +84,6 @@ export const ResumeForm: React.FC<ResumeFormProps> = ({ resumeData, onUpdate }) 
     });
   };
 
-  // Handler for section rename
   const handleRename = (sectionId: string, newName: string) => {
     const updatedSections = allSections.map((s) =>
       s.id === sectionId ? { ...s, displayName: newName } : s
@@ -99,16 +91,13 @@ export const ResumeForm: React.FC<ResumeFormProps> = ({ resumeData, onUpdate }) 
     handleSectionMetaUpdate(updatedSections);
   };
 
-  // Handler for section delete
   const handleDelete = (sectionId: string) => {
     const section = allSections.find((s) => s.id === sectionId);
     if (!section) return;
 
     if (section.isDefault) {
-      // For default sections, just hide them
       handleToggleVisibility(sectionId);
     } else {
-      // For custom sections, remove from both sectionMeta and customSections
       const updatedSections = allSections.filter((s) => s.id !== sectionId);
       const updatedCustomSections = { ...resumeData.customSections };
       delete updatedCustomSections[section.key];
@@ -121,7 +110,6 @@ export const ResumeForm: React.FC<ResumeFormProps> = ({ resumeData, onUpdate }) 
     }
   };
 
-  // Handler for section visibility toggle
   const handleToggleVisibility = (sectionId: string) => {
     const updatedSections = allSections.map((s) =>
       s.id === sectionId ? { ...s, isVisible: !s.isVisible } : s
@@ -129,7 +117,6 @@ export const ResumeForm: React.FC<ResumeFormProps> = ({ resumeData, onUpdate }) 
     handleSectionMetaUpdate(updatedSections);
   };
 
-  // Handler for moving section up
   const handleMoveUp = (sectionId: string) => {
     const sorted = [...allSections].sort((a, b) => a.order - b.order);
     const index = sorted.findIndex((s) => s.id === sectionId);
@@ -145,7 +132,6 @@ export const ResumeForm: React.FC<ResumeFormProps> = ({ resumeData, onUpdate }) 
     handleSectionMetaUpdate(updatedSections);
   };
 
-  // Handler for moving section down
   const handleMoveDown = (sectionId: string) => {
     const sorted = [...allSections].sort((a, b) => a.order - b.order);
     const index = sorted.findIndex((s) => s.id === sectionId);
@@ -161,7 +147,6 @@ export const ResumeForm: React.FC<ResumeFormProps> = ({ resumeData, onUpdate }) 
     handleSectionMetaUpdate(updatedSections);
   };
 
-  // Configure drag-and-drop sensors
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -169,7 +154,6 @@ export const ResumeForm: React.FC<ResumeFormProps> = ({ resumeData, onUpdate }) 
     })
   );
 
-  // Handler for drag end event
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
@@ -181,21 +165,17 @@ export const ResumeForm: React.FC<ResumeFormProps> = ({ resumeData, onUpdate }) 
 
     if (oldIndex === -1 || newIndex === -1) return;
 
-    // Prevent moving above personalInfo
     if (sorted[newIndex].id === 'personalInfo') return;
 
-    // Create new order by swapping the order values
     const updatedSections = allSections.map((section) => {
       if (section.id === active.id) {
         return { ...section, order: sorted[newIndex].order };
       }
       if (oldIndex < newIndex) {
-        // Moving down: shift items up
         if (section.order > sorted[oldIndex].order && section.order <= sorted[newIndex].order) {
           return { ...section, order: section.order - 1 };
         }
       } else {
-        // Moving up: shift items down
         if (section.order >= sorted[newIndex].order && section.order < sorted[oldIndex].order) {
           return { ...section, order: section.order + 1 };
         }
@@ -206,11 +186,9 @@ export const ResumeForm: React.FC<ResumeFormProps> = ({ resumeData, onUpdate }) 
     handleSectionMetaUpdate(updatedSections);
   };
 
-  // Render default section forms
   const renderDefaultSection = (section: SectionMeta, isFirst: boolean, isLast: boolean) => {
     const isPersonalInfo = section.id === 'personalInfo';
 
-    // Render content based on section key
     const renderContent = () => {
       switch (section.key) {
         case 'personalInfo':
@@ -273,13 +251,10 @@ export const ResumeForm: React.FC<ResumeFormProps> = ({ resumeData, onUpdate }) 
       }
     };
 
-    // PersonalInfo is special - render without wrapper
     if (isPersonalInfo) {
       return renderContent();
     }
 
-    // Other default sections get SectionHeader with visibility/reorder controls
-    // The form components provide their own container styling
     return (
       <SectionHeader
         section={section}
@@ -297,7 +272,6 @@ export const ResumeForm: React.FC<ResumeFormProps> = ({ resumeData, onUpdate }) 
     );
   };
 
-  // Render custom section forms
   const renderCustomSection = (section: SectionMeta, isFirst: boolean, isLast: boolean) => {
     const customSection = resumeData.customSections?.[section.key];
 
@@ -351,7 +325,7 @@ export const ResumeForm: React.FC<ResumeFormProps> = ({ resumeData, onUpdate }) 
 
         default:
           return (
-            <div className="text-gray-500">
+            <div className="rounded-[1.5rem] border border-white/10 bg-white/5 px-5 py-4 text-sm text-slate-400">
               {t('builder.customSections.unknownSectionType', { type: section.sectionType })}
             </div>
           );
@@ -381,7 +355,7 @@ export const ResumeForm: React.FC<ResumeFormProps> = ({ resumeData, onUpdate }) 
         items={sortedAllSections.map((s) => s.id)}
         strategy={verticalListSortingStrategy}
       >
-        <div className="space-y-8 pb-20">
+        <div className="space-y-10 pb-24">
           {sortedAllSections.map((section, index) => {
             const isFirst = index === 0 || section.id === 'personalInfo';
             const isLast = index === sortedAllSections.length - 1;
@@ -393,14 +367,20 @@ export const ResumeForm: React.FC<ResumeFormProps> = ({ resumeData, onUpdate }) 
 
             return (
               <DraggableSectionWrapper key={section.id} id={section.id} disabled={isPersonalInfo}>
-                {sectionContent}
+                <div className="relative">
+                  {!isPersonalInfo && (
+                    <div className="pointer-events-none absolute -left-4 top-10 hidden h-[calc(100%-2.5rem)] w-px bg-gradient-to-b from-cyan-300/30 via-white/10 to-transparent xl:block" />
+                  )}
+                  {sectionContent}
+                </div>
               </DraggableSectionWrapper>
             );
           })}
 
-          {/* Add Section Button */}
           <div className="flex justify-center pt-4">
-            <AddSectionButton onAdd={handleAddSection} />
+            <div className="w-full max-w-md rounded-[1.8rem] border border-dashed border-cyan-300/20 bg-[linear-gradient(180deg,rgba(15,23,42,0.42),rgba(15,23,42,0.22))] px-4 py-5 shadow-[0_14px_40px_rgba(2,6,23,0.22)]">
+              <AddSectionButton onAdd={handleAddSection} />
+            </div>
           </div>
         </div>
       </SortableContext>

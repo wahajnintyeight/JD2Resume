@@ -4,6 +4,7 @@ import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useTranslations } from '@/lib/i18n';
+import { ListChecks, Sparkles } from 'lucide-react';
 
 interface GenericListFormProps {
   items: string[];
@@ -29,7 +30,6 @@ export const GenericListForm: React.FC<GenericListFormProps> = ({
   const finalPlaceholder = placeholder ?? t('builder.customSections.itemsPlaceholder');
 
   const handleChange = (value: string) => {
-    // Split by newlines, filter empty lines
     const newItems = value.split('\n').filter((item) => item.trim() !== '');
     onChange(newItems);
   };
@@ -38,7 +38,6 @@ export const GenericListForm: React.FC<GenericListFormProps> = ({
     return arr?.join('\n') || '';
   };
 
-  // Explicitly allow Enter key to create newlines
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter') {
       e.stopPropagation();
@@ -46,20 +45,57 @@ export const GenericListForm: React.FC<GenericListFormProps> = ({
   };
 
   return (
-    <div className="space-y-2">
-      <Label className="font-mono text-xs uppercase tracking-wider text-gray-500">
-        {finalLabel}
-      </Label>
-      <p className="font-mono text-xs text-blue-700 border-l-2 border-blue-700 pl-3 mb-2">
-        {t('builder.additionalForm.instructions')}
-      </p>
-      <Textarea
-        value={formatItems(items)}
-        onChange={(e) => handleChange(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder={finalPlaceholder}
-        className="min-h-[150px] rounded-lg border border-slate-200 bg-white text-black shadow-sm focus-visible:border-blue-700 focus-visible:ring-0 focus-visible:ring-offset-0"
-      />
-    </div>
+    <section className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.82),rgba(15,23,42,0.58))] p-6 shadow-[0_24px_60px_rgba(2,6,23,0.3)] sm:p-7">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_24%),radial-gradient(circle_at_bottom_right,rgba(251,191,36,0.10),transparent_22%)]" />
+
+      <div className="relative mb-6 flex flex-col gap-5 border-b border-white/10 pb-6 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex items-start gap-4">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.45rem] border border-white/10 bg-[linear-gradient(135deg,rgba(56,189,248,0.18),rgba(34,197,94,0.12))] text-cyan-100 shadow-[0_10px_30px_rgba(15,23,42,0.3)]">
+            <ListChecks className="h-6 w-6" />
+          </div>
+          <div>
+            <p className="font-sans text-[10px] font-bold uppercase tracking-[0.34em] text-cyan-200/80">
+              modular entries
+            </p>
+            <Label className="mt-2 block font-serif text-3xl font-black uppercase tracking-[0.08em] text-white">
+              {finalLabel}
+            </Label>
+          </div>
+        </div>
+
+        <div className="max-w-md rounded-[1.45rem] border border-white/10 bg-white/5 px-4 py-3">
+          <p className="font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-slate-400">
+            entry rhythm
+          </p>
+          <p className="mt-2 text-sm leading-6 text-slate-300">
+            Use one line per item to keep the section breathable and easier to scan.
+          </p>
+        </div>
+      </div>
+
+      <div className="relative rounded-[1.6rem] border border-white/10 bg-white/[0.035] p-4">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-[1rem] border border-white/10 bg-white/5 text-emerald-100">
+            <Sparkles className="h-4 w-4" />
+          </div>
+          <div>
+            <p className="font-sans text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500">
+              newline separated
+            </p>
+            <p className="mt-1 text-sm text-slate-300">
+              Press Enter to create a new item without breaking the form flow.
+            </p>
+          </div>
+        </div>
+
+        <Textarea
+          value={formatItems(items)}
+          onChange={(e) => handleChange(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder={finalPlaceholder}
+          className="min-h-[180px] resize-none rounded-[1.2rem] border border-white/10 bg-white/5 p-4 text-sm text-white placeholder:text-slate-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-all focus-visible:border-cyan-300/40 focus-visible:bg-slate-900/80 focus-visible:ring-2 focus-visible:ring-cyan-300/10"
+        />
+      </div>
+    </section>
   );
 };

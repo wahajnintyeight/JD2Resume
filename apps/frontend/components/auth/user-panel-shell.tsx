@@ -41,45 +41,36 @@ function NavLink({
       href={href}
       onClick={onClick}
       className={cn(
-        'group relative flex items-center overflow-hidden transition-all duration-500 ease-in-out',
+        'group relative flex items-center overflow-hidden transition-all duration-300 ease-out',
         isCollapsed
-          ? 'h-[64px] w-[64px] justify-center rounded-[1.8rem]'
-          : 'h-14 w-full rounded-[1.4rem] px-3',
+          ? 'h-12 w-12 justify-center rounded-xl'
+          : 'h-11 w-full rounded-xl px-3',
         isActive
-          ? 'bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-600 text-white shadow-xl'
-          : 'border border-white/60 bg-white/40 text-slate-500 hover:bg-white/80 hover:text-slate-900'
+          ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20'
+          : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white'
       )}
     >
-      <div
+      <Icon
         className={cn(
-          'flex shrink-0 items-center justify-center transition-all duration-500',
-          isCollapsed ? 'h-11 w-11' : 'mr-3 h-10 w-10',
-          isActive
-            ? 'rounded-2xl bg-white/20'
-            : 'rounded-2xl bg-slate-100/50 group-hover:bg-white'
+          'shrink-0 transition-all duration-300',
+          isCollapsed ? 'h-5 w-5' : 'mr-3 h-4.5 w-4.5',
+          isActive && 'drop-shadow-sm'
         )}
-      >
-        <Icon
-          className={cn(
-            'transition-transform duration-500',
-            isCollapsed ? 'h-6 w-6' : 'h-5 w-5'
-          )}
-        />
-      </div>
+      />
 
       <span
         className={cn(
-          'whitespace-nowrap text-sm font-semibold transition-all duration-500',
+          'whitespace-nowrap text-sm font-bold transition-all duration-300',
           isCollapsed
-            ? 'w-0 translate-x-4 scale-95 opacity-0'
-            : 'w-auto translate-x-0 scale-100 opacity-100'
+            ? 'w-0 translate-x-4 opacity-0'
+            : 'w-auto translate-x-0 opacity-100'
         )}
       >
         {children}
       </span>
 
       {isActive && !isCollapsed && (
-        <div className="ml-auto h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
+        <div className="ml-auto h-1.5 w-1.5 rounded-full bg-white/80 shadow-sm" />
       )}
     </Link>
   );
@@ -100,18 +91,18 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
 
   if (status === 'loading') {
     return (
-      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top,#dbeafe_0%,#f8fafc_45%,#eef2ff_100%)] p-6">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(59,130,246,0.15),transparent_28%),radial-gradient(circle_at_80%_0%,rgba(168,85,247,0.12),transparent_26%),radial-gradient(circle_at_50%_100%,rgba(14,165,233,0.1),transparent_30%)]" />
-        <div className="relative flex flex-col items-center gap-5 rounded-[2rem] border border-white/60 bg-white/70 px-10 py-9 shadow-[0_30px_90px_rgba(15,23,42,0.12)] backdrop-blur-2xl">
-          <div className="relative flex h-16 w-16 items-center justify-center rounded-[1.75rem] bg-[linear-gradient(135deg,#2563eb,#6366f1,#8b5cf6)] shadow-[0_24px_50px_rgba(79,70,229,0.3)]">
+      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-100 dark:bg-[#050505] p-6">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(99,102,241,0.08),transparent)] dark:bg-[radial-gradient(circle_at_20%_20%,rgba(99,102,241,0.15),transparent)]" />
+        <div className="relative flex flex-col items-center gap-5 rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#0A0A0A] px-10 py-9 shadow-2xl">
+          <div className="relative flex h-16 w-16 items-center justify-center rounded-xl bg-indigo-600 shadow-lg shadow-indigo-500/30">
             <div className="h-8 w-8 rounded-full border-[3px] border-white/90 border-t-transparent animate-spin" />
           </div>
           <div className="space-y-1 text-center">
-            <p className="font-sans text-base font-semibold tracking-tight text-slate-900">
-              Syncing your workspace
+            <p className="font-mono text-sm font-bold tracking-tight text-slate-900 dark:text-white uppercase">
+              Syncing Workspace
             </p>
-            <p className="font-sans text-sm text-slate-500">
-              Preparing your dashboard with your latest resume data.
+            <p className="font-sans text-sm text-slate-600 dark:text-slate-400">
+              Loading your professional pipeline...
             </p>
           </div>
         </div>
@@ -125,41 +116,36 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
 
   if (!user) {
     return (
-      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[radial-gradient(circle_at_top,#dbeafe_0%,#f8fafc_42%,#eef2ff_100%)] p-6">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_15%,rgba(37,99,235,0.16),transparent_24%),radial-gradient(circle_at_85%_10%,rgba(192,132,252,0.16),transparent_22%),radial-gradient(circle_at_60%_100%,rgba(56,189,248,0.12),transparent_28%)]" />
+      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-100 dark:bg-[#050505] p-6">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_15%,rgba(99,102,241,0.08),transparent)] dark:bg-[radial-gradient(circle_at_15%_15%,rgba(99,102,241,0.15),transparent)]" />
         <Card
-          variant="glass"
-          className="relative w-full max-w-lg overflow-hidden rounded-[2rem] border border-white/70 bg-white/72 p-0 shadow-[0_40px_120px_rgba(15,23,42,0.16)] backdrop-blur-2xl"
+          className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#0A0A0A] p-0 shadow-2xl"
         >
-          <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-sky-300/80 to-transparent" />
-          <div className="absolute -right-10 top-10 h-36 w-36 rounded-full bg-fuchsia-200/40 blur-3xl" />
-          <div className="absolute -left-8 bottom-6 h-32 w-32 rounded-full bg-sky-200/40 blur-3xl" />
           <div className="relative space-y-8 p-10 text-center md:p-12">
-            <div className="mx-auto flex h-18 w-18 items-center justify-center rounded-[1.75rem] bg-[linear-gradient(135deg,#2563eb,#6366f1,#a855f7)] text-white shadow-[0_28px_60px_rgba(79,70,229,0.28)]">
-              <Zap className="h-8 w-8 fill-current" />
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-lg shadow-indigo-500/30">
+              <Zap className="h-7 w-7" />
             </div>
             <div className="space-y-3">
-              <span className="inline-flex rounded-full border border-sky-100 bg-white/70 px-4 py-1 text-xs font-semibold uppercase tracking-[0.22em] text-sky-700 shadow-sm">
-                Resume workspace
+              <span className="inline-flex rounded-full border border-indigo-200 dark:border-indigo-500/20 bg-indigo-50 dark:bg-indigo-500/10 px-4 py-1 text-[10px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400">
+                Professional Engine
               </span>
               <div className="space-y-2">
-                <h2 className="font-sans text-3xl font-bold tracking-tight text-slate-950 md:text-4xl">
-                  Welcome back
+                <h2 className="font-sans text-3xl font-bold italic tracking-tight text-slate-900 dark:text-white md:text-4xl">
+                  Access Required<span className="text-indigo-600">.</span>
                 </h2>
-                <p className="mx-auto max-w-sm font-sans text-sm leading-6 text-slate-500 md:text-[15px]">
-                  Continue tailoring, refining, and tracking your resume flow with a softer,
-                  polished workspace.
+                <p className="mx-auto max-w-sm font-sans text-sm leading-6 text-slate-600 dark:text-slate-400">
+                  Authenticate to access your resume pipeline, builder workspace, and AI-powered tailoring system.
                 </p>
               </div>
             </div>
-            <div className="grid gap-3 rounded-[1.5rem] border border-white/70 bg-white/55 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]">
+            <div className="space-y-3">
               <a href={loginUrl} className="block">
-                <Button className="h-13 w-full rounded-[1.35rem] text-base font-semibold shadow-[0_24px_50px_rgba(79,70,229,0.22)]">
+                <Button className="h-12 w-full rounded-xl text-base font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20">
                   Sign in with Google
                 </Button>
               </a>
-              <p className="px-2 text-xs leading-5 text-slate-500">
-                Secure sign-in unlocks your dashboard, builder, and tailored resume workflows.
+              <p className="px-2 text-xs leading-5 text-slate-500 dark:text-slate-500 font-medium">
+                Secure OAuth authentication • End-to-end encrypted
               </p>
             </div>
           </div>
@@ -176,17 +162,17 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
   ];
 
   return (
-    <div className="flex h-screen w-full flex-col overflow-hidden bg-[radial-gradient(circle_at_top,#eff6ff_0%,#f8fafc_38%,#eef2ff_100%)] md:flex-row">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_20%,rgba(59,130,246,0.1),transparent_24%),radial-gradient(circle_at_100%_0%,rgba(168,85,247,0.09),transparent_22%),radial-gradient(circle_at_50%_100%,rgba(14,165,233,0.08),transparent_24%)]" />
+    <div className="flex h-screen w-full flex-col overflow-hidden bg-slate-50 dark:bg-[#050505] md:flex-row">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_10%_20%,rgba(99,102,241,0.06),transparent)] dark:bg-[radial-gradient(circle_at_10%_20%,rgba(99,102,241,0.12),transparent)]" />
 
-      <header className="relative z-20 flex h-20 shrink-0 items-center justify-between border-b border-white/60 bg-white/68 px-5 backdrop-blur-2xl md:hidden">
+      <header className="relative z-20 flex h-16 shrink-0 items-center justify-between border-b border-slate-200 dark:border-white/10 bg-white dark:bg-[#0A0A0A] px-5 md:hidden">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-[1.35rem] bg-[linear-gradient(135deg,#2563eb,#6366f1,#a855f7)] text-white shadow-[0_18px_35px_rgba(79,70,229,0.28)]">
-            <Zap className="h-5 w-5 fill-current" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-500/20">
+            <Zap className="h-5 w-5" />
           </div>
           <div>
-            <div className="font-sans text-lg font-bold tracking-tight text-slate-950">JD2Resume</div>
-            <div className="text-xs font-medium text-slate-500">Personal workspace</div>
+            <div className="font-sans text-base font-bold italic tracking-tight text-slate-900 dark:text-white">JD2Resume</div>
+            <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-500">Workspace</div>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -194,55 +180,55 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
             variant="ghost"
             size="icon"
             onClick={handleLogout}
-            className="rounded-[1.15rem] border border-white/60 bg-white/65 text-slate-500 shadow-[0_10px_24px_rgba(15,23,42,0.06)] hover:bg-rose-50 hover:text-rose-600"
+            className="rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400 hover:border-rose-200 dark:hover:border-rose-500/20"
             title="Log out"
           >
-            <LogOut className="h-5 w-5" />
+            <LogOut className="h-4.5 w-4.5" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setIsMobileMenuOpen(true)}
-            className="rounded-[1.15rem] border border-white/60 bg-white/65 text-slate-600 shadow-[0_10px_24px_rgba(15,23,42,0.06)] hover:bg-white hover:text-slate-950"
+            className="rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white"
           >
-            <Menu className="h-5.5 w-5.5" />
+            <Menu className="h-5 w-5" />
           </Button>
         </div>
       </header>
 
       <aside
         className={cn(
-          'relative z-20 hidden h-full shrink-0 flex-col border-r border-white/40 bg-white/40 backdrop-blur-3xl transition-all duration-500 ease-in-out md:flex',
-          isCollapsed ? 'w-28 items-center' : 'w-80'
+          'relative z-20 hidden h-full shrink-0 flex-col border-r border-slate-200 dark:border-white/10 bg-white dark:bg-[#0A0A0A] transition-all duration-500 ease-in-out md:flex',
+          isCollapsed ? 'w-20 items-center' : 'w-72'
         )}
       >
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="absolute -right-4 top-12 z-40 flex h-8 w-8 items-center justify-center rounded-full border border-white/80 bg-white shadow-lg text-slate-400 transition-colors hover:text-indigo-600"
+          className="absolute -right-3 top-12 z-40 flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 dark:border-white/10 bg-white dark:bg-[#0A0A0A] shadow-lg text-slate-400 dark:text-slate-500 transition-colors hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-500/20"
         >
-          {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+          {isCollapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
         </button>
 
         <div
           className={cn(
-            'flex h-full w-full flex-col gap-8 p-5',
+            'flex h-full w-full flex-col gap-6 p-5',
             isCollapsed && 'items-center'
           )}
         >
           <div
             className={cn(
               'flex items-center gap-3 transition-all duration-500',
-              isCollapsed ? 'justify-center' : 'px-2'
+              isCollapsed ? 'justify-center' : 'px-1'
             )}
           >
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-600 to-violet-600 text-white shadow-lg">
-              <Zap size={24} fill="currentColor" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-500/20">
+              <Zap size={20} />
             </div>
             {!isCollapsed && (
               <div className="flex flex-col transition-all duration-500">
-                <span className="text-xl font-bold tracking-tight text-slate-900">JD2Resume</span>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                  Career Studio
+                <span className="text-lg font-bold italic tracking-tight text-slate-900 dark:text-white">JD2Resume</span>
+                <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-500 dark:text-slate-500">
+                  Professional Engine
                 </span>
               </div>
             )}
@@ -250,10 +236,10 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
 
           <div
             className={cn(
-              'relative group flex items-center overflow-hidden border border-white/60 bg-white/50 shadow-sm backdrop-blur-md transition-all duration-500',
+              'relative group flex items-center overflow-hidden border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 transition-all duration-500',
               isCollapsed
-                ? 'h-16 w-16 justify-center rounded-[1.8rem]'
-                : 'h-20 w-full rounded-[1.5rem] px-4'
+                ? 'h-12 w-12 justify-center rounded-xl'
+                : 'h-16 w-full rounded-xl px-3'
             )}
           >
             <div className="relative shrink-0">
@@ -262,30 +248,30 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
                   src={user.picture}
                   alt="Profile"
                   className={cn(
-                    'rounded-2xl object-cover transition-all duration-500',
-                    isCollapsed ? 'h-11 w-11' : 'h-12 w-12'
+                    'rounded-lg object-cover transition-all duration-500',
+                    isCollapsed ? 'h-8 w-8' : 'h-10 w-10'
                   )}
                 />
               ) : (
                 <div
                   className={cn(
-                    'flex items-center justify-center rounded-2xl bg-white/90 transition-all duration-500',
-                    isCollapsed ? 'h-11 w-11' : 'h-12 w-12'
+                    'flex items-center justify-center rounded-lg bg-slate-100 dark:bg-white/10 transition-all duration-500',
+                    isCollapsed ? 'h-8 w-8' : 'h-10 w-10'
                   )}
                 >
-                  <UserIcon className="h-5 w-5 text-slate-400" />
+                  <UserIcon className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                 </div>
               )}
-              <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500 shadow-sm" />
+              <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white dark:border-[#0A0A0A] bg-emerald-500" />
             </div>
 
             {!isCollapsed && (
               <div className="ml-3 flex min-w-0 flex-col transition-all duration-500">
-                <span className="truncate text-sm font-bold text-slate-900">
+                <span className="truncate text-sm font-bold text-slate-900 dark:text-white">
                   {user.name || user.email?.split('@')[0]}
                 </span>
-                <span className="mt-1 w-fit rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-medium text-emerald-600">
-                  PRO
+                <span className="mt-0.5 w-fit rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+                  Active
                 </span>
               </div>
             )}
@@ -309,14 +295,14 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
             onClick={handleLogout}
             variant="ghost"
             className={cn(
-              'border border-white/60 bg-white/40 transition-all duration-500 hover:border-rose-100 hover:bg-rose-50 hover:text-rose-600',
+              'border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 transition-all duration-500 hover:border-rose-200 dark:hover:border-rose-500/20 hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400',
               isCollapsed
-                ? 'h-14 w-14 rounded-2xl p-0'
-                : 'h-12 w-full justify-start gap-3 rounded-2xl px-4'
+                ? 'h-11 w-11 rounded-xl p-0'
+                : 'h-11 w-full justify-start gap-3 rounded-xl px-3'
             )}
           >
-            <LogOut size={20} />
-            {!isCollapsed && <span className="text-sm font-semibold">Sign Out</span>}
+            <LogOut size={18} />
+            {!isCollapsed && <span className="text-sm font-bold">Sign Out</span>}
           </Button>
         </div>
       </aside>
@@ -324,50 +310,49 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
           <div
-            className="fixed inset-0 bg-slate-950/28 backdrop-blur-md animate-in fade-in duration-300"
+            className="fixed inset-0 bg-slate-950/40 backdrop-blur-sm animate-in fade-in duration-300"
             onClick={() => setIsMobileMenuOpen(false)}
           />
-          <aside className="relative flex w-[22rem] max-w-[88%] flex-col border-r border-white/65 bg-white/80 p-6 shadow-[0_30px_90px_rgba(15,23,42,0.22)] backdrop-blur-2xl animate-in slide-in-from-left duration-500">
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-white/70 to-transparent" />
+          <aside className="relative flex w-[20rem] max-w-[85%] flex-col border-r border-slate-200 dark:border-white/10 bg-white dark:bg-[#0A0A0A] p-6 shadow-2xl animate-in slide-in-from-left duration-500">
             <button
               onClick={() => setIsMobileMenuOpen(false)}
-              className="absolute right-5 top-5 flex h-11 w-11 items-center justify-center rounded-[1.2rem] border border-white/70 bg-white/90 text-slate-500 shadow-[0_12px_28px_rgba(15,23,42,0.08)] transition hover:text-slate-950"
+              className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-400 transition hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10"
             >
-              <X className="h-5 w-5" />
+              <X className="h-4.5 w-4.5" />
             </button>
 
             <div className="relative mb-8 flex items-center gap-3 pt-5">
-              <div className="flex h-13 w-13 items-center justify-center rounded-[1.45rem] bg-[linear-gradient(135deg,#2563eb,#6366f1,#a855f7)] text-white shadow-[0_20px_40px_rgba(79,70,229,0.26)]">
-                <Zap className="h-6 w-6 fill-current" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-500/20">
+                <Zap className="h-6 w-6" />
               </div>
               <div>
-                <span className="block font-sans text-2xl font-bold tracking-tight text-slate-950">
+                <span className="block font-sans text-xl font-bold italic tracking-tight text-slate-900 dark:text-white">
                   JD2Resume
                 </span>
-                <span className="block text-xs uppercase tracking-[0.2em] text-slate-400">
-                  Personal workspace
+                <span className="block text-[9px] font-bold uppercase tracking-[0.15em] text-slate-500 dark:text-slate-500">
+                  Professional Engine
                 </span>
               </div>
             </div>
 
-            <div className="relative mb-6 overflow-hidden rounded-[1.7rem] border border-white/80 bg-white/72 p-4 shadow-[0_16px_40px_rgba(15,23,42,0.08)]">
+            <div className="relative mb-6 overflow-hidden rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 p-4">
               <div className="flex items-center gap-3">
                 {user.picture ? (
                   <img
                     src={user.picture}
                     alt="avatar"
-                    className="h-13 w-13 rounded-[1.15rem] border border-white/80 object-cover shadow-[0_12px_28px_rgba(15,23,42,0.1)]"
+                    className="h-12 w-12 rounded-lg border border-slate-200 dark:border-white/10 object-cover"
                   />
                 ) : (
-                  <div className="flex h-13 w-13 items-center justify-center rounded-[1.15rem] border border-white/80 bg-white shadow-[0_12px_28px_rgba(15,23,42,0.08)]">
-                    <UserIcon className="h-6 w-6 text-slate-400" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-white/10">
+                    <UserIcon className="h-5 w-5 text-slate-400 dark:text-slate-500" />
                   </div>
                 )}
                 <div className="min-w-0">
-                  <div className="truncate font-sans text-base font-semibold text-slate-950">
+                  <div className="truncate font-sans text-sm font-bold text-slate-900 dark:text-white">
                     {user.name || user.email?.split('@')[0]}
                   </div>
-                  <div className="truncate text-sm text-slate-500">{user.email}</div>
+                  <div className="truncate text-xs text-slate-600 dark:text-slate-400">{user.email}</div>
                 </div>
               </div>
             </div>
@@ -390,10 +375,10 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
             <Button
               onClick={handleLogout}
               variant="ghost"
-              className="mt-5 flex h-12 w-full items-center justify-start gap-3 rounded-[1.35rem] border border-white/70 bg-white/72 px-4 font-semibold text-slate-500 shadow-[0_14px_30px_rgba(15,23,42,0.06)] hover:bg-rose-50 hover:text-rose-600"
+              className="mt-5 flex h-11 w-full items-center justify-start gap-3 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 px-3 font-bold text-slate-600 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-600 dark:hover:text-rose-400 hover:border-rose-200 dark:hover:border-rose-500/20"
             >
-              <LogOut className="h-5 w-5" />
-              Log out
+              <LogOut className="h-4.5 w-4.5" />
+              Sign Out
             </Button>
           </aside>
         </div>

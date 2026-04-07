@@ -14,7 +14,21 @@ import {
   renameResume,
 } from '@/lib/api/resume';
 import { useStatusCache } from '@/lib/context/status-cache';
-import { ArrowLeft, Edit, Download, Loader2, AlertCircle, Sparkles, Pencil, Target } from 'lucide-react';
+import {
+  ArrowLeft,
+  Edit,
+  Download,
+  Loader2,
+  AlertCircle,
+  Sparkles,
+  Pencil,
+  Target,
+  Orbit,
+  ShieldCheck,
+  ScanSearch,
+  FileStack,
+  WandSparkles,
+} from 'lucide-react';
 import { EnrichmentModal } from '@/components/enrichment/enrichment-modal';
 import ATSScanDialog from '@/components/resume/ats-scan-dialog';
 import { useTranslations } from '@/lib/i18n';
@@ -63,14 +77,10 @@ export default function ResumeViewerPage() {
         setError(null);
         const data = await fetchResume(resumeId);
 
-        // Get processing status
         const status = (data.raw_resume?.processing_status || 'pending') as ProcessingStatus;
         setProcessingStatus(status);
-
-        // Capture title for editable display (always set to clear stale state)
         setResumeTitle(data.title ?? null);
 
-        // Prioritize processed_resume if available (structured JSON)
         if (data.processed_resume) {
           setResumeData(data.processed_resume as ResumeData);
           setError(null);
@@ -79,7 +89,6 @@ export default function ResumeViewerPage() {
         } else if (status === 'processing') {
           setError(t('resumeViewer.errors.stillProcessing'));
         } else if (data.raw_resume?.content) {
-          // Try to parse raw_resume content as JSON (for tailored resumes stored as JSON)
           try {
             const parsed = JSON.parse(data.raw_resume.content);
             setResumeData(parsed as ResumeData);
@@ -107,7 +116,6 @@ export default function ResumeViewerPage() {
     try {
       const result = await retryProcessing(resumeId);
       if (result.processing_status === 'ready') {
-        // Reload the page to show the processed resume
         window.location.reload();
       } else {
         setError(t('resumeViewer.errors.processingFailed'));
@@ -147,7 +155,6 @@ export default function ResumeViewerPage() {
     }
   };
 
-  // Reload resume data after enrichment
   const reloadResumeData = async () => {
     try {
       const data = await fetchResume(resumeId);
@@ -187,7 +194,6 @@ export default function ResumeViewerPage() {
     try {
       setDeleteError(null);
       await deleteResume(resumeId);
-      // Update cached counters
       decrementResumes();
       if (isMasterResume) {
         localStorage.removeItem('master_resume_id');
@@ -211,12 +217,33 @@ export default function ResumeViewerPage() {
     setShowDownloadSuccessDialog(false);
   };
 
+  const pageTheme = {
+    ['--rv-paper' as string]: '#efe4c8',
+    ['--rv-ink' as string]: '#071019',
+    ['--rv-copper' as string]: '#f59e0b',
+    ['--rv-cyan' as string]: '#62e8d7',
+    ['--rv-red' as string]: '#ff6b6b',
+    ['--rv-grid' as string]: 'rgba(239, 228, 200, 0.08)',
+  } as React.CSSProperties;
+
   if (loading) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.10),_transparent_32%),linear-gradient(180deg,_#f8fafc_0%,_#eef2ff_100%)]">
-        <div className="rounded-[2rem] border border-white/70 bg-white/80 px-8 py-7 shadow-[0_24px_80px_-36px_rgba(15,23,42,0.35)] backdrop-blur-xl">
-          <Loader2 className="mx-auto mb-4 h-10 w-10 animate-spin text-blue-600" />
-          <p className="text-center text-sm font-semibold tracking-[0.18em] text-slate-600">
+      <div
+        className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[#050913]"
+        style={pageTheme}
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(245,158,11,0.16),transparent_24%),radial-gradient(circle_at_85%_14%,rgba(98,232,215,0.14),transparent_25%),linear-gradient(180deg,#04070d_0%,#091421_100%)]" />
+        <div
+          className="absolute inset-0 opacity-35"
+          style={{
+            backgroundImage:
+              'linear-gradient(var(--rv-grid) 1px, transparent 1px), linear-gradient(90deg, var(--rv-grid) 1px, transparent 1px)',
+            backgroundSize: '36px 36px',
+          }}
+        />
+        <div className="relative rounded-[2rem] border border-[#efe4c8]/12 bg-[rgba(5,9,19,0.76)] px-8 py-7 shadow-[0_30px_100px_rgba(0,0,0,0.45)] backdrop-blur-xl">
+          <Loader2 className="mx-auto mb-4 h-10 w-10 animate-spin text-[#62e8d7]" />
+          <p className="text-center text-sm font-semibold uppercase tracking-[0.24em] text-[#e9dcc0]">
             {t('resumeViewer.loading')}
           </p>
         </div>
@@ -229,26 +256,38 @@ export default function ResumeViewerPage() {
     const isFailed = processingStatus === 'failed';
 
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.10),_transparent_32%),linear-gradient(180deg,_#f8fafc_0%,_#eef2ff_100%)] p-4">
+      <div
+        className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#050913] p-4"
+        style={pageTheme}
+      >
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(245,158,11,0.16),transparent_24%),radial-gradient(circle_at_85%_14%,rgba(98,232,215,0.14),transparent_25%),linear-gradient(180deg,#04070d_0%,#091421_100%)]" />
+        <div
+          className="absolute inset-0 opacity-35"
+          style={{
+            backgroundImage:
+              'linear-gradient(var(--rv-grid) 1px, transparent 1px), linear-gradient(90deg, var(--rv-grid) 1px, transparent 1px)',
+            backgroundSize: '36px 36px',
+          }}
+        />
         <div
           className={cn(
-            'w-full max-w-lg rounded-[2rem] border px-6 py-7 text-center shadow-[0_24px_80px_-36px_rgba(15,23,42,0.35)] backdrop-blur-xl sm:px-8',
+            'relative w-full max-w-xl rounded-[2rem] border bg-[rgba(7,16,25,0.86)] px-6 py-7 text-center shadow-[0_30px_100px_rgba(0,0,0,0.5)] backdrop-blur-xl sm:px-8',
             isProcessing
-              ? 'border-blue-200/70 bg-white/85'
+              ? 'border-[#62e8d7]/20'
               : isFailed
-                ? 'border-orange-200/70 bg-white/85'
-                : 'border-red-200/70 bg-white/85'
+                ? 'border-[#f59e0b]/25'
+                : 'border-[#ff6b6b]/25'
           )}
         >
           <div className="mb-4 flex justify-center">
             <div
               className={cn(
-                'flex h-14 w-14 items-center justify-center rounded-2xl',
+                'flex h-14 w-14 items-center justify-center rounded-[1.25rem] border',
                 isProcessing
-                  ? 'bg-blue-50 text-blue-600'
+                  ? 'border-[#62e8d7]/20 bg-[#62e8d7]/10 text-[#62e8d7]'
                   : isFailed
-                    ? 'bg-orange-50 text-orange-500'
-                    : 'bg-red-50 text-red-500'
+                    ? 'border-[#f59e0b]/20 bg-[#f59e0b]/10 text-[#ffd089]'
+                    : 'border-[#ff6b6b]/20 bg-[#ff6b6b]/10 text-[#ff9f9f]'
               )}
             >
               {isProcessing ? (
@@ -258,25 +297,27 @@ export default function ResumeViewerPage() {
               )}
             </div>
           </div>
+
           <p
             className={cn(
               'mb-6 text-base font-semibold leading-7',
               isProcessing
-                ? 'text-blue-700'
+                ? 'text-[#dafaf5]'
                 : isFailed
-                  ? 'text-orange-700'
-                  : 'text-red-700'
+                  ? 'text-[#ffe3b6]'
+                  : 'text-[#ffd1d1]'
             )}
           >
             {error || t('resumeViewer.resumeNotFound')}
           </p>
+
           <div className="flex flex-col gap-3">
             {isFailed && (
               <>
                 <Button
                   onClick={handleRetryProcessing}
                   disabled={isRetrying}
-                  className="h-11 rounded-2xl bg-slate-900 text-white hover:bg-slate-800"
+                  className="h-11 rounded-[1.2rem] border border-[#62e8d7]/20 bg-[#62e8d7]/10 text-[#ddfdf8] hover:bg-[#62e8d7]/18"
                 >
                   {isRetrying ? (
                     <>
@@ -290,7 +331,7 @@ export default function ResumeViewerPage() {
                 <Button
                   variant="destructive"
                   onClick={() => setShowDeleteDialog(true)}
-                  className="h-11 rounded-2xl"
+                  className="h-11 rounded-[1.2rem]"
                 >
                   {t('resumeViewer.deleteAndStartOver')}
                 </Button>
@@ -299,7 +340,7 @@ export default function ResumeViewerPage() {
             <Button
               variant="outline"
               onClick={() => router.push('/dashboard')}
-              className="h-11 rounded-2xl border-slate-200 bg-white hover:bg-slate-50"
+              className="h-11 rounded-[1.2rem] border-[#efe4c8]/15 bg-white/5 text-[#efe4c8] hover:bg-white/10"
             >
               {t('resumeViewer.returnToDashboard')}
             </Button>
@@ -310,33 +351,52 @@ export default function ResumeViewerPage() {
   }
 
   return (
-    <div className="flex min-h-full w-full flex-col bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_transparent_30%),linear-gradient(180deg,_#f8fafc_0%,_#eef2ff_100%)] font-sans">
-      <div className="mx-auto flex w-full max-w-[1400px] flex-1 flex-col gap-8 px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
-        <div className="overflow-hidden rounded-[2rem] border border-white/70 bg-white/78 shadow-[0_28px_90px_-40px_rgba(15,23,42,0.35)] backdrop-blur-xl">
-          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.12),_transparent_30%),radial-gradient(circle_at_bottom_right,_rgba(168,85,247,0.10),_transparent_28%)]" />
+    <div className="relative flex min-h-full w-full flex-col overflow-hidden bg-[#050913]" style={pageTheme}>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_12%_18%,rgba(245,158,11,0.16),transparent_24%),radial-gradient(circle_at_85%_14%,rgba(98,232,215,0.14),transparent_25%),radial-gradient(circle_at_68%_75%,rgba(255,107,107,0.08),transparent_18%),linear-gradient(180deg,#04070d_0%,#091421_100%)]" />
+      <div
+        className="absolute inset-0 opacity-35"
+        style={{
+          backgroundImage:
+            'linear-gradient(var(--rv-grid) 1px, transparent 1px), linear-gradient(90deg, var(--rv-grid) 1px, transparent 1px)',
+          backgroundSize: '36px 36px',
+        }}
+      />
+      <div className="absolute left-[-4rem] top-16 h-72 w-72 rounded-full bg-[#f59e0b]/10 blur-3xl" />
+      <div className="absolute right-[-6rem] top-10 h-80 w-80 rounded-full bg-[#62e8d7]/10 blur-3xl" />
+      <div className="absolute bottom-0 left-1/3 h-64 w-64 rounded-full bg-[#ff6b6b]/8 blur-3xl" />
+
+      <div className="relative mx-auto flex w-full max-w-[1480px] flex-1 flex-col gap-8 px-4 py-5 sm:px-6 lg:px-8 lg:py-8">
+        <div className="overflow-hidden rounded-[2rem] border border-[#efe4c8]/10 bg-[rgba(7,16,25,0.78)] shadow-[0_32px_120px_rgba(0,0,0,0.55)] backdrop-blur-xl">
+          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(110deg,rgba(255,255,255,0.04),transparent_20%,transparent_75%,rgba(255,255,255,0.03))]" />
           <div className="relative p-5 sm:p-6 lg:p-8">
-            {/* Header Actions */}
-            <div className="mb-8 flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between no-print">
-              <div className="space-y-4">
+            <div className="mb-8 grid gap-6 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start no-print">
+              <div className="space-y-5">
                 <Button
                   variant="ghost"
                   onClick={() => router.push('/dashboard')}
-                  className="h-10 rounded-full border border-white/80 bg-white/80 px-4 text-sm font-medium text-slate-700 shadow-sm hover:bg-white"
+                  className="h-10 rounded-full border border-[#efe4c8]/12 bg-white/[0.03] px-4 text-sm font-medium text-[#e9dcc0] hover:bg-white/[0.08] hover:text-white"
                 >
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   {t('nav.backToDashboard')}
                 </Button>
 
-                <div className="space-y-3">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-blue-200/70 bg-blue-50/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-blue-700">
-                    {!isMasterResume ? <Target className="h-3.5 w-3.5" /> : <Sparkles className="h-3.5 w-3.5" />}
-                    <span>{isMasterResume ? t('resumeViewer.enhanceResume') : 'Tailored resume'}</span>
+                <div className="space-y-4">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-[#f59e0b]/20 bg-[#f59e0b]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#ffd89c]">
+                      {isMasterResume ? <Sparkles className="h-3.5 w-3.5" /> : <Target className="h-3.5 w-3.5" />}
+                      <span>{isMasterResume ? t('resumeViewer.enhanceResume') : 'Tailored resume'}</span>
+                    </div>
+
+                    <div className="inline-flex items-center gap-2 rounded-full border border-[#62e8d7]/18 bg-[#62e8d7]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#dffcf8]">
+                      <Orbit className="h-3.5 w-3.5" />
+                      Viewer deck
+                    </div>
                   </div>
 
                   {!isMasterResume && (
-                    <div className="w-full max-w-3xl">
+                    <div className="w-full max-w-4xl">
                       {isEditingTitle ? (
-                        <div className="rounded-[1.5rem] border border-blue-200/70 bg-white/90 px-5 py-4 shadow-sm">
+                        <div className="rounded-[1.6rem] border border-[#efe4c8]/12 bg-white/[0.04] px-5 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
                           <input
                             type="text"
                             value={editingTitleValue}
@@ -346,7 +406,8 @@ export default function ResumeViewerPage() {
                             autoFocus
                             maxLength={80}
                             placeholder={t('resumeViewer.titlePlaceholder')}
-                            className="w-full bg-transparent text-center font-serif text-3xl font-semibold tracking-tight text-slate-900 outline-none md:text-4xl"
+                            className="w-full bg-transparent text-left text-3xl font-black uppercase tracking-[-0.07em] text-[#f6ebd2] outline-none md:text-5xl"
+                            style={{ fontFamily: 'var(--font-playfair-display), "Times New Roman", serif' }}
                           />
                         </div>
                       ) : (
@@ -355,72 +416,140 @@ export default function ResumeViewerPage() {
                             setEditingTitleValue(resumeTitle || '');
                             setIsEditingTitle(true);
                           }}
-                          className="group inline-flex max-w-full items-center gap-3 rounded-[1.5rem] border border-transparent px-1 py-1 text-left transition-all hover:border-white/70"
+                          className="group inline-flex max-w-full items-center gap-3 rounded-[1.5rem] border border-transparent px-1 py-1 text-left transition-all hover:border-[#efe4c8]/12"
                         >
                           <h2
                             className={cn(
-                              'truncate font-serif text-3xl font-semibold tracking-tight text-slate-900 md:text-4xl',
-                              !resumeTitle && 'italic text-slate-300'
+                              'truncate text-3xl font-black uppercase tracking-[-0.07em] text-[#f6ebd2] md:text-5xl',
+                              !resumeTitle && 'italic text-[#8f846e]'
                             )}
+                            style={{ fontFamily: 'var(--font-playfair-display), "Times New Roman", serif' }}
                           >
                             {resumeTitle || t('resumeViewer.titlePlaceholder')}
                           </h2>
                           <Pencil
                             className={cn(
-                              'h-5 w-5 shrink-0 text-slate-400 transition-all duration-300',
-                              resumeTitle ? 'opacity-0 group-hover:opacity-100 group-hover:text-slate-600' : 'opacity-50'
+                              'h-5 w-5 shrink-0 text-[#9c9076] transition-all duration-300',
+                              resumeTitle ? 'opacity-0 group-hover:opacity-100 group-hover:text-[#e9dcc0]' : 'opacity-50'
                             )}
                           />
                         </button>
                       )}
                     </div>
                   )}
+
+                  {isMasterResume && (
+                    <div className="max-w-4xl">
+                      <h2
+                        className="text-3xl font-black uppercase tracking-[-0.07em] text-[#f6ebd2] md:text-5xl"
+                        style={{ fontFamily: 'var(--font-playfair-display), "Times New Roman", serif' }}
+                      >
+                        Master Resume
+                        <span className="block bg-[linear-gradient(90deg,#f6ebd2_0%,#f59e0b_38%,#62e8d7_100%)] bg-clip-text text-transparent">
+                          Calibration Deck
+                        </span>
+                      </h2>
+                    </div>
+                  )}
+
+                  <p className="max-w-3xl text-sm leading-7 text-[#cabfa7] sm:text-base">
+                    Inspect, refine, and export this resume from a focused command surface with a
+                    print-stage presentation rather than a standard document page.
+                  </p>
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-3">
-                {isMasterResume && (
+              <div className="grid gap-3 sm:grid-cols-2 xl:w-[390px]">
+                {isMasterResume ? (
                   <Button
                     onClick={() => setShowEnrichmentModal(true)}
-                    className="h-11 rounded-2xl bg-slate-900 px-5 text-sm font-semibold text-white shadow-sm hover:bg-slate-800"
+                    className="h-12 rounded-[1.2rem] border border-[#f59e0b]/20 bg-[#f59e0b]/12 px-5 text-sm font-semibold text-[#fff1cf] hover:bg-[#f59e0b]/20"
                   >
-                    <Sparkles className="mr-2 h-4 w-4" />
+                    <WandSparkles className="mr-2 h-4 w-4" />
                     {t('resumeViewer.enhanceResume')}
                   </Button>
-                )}
-                {!isMasterResume && (
+                ) : (
                   <Button
                     onClick={() => setShowATSScanDialog(true)}
                     variant="outline"
-                    className="h-11 rounded-2xl border-slate-200 bg-white/90 px-5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                    className="h-12 rounded-[1.2rem] border-[#62e8d7]/20 bg-[#62e8d7]/10 px-5 text-sm font-semibold text-[#ddfdf8] hover:bg-[#62e8d7]/18"
                   >
-                    <Target className="mr-2 h-4 w-4" />
+                    <ScanSearch className="mr-2 h-4 w-4" />
                     ATS Scan
                   </Button>
                 )}
+
                 <Button
                   variant="outline"
                   onClick={handleEdit}
-                  className="h-11 rounded-2xl border-slate-200 bg-white/90 px-5 text-sm font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+                  className="h-12 rounded-[1.2rem] border-[#efe4c8]/12 bg-white/[0.03] px-5 text-sm font-semibold text-[#e9dcc0] hover:bg-white/[0.08]"
                 >
                   <Edit className="mr-2 h-4 w-4" />
                   {t('dashboard.editResume')}
                 </Button>
+
                 <Button
                   variant="default"
                   onClick={handleDownload}
-                  className="h-11 rounded-2xl bg-blue-600 px-5 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
+                  className="h-12 rounded-[1.2rem] border border-[#62e8d7]/20 bg-[#62e8d7]/12 px-5 text-sm font-semibold text-[#ddfdf8] hover:bg-[#62e8d7]/20"
                 >
                   <Download className="mr-2 h-4 w-4" />
                   {t('resumeViewer.downloadResume')}
                 </Button>
+
+                <div className="rounded-[1.2rem] border border-[#efe4c8]/10 bg-white/[0.03] px-4 py-3">
+                  <p className="text-[10px] uppercase tracking-[0.24em] text-[#968b74]">status</p>
+                  <p className="mt-1 text-sm font-semibold text-[#f6ebd2]">
+                    {isMasterResume ? 'Source template' : 'Tailored output'}
+                  </p>
+                </div>
               </div>
             </div>
 
-            {/* Resume Viewer */}
+            <div className="mb-6 grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px] no-print">
+              <div className="rounded-[1.7rem] border border-[#efe4c8]/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01))] p-4 sm:p-5">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[1rem] border border-[#f59e0b]/18 bg-[#f59e0b]/10 text-[#ffd89c]">
+                    <FileStack className="h-4.5 w-4.5" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.24em] text-[#968b74]">
+                      document stage
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-[#dacfb7]">
+                      This preview is framed as a print plate. Use edit for structure changes,
+                      scan for ATS posture, and export when the composition is ready.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-[1.7rem] border border-[#efe4c8]/10 bg-[linear-gradient(180deg,rgba(98,232,215,0.08),rgba(255,255,255,0.015))] p-4 sm:p-5">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[1rem] border border-[#62e8d7]/18 bg-[#62e8d7]/10 text-[#ddfdf8]">
+                    <ShieldCheck className="h-4.5 w-4.5" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.24em] text-[#968b74]">
+                      control note
+                    </p>
+                    <p className="mt-2 text-sm leading-6 text-[#dacfb7]">
+                      {isMasterResume
+                        ? 'Master resumes shape future tailoring runs and benefit most from enrichment.'
+                        : 'Tailored resumes should be scanned and exported once the role alignment looks sharp.'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div className="flex justify-center pb-6">
-              <div className="relative w-full max-w-[230mm] rounded-[2rem] border border-white/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.88),rgba(248,250,252,0.96))] p-3 shadow-[0_30px_80px_-40px_rgba(15,23,42,0.35)] sm:p-4 lg:p-5">
-                <div className="resume-print relative mx-auto w-full max-w-[210mm] overflow-hidden rounded-[1.5rem] bg-white shadow-[0_24px_60px_-32px_rgba(15,23,42,0.35)] ring-1 ring-slate-200/70">
+              <div className="relative w-full max-w-[245mm] rounded-[2rem] border border-[#efe4c8]/10 bg-[linear-gradient(180deg,rgba(245,158,11,0.05),rgba(255,255,255,0.02))] p-3 shadow-[0_40px_120px_rgba(0,0,0,0.45)] sm:p-4 lg:p-5">
+                <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-[#efe4c8]/60 to-transparent" />
+                <div className="absolute -left-8 top-10 h-28 w-28 rounded-full bg-[#f59e0b]/10 blur-3xl" />
+                <div className="absolute -right-8 bottom-10 h-32 w-32 rounded-full bg-[#62e8d7]/10 blur-3xl" />
+
+                <div className="resume-print relative mx-auto w-full max-w-[210mm] overflow-hidden rounded-[1.5rem] bg-white shadow-[0_30px_80px_rgba(0,0,0,0.28)] ring-1 ring-[#d9d3c3]">
                   <Resume
                     resumeData={localizedResumeData || resumeData}
                     additionalSectionLabels={{
@@ -450,7 +579,7 @@ export default function ResumeViewerPage() {
               <Button
                 variant="ghost"
                 onClick={() => setShowDeleteDialog(true)}
-                className="rounded-full px-6 py-2 text-sm font-medium text-red-600 hover:bg-red-50 hover:text-red-700"
+                className="rounded-full border border-[#ff6b6b]/15 bg-[#ff6b6b]/8 px-6 py-2 text-sm font-medium text-[#ffb7b7] hover:bg-[#ff6b6b]/12 hover:text-[#ffd3d3]"
               >
                 {isMasterResume
                   ? t('confirmations.deleteMasterResumeTitle')
@@ -517,7 +646,6 @@ export default function ResumeViewerPage() {
         />
       )}
 
-      {/* Enrichment Modal - Only for master resume */}
       {isMasterResume && (
         <EnrichmentModal
           resumeId={resumeId}
@@ -527,7 +655,6 @@ export default function ResumeViewerPage() {
         />
       )}
 
-      {/* ATS Scan Dialog - Only for tailored resumes */}
       {!isMasterResume && (
         <ATSScanDialog
           resumeId={resumeId}
