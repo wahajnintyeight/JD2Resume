@@ -1,7 +1,7 @@
 'use client';
 
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Orbit, ShieldAlert, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useTranslations } from '@/lib/i18n';
 
@@ -68,46 +68,101 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-[#F0F0E8]">
-          <div className="max-w-md w-full bg-white border-1 rounded-sm border-black p-10 shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] animate-in fade-in zoom-in-95 duration-300">
-            <div className="flex flex-col items-center text-center gap-6 mb-8">
-              <div className="w-24 h-24 border-1 rounded-sm border-black bg-red-600 flex items-center justify-center text-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]">
-                <AlertTriangle className="w-12 h-12" />
-              </div>
-              <div className="space-y-3">
-                <h2 className="font-serif text-4xl font-black uppercase tracking-tight text-black">
-                  {strings.title}
-                </h2>
-                <p className="text-gray-700 font-mono font-bold text-sm uppercase leading-relaxed px-4">
-                  {strings.description}
-                </p>
-              </div>
-            </div>
+        <div className="relative min-h-screen overflow-hidden bg-slate-950 px-4 py-6 sm:px-6 sm:py-10">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.14),transparent_26%),radial-gradient(circle_at_top_right,rgba(217,70,239,0.12),transparent_24%),radial-gradient(circle_at_bottom,rgba(245,158,11,0.10),transparent_30%)]" />
+          <div className="absolute left-[-8rem] top-[-5rem] h-64 w-64 rounded-full bg-cyan-400/10 blur-3xl" />
+          <div className="absolute bottom-[-6rem] right-[-5rem] h-72 w-72 rounded-full bg-fuchsia-500/10 blur-3xl" />
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/40 to-transparent" />
 
-            {process.env.NODE_ENV === 'development' && this.state.error && (
-              <div className="mb-8 p-6 bg-red-50 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] overflow-hidden">
-                <p className="font-mono text-xs text-red-700 break-all leading-relaxed font-bold uppercase">
-                  {'// ERROR: '}
-                  {this.state.error.message}
-                </p>
-              </div>
-            )}
+          <div className="relative mx-auto flex min-h-[calc(100vh-3rem)] max-w-5xl items-center justify-center">
+            <div className="relative w-full overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.04] shadow-[0_30px_90px_rgba(2,6,23,0.65)] backdrop-blur-2xl">
+              <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.02)_35%,transparent_70%)]" />
+              <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/35 to-transparent" />
+              <div className="relative grid gap-0 lg:grid-cols-[1.15fr_0.85fr]">
+                <div className="p-6 sm:p-8 lg:p-10">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/6 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-300">
+                    <Sparkles className="h-3.5 w-3.5 text-cyan-300" />
+                    Stability Layer
+                  </div>
 
-            <div className="flex flex-col gap-4">
-              <Button
-                onClick={this.handleReset}
-                variant="outline"
-                className="w-full h-14 border-2 border-black bg-white text-black font-bold uppercase tracking-widest hover:bg-gray-100 transition-all active:translate-x-1 active:translate-y-1 active:shadow-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-              >
-                {strings.tryAgain}
-              </Button>
-              <Button
-                onClick={this.handleReload}
-                className="w-full h-14 border-2 border-black bg-blue-700 text-white font-bold uppercase tracking-widest hover:bg-blue-800 transition-all active:translate-x-1 active:translate-y-1 active:shadow-none shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-              >
-                <RefreshCw className="w-5 h-5 mr-3" />
-                {strings.reloadPage}
-              </Button>
+                  <div className="mt-6 flex items-start gap-4 sm:gap-5">
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[1.35rem] border border-rose-400/20 bg-gradient-to-br from-rose-500/20 via-fuchsia-500/10 to-transparent text-rose-100 shadow-[0_18px_45px_rgba(244,63,94,0.18)]">
+                      <AlertTriangle className="h-8 w-8" />
+                    </div>
+
+                    <div className="min-w-0">
+                      <h2 className="font-serif text-3xl leading-tight text-white sm:text-4xl">
+                        {strings.title}
+                      </h2>
+                      <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-300 sm:text-[15px]">
+                        {strings.description}
+                      </p>
+                    </div>
+                  </div>
+
+               
+
+                  {process.env.NODE_ENV === 'development' && this.state.error && (
+                    <div className="mt-6 rounded-[1.5rem] border border-rose-400/20 bg-slate-950/70 p-4 sm:p-5">
+                      <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-rose-200/90">
+                        <ShieldAlert className="h-4 w-4" />
+                        Development details
+                      </div>
+                      <pre className="overflow-x-auto whitespace-pre-wrap break-words text-xs leading-6 text-rose-100/85">
+                        {this.state.error.message}
+                        {this.state.error.stack ? `\n\n${this.state.error.stack}` : ''}
+                        {this.state.errorInfo?.componentStack
+                          ? `\n\nComponent Stack:\n${this.state.errorInfo.componentStack}`
+                          : ''}
+                      </pre>
+                    </div>
+                  )}
+                </div>
+
+                <div className="relative border-t border-white/10 bg-slate-950/30 p-6 sm:p-8 lg:border-l lg:border-t-0 lg:p-10">
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.08),transparent_34%)]" />
+                  <div className="relative">
+                    <div className="rounded-[1.75rem] border border-white/10 bg-white/[0.045] p-5 backdrop-blur-xl">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-400">
+                        Recovery actions
+                      </p>
+                      <h3 className="mt-3 font-serif text-2xl text-white">
+                        Get back on track
+                      </h3>
+                      <p className="mt-2 text-sm leading-6 text-slate-400">
+                        Start with a soft reset, then reload the page if the issue persists.
+                      </p>
+
+                      <div className="mt-6 flex flex-col gap-3">
+                        <Button
+                          onClick={this.handleReset}
+                          className={cn(
+                            'h-12 w-full rounded-xl border border-cyan-300/25',
+                            'bg-gradient-to-r from-cyan-400 via-sky-400 to-fuchsia-500 text-slate-950',
+                            'shadow-[0_14px_40px_rgba(34,211,238,0.28)] transition-all duration-200',
+                            'hover:scale-[1.01] hover:shadow-[0_18px_48px_rgba(34,211,238,0.34)]'
+                          )}
+                        >
+                          <Sparkles className="mr-2 h-4 w-4" />
+                          {strings.tryAgain}
+                        </Button>
+
+                        <Button
+                          onClick={this.handleReload}
+                          variant="outline"
+                          className={cn(
+                            'h-12 w-full rounded-xl border-white/15 bg-white/5 text-slate-100 backdrop-blur-xl',
+                            'hover:border-white/25 hover:bg-white/10 hover:text-white'
+                          )}
+                        >
+                          <RefreshCw className="mr-2 h-4 w-4" />
+                          {strings.reloadPage}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

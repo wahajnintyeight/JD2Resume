@@ -212,8 +212,7 @@ export function ResumeUploadDialog({
       >
         <DialogHeader className="relative p-7 border-b border-gray-200">
           <DialogTitle 
-            className="font-serif text-4xl font-black uppercase leading-tight tracking-[-0.06em] text-gray-900"
-            style={{ fontFamily: 'var(--font-playfair-display), "Times New Roman", serif' }}
+            className="font-serif text-4xl font-black uppercase leading-tight tracking-[-0.06em] text-gray-900 [font-family:var(--font-playfair-display),'Times_New_Roman',serif]"
           >
             {t('dashboard.uploadResume')}
           </DialogTitle>

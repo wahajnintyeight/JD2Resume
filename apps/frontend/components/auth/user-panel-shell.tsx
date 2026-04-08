@@ -87,18 +87,36 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
 
   if (status === 'loading') {
     return (
-      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-100 dark:bg-[#050505] p-6">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(99,102,241,0.08),transparent)] dark:bg-[radial-gradient(circle_at_20%_20%,rgba(99,102,241,0.15),transparent)]" />
-        <div className="relative flex flex-col items-center gap-5 rounded-2xl border border-slate-200 dark:border-white/10 bg-white dark:bg-[#0A0A0A] px-10 py-9 shadow-2xl">
-          <div className="relative flex h-16 w-16 items-center justify-center rounded-xl bg-indigo-600 shadow-lg shadow-indigo-500/30">
-            <div className="h-8 w-8 rounded-full border-[3px] border-white/90 border-t-transparent animate-spin" />
+      <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#0a0a0f] p-6">
+        {/* Cyberpunk grid background */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `
+              linear-gradient(to right, #06b6d4 1px, transparent 1px),
+              linear-gradient(to bottom, #06b6d4 1px, transparent 1px)
+            `,
+            backgroundSize: '40px 40px'
+          }} />
+        </div>
+        
+        {/* Animated gradient orbs */}
+        <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-gradient-to-br from-cyan-500/20 via-blue-500/20 to-purple-500/20 blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-gradient-to-tr from-fuchsia-500/15 via-pink-500/15 to-cyan-500/15 blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        
+        <div className="relative flex flex-col items-center gap-6 border-2 border-cyan-400/30 bg-slate-950/80 backdrop-blur-md px-12 py-10 shadow-[0_32px_120px_rgba(2,6,23,0.72)]">
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/50 to-transparent" />
+          
+          <div className="relative flex h-16 w-16 items-center justify-center border-2 border-cyan-400/40 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 backdrop-blur-sm">
+            <div className="absolute inset-0 bg-cyan-400/20 blur-xl animate-pulse" />
+            <div className="h-8 w-8 border-2 border-cyan-400 border-t-transparent animate-spin relative z-10" />
           </div>
-          <div className="space-y-1 text-center">
-            <p className="font-mono text-sm font-bold tracking-tight text-slate-900 dark:text-white uppercase">
+          
+          <div className="space-y-2 text-center">
+            <p className="font-mono text-sm font-bold tracking-[0.25em] text-cyan-300 uppercase">
               Syncing Workspace
             </p>
-            <p className="font-sans text-sm text-slate-600 dark:text-slate-400">
-              Loading your professional pipeline...
+            <p className="font-mono text-xs text-cyan-400/70 tracking-wider">
+              // Loading your professional pipeline...
             </p>
           </div>
         </div>
