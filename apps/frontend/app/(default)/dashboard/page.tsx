@@ -32,6 +32,7 @@ import {
   Radar,
   ShieldAlert,
   Workflow,
+  Trash2,
 } from 'lucide-react';
 
 import {
@@ -73,6 +74,7 @@ export default function DashboardPage() {
   const [masterResumeId, setMasterResumeId] = useState<string | null>(null);
   const [processingStatus, setProcessingStatus] = useState<ProcessingStatus>('loading');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [resumePendingDelete, setResumePendingDelete] = useState<ResumeListItem | null>(null);
   const [tailoredResumes, setTailoredResumes] = useState<ResumeListItem[]>([]);
   const [isRetrying, setIsRetrying] = useState(false);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
@@ -251,6 +253,18 @@ export default function DashboardPage() {
       await loadTailoredResumes();
     } catch (err) {
       console.error('Failed to delete resume:', err);
+    }
+  };
+
+  const confirmDeleteTailoredResume = async () => {
+    if (!resumePendingDelete) return;
+    try {
+      await deleteResume(resumePendingDelete.resume_id);
+      decrementResumes();
+      setResumePendingDelete(null);
+      await loadTailoredResumes();
+    } catch (err) {
+      console.error('Failed to delete tailored resume:', err);
     }
   };
 
@@ -672,12 +686,25 @@ export default function DashboardPage() {
                           </div>
                         </div>
 
-                        <div className="mt-5 flex items-center justify-between border-t border-white/10 pt-4">
+                        <div className="mt-5 flex items-center justify-between gap-3 border-t border-white/10 pt-4">
                           <span className="text-[10px] uppercase tracking-[0.22em] text-slate-500">
                             Open detail view
                           </span>
-                          <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 transition-all group-hover:border-cyan-300/20 group-hover:bg-cyan-300/10">
-                            <ChevronRight className="h-4 w-4 text-slate-200" />
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setResumePendingDelete(resume);
+                              }}
+                              className="h-9 w-9 rounded-full border border-rose-300/15 bg-rose-400/8 text-rose-100 hover:border-rose-300/25 hover:bg-rose-400/18"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                            <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 transition-all group-hover:border-cyan-300/20 group-hover:bg-cyan-300/10">
+                              <ChevronRight className="h-4 w-4 text-slate-200" />
+                            </div>
                           </div>
                         </div>
                       </article>
@@ -697,6 +724,22 @@ export default function DashboardPage() {
         description="This removes the current master resume and disconnects future tailoring from its source document."
         confirmLabel="Delete Master"
         onConfirm={confirmDeleteAndReupload}
+        variant="danger"
+      />
+
+      <ConfirmDialog
+        open={Boolean(resumePendingDelete)}
+        onOpenChange={(open) => {
+          if (!open) setResumePendingDelete(null);
+        }}
+        title="Delete tailored resume?"
+        description={
+          resumePendingDelete
+            ? `Delete "${resumePendingDelete.title || 'Untitled Variation'}" from the dashboard library? This action cannot be undone.`
+            : 'Delete this tailored resume from the dashboard library?'
+        }
+        confirmLabel="Delete Resume"
+        onConfirm={confirmDeleteTailoredResume}
         variant="danger"
       />
 

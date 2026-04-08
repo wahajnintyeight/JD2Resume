@@ -258,7 +258,7 @@ export default function ResumeManagerDialog({
                   <p className="mt-3 text-sm leading-6 text-rose-100">{error}</p>
                 </div>
               ) : resumes.length === 0 ? (
-                <div className="overflow-hidden rounded-[1.9rem] border border-[#f7e8c4]/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.012))]">
+                <div className="overflow-hidden rounded-[1.9rem] border border-[#f7e8c4]/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03))]">
                   <div className="border-b border-[#f7e8c4]/10 px-6 py-6 sm:px-8">
                     <div className="inline-flex items-center gap-2 rounded-full border border-[#907cff]/20 bg-[#907cff]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-[#ddd7ff]">
                       <Sparkles className="h-3.5 w-3.5" />
@@ -300,7 +300,7 @@ export default function ResumeManagerDialog({
                       {resumes.map((resume, index) => (
                         <article
                           key={resume.resume_id}
-                          className="group relative overflow-hidden rounded-[1.75rem] border border-[#f7e8c4]/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015))] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-all duration-300 hover:-translate-y-1 hover:border-[#41d6c3]/25 hover:shadow-[0_24px_60px_rgba(0,0,0,0.28)] sm:p-6"
+                          className="group relative overflow-hidden rounded-[1.75rem] border border-[#f7e8c4]/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.04))] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] transition-all duration-300 hover:-translate-y-1 hover:border-[#41d6c3]/25 hover:shadow-[0_24px_60px_rgba(0,0,0,0.28)] sm:p-6"
                           style={{ animationDelay: `${index * 55}ms` }}
                         >
                           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#f7e8c4]/60 to-transparent" />
@@ -310,7 +310,7 @@ export default function ResumeManagerDialog({
                           <div className="relative flex h-full flex-col">
                             <div className="flex items-start justify-between gap-3">
                               <div className="flex min-w-0 items-start gap-3">
-                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.1rem] border border-[#f7e8c4]/10 bg-black/20">
+                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.1rem] border border-[#f7e8c4]/10 bg-black/12">
                                   <FileText className="h-5 w-5 text-[#ffd89c]" />
                                 </div>
 
@@ -353,7 +353,7 @@ export default function ResumeManagerDialog({
                             )}
 
                             <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                              <div className="rounded-[1.1rem] border border-[#f7e8c4]/10 bg-black/20 p-3.5">
+                              <div className="rounded-[1.1rem] border border-[#f7e8c4]/10 bg-black/12 p-3.5">
                                 <p className="flex items-center gap-2 text-[10px] uppercase tracking-[0.22em] text-[#91876f]">
                                   <CalendarClock className="h-3.5 w-3.5" />
                                   updated
@@ -363,7 +363,7 @@ export default function ResumeManagerDialog({
                                 </p>
                               </div>
 
-                              <div className="rounded-[1.1rem] border border-[#f7e8c4]/10 bg-black/20 p-3.5">
+                              <div className="rounded-[1.1rem] border border-[#f7e8c4]/10 bg-black/12 p-3.5">
                                 <p className="text-[10px] uppercase tracking-[0.22em] text-[#91876f]">
                                   status
                                 </p>
@@ -429,7 +429,7 @@ export default function ResumeManagerDialog({
                     <aside className="space-y-4">
                       <div className="overflow-hidden rounded-[1.75rem] border border-[#f7e8c4]/10 bg-[linear-gradient(180deg,rgba(245,158,11,0.08),rgba(255,255,255,0.015))] p-5 sm:p-6">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-11 w-11 items-center justify-center rounded-[1.1rem] border border-[#f7e8c4]/10 bg-black/20">
+                          <div className="flex h-11 w-11 items-center justify-center rounded-[1.1rem] border border-[#f7e8c4]/10 bg-black/12">
                             <Waves className="h-4.5 w-4.5 text-[#ffd89c]" />
                           </div>
                           <div>
@@ -454,7 +454,7 @@ export default function ResumeManagerDialog({
                           design systems.
                         </p>
 
-                        <div className="mt-5 rounded-[1.15rem] border border-[#f7e8c4]/10 bg-black/20 p-4">
+                        <div className="mt-5 rounded-[1.15rem] border border-[#f7e8c4]/10 bg-black/12 p-4">
                           <p className="text-[10px] uppercase tracking-[0.22em] text-[#92876f]">
                             current state
                           </p>

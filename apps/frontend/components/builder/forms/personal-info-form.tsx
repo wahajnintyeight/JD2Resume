@@ -121,15 +121,7 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ data, onChan
           </div>
         </div>
 
-        <div className="w-full shrink-0 lg:max-w-sm rounded-[1.5rem] border border-white/10 bg-white/5 px-4 py-3">
-          <p className="font-sans text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">
-            first impression
-          </p>
-          <p className="mt-2 text-sm leading-relaxed text-slate-300">
-            Lead with signal-rich identity details so every generated asset starts with the right
-            voice.
-          </p>
-        </div>
+         
       </div>
 
       <div className="relative grid grid-cols-1 gap-4 md:grid-cols-2 xl:gap-5">

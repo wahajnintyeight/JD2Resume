@@ -96,7 +96,7 @@ export function Dropdown({
   return (
     <div className={cn('space-y-3', className)} ref={containerRef}>
       {label && (
-        <label className="font-serif text-lg font-black uppercase tracking-tight text-slate-900 block px-1">
+        <label className="font-serif text-lg font-black uppercase tracking-tight text-[#f7efdd] block px-1">
           {label}
         </label>
       )}

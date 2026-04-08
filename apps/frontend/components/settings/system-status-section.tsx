@@ -148,13 +148,7 @@ export function SystemStatusSection({
           </div>
 
           <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
-            <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 backdrop-blur-sm">
-              <p className="flex items-center gap-2 text-[10px] uppercase tracking-[0.24em] text-slate-400">
-                <Clock className="h-3.5 w-3.5" />
-                last sync
-              </p>
-              <p className="mt-1 text-sm font-semibold text-slate-100">{formatLastFetched()}</p>
-            </div>
+            
 
             <Button
               variant="ghost"

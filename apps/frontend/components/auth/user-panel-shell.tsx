@@ -264,9 +264,7 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
                 <span className="truncate text-sm font-bold text-slate-900 dark:text-white">
                   {user.name || user.email?.split('@')[0]}
                 </span>
-                <span className="mt-0.5 w-fit rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
-                  Active
-                </span>
+                 
               </div>
             )}
           </div>

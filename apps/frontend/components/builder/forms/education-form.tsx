@@ -89,15 +89,7 @@ export const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) 
           </div>
         </div>
 
-        <div className="w-full shrink-0 lg:max-w-sm rounded-[1.5rem] border border-white/10 bg-white/5 px-4 py-3">
-          <p className="font-sans text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">
-            study signal
-          </p>
-          <p className="mt-2 text-sm leading-relaxed text-slate-300">
-            Surface the programs, timelines, and standout context that strengthen your narrative at
-            a glance.
-          </p>
-        </div>
+       
       </div>
 
       {data.length > 0 && (

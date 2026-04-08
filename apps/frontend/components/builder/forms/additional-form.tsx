@@ -105,14 +105,7 @@ export const AdditionalForm: React.FC<AdditionalFormProps> = ({ data, onChange }
           </div>
         </div>
 
-        <div className="w-full shrink-0 lg:max-w-sm rounded-[1.5rem] border border-white/10 bg-white/5 px-4 py-3">
-          <p className="font-sans text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">
-            formatting rule
-          </p>
-          <p className="mt-2 text-sm leading-relaxed text-slate-300">
-            One item per line. Keep entries concise and easy to scan.
-          </p>
-        </div>
+        
       </div>
 
       <div className="relative grid grid-cols-1 gap-4 xl:grid-cols-2 xl:gap-5">

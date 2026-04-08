@@ -252,29 +252,61 @@ def _apply_change_decisions(
     original_data: dict[str, Any],
     improved_data: dict[str, Any],
     current_changes: list[ResumeFieldDiff],
-    decisions: dict[str, bool],
+    decisions: dict[int, str],
 ) -> tuple[dict[str, Any], list[str]]:
-    """Apply selective changes based on user decisions."""
-    import copy
+    """Apply selective changes based on user decisions.
     
+    decisions: index-keyed map of 'accepted' | 'rejected' | 'pending'
+    """
+    import copy
+
     warnings = []
     result_data = copy.deepcopy(improved_data)
-    
-    # Build a map of rejected changes by field_path
-    rejected_paths = {path for path, accepted in decisions.items() if not accepted}
-    
-    if not rejected_paths:
+
+    # Collect rejected changes by their index in current_changes
+    rejected_changes = [
+        change
+        for idx, change in enumerate(current_changes)
+        if str(decisions.get(idx, decisions.get(str(idx), "pending"))) == "rejected"
+    ]
+
+    if not rejected_changes:
         return result_data, warnings
-    
-    # Apply rejections by reverting to original values
-    for change in current_changes:
-        if change.field_path in rejected_paths:
-            try:
-                # Parse the field path (e.g., "workExperience[0].description[2]")
-                _set_nested_value(result_data, change.field_path, change.original_value, original_data)
-            except Exception as e:
-                warnings.append(f"Failed to revert change at {change.field_path}: {str(e)}")
-    
+
+    # Handle skill rejections by rebuilding the technicalSkills list
+    rejected_skill_changes = [c for c in rejected_changes if c.field_type == "skill"]
+    if rejected_skill_changes:
+        orig_skills: list[str] = (
+            original_data.get("additional", {}).get("technicalSkills", []) or []
+        )
+        improved_skills: list[str] = (
+            result_data.get("additional", {}).get("technicalSkills", []) or []
+        )
+        orig_lower = {s.casefold(): s for s in orig_skills}
+        improved_lower = {s.casefold(): s for s in improved_skills}
+
+        for change in rejected_skill_changes:
+            if change.change_type == "added" and change.new_value:
+                # Remove the added skill
+                key = change.new_value.casefold()
+                improved_lower.pop(key, None)
+            elif change.change_type == "removed" and change.original_value:
+                # Restore the removed skill
+                key = change.original_value.casefold()
+                if key not in improved_lower:
+                    improved_lower[key] = orig_lower.get(key, change.original_value)
+
+        result_data.setdefault("additional", {})["technicalSkills"] = list(improved_lower.values())
+
+    # Handle non-skill rejections by reverting via field path
+    for change in rejected_changes:
+        if change.field_type == "skill":
+            continue
+        try:
+            _set_nested_value(result_data, change.field_path, change.original_value, original_data)
+        except Exception as e:
+            warnings.append(f"Failed to revert change at {change.field_path}: {str(e)}")
+
     return result_data, warnings
 
 

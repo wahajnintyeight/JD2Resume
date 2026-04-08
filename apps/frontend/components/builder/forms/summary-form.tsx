@@ -42,14 +42,7 @@ export const SummaryForm: React.FC<SummaryFormProps> = ({ value, onChange }) => 
           </div>
         </div>
 
-        <div className="w-full shrink-0 md:max-w-[280px] rounded-[1.45rem] border border-white/10 bg-white/5 px-4 py-3">
-          <p className="font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-slate-400">
-            writing note
-          </p>
-          <p className="mt-2 text-sm leading-relaxed text-slate-300">
-            Lead with scope, signal, and specialty. Keep it crisp rather than crowded.
-          </p>
-        </div>
+         
       </div>
 
       <div className="relative rounded-[1.6rem] border border-white/10 bg-white/[0.035] p-4">

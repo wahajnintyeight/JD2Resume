@@ -201,28 +201,39 @@ export function ResumeUploadDialog({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button className="rounded-none border border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] hover:translate-y-[1px] hover:translate-x-[1px] hover:shadow-none transition-all">
+          <Button className="h-11 rounded-[1.2rem] border border-blue-300 bg-blue-100 px-4 text-blue-700 font-semibold shadow-[0_8px_24px_rgba(59,130,246,0.12)] transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-400 hover:bg-blue-200">
             <UploadIcon className="w-4 h-4 mr-2" />
             {t('dashboard.uploadResume')}
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md bg-[#F0F0E8] border border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] p-0 gap-0 rounded-none">
-        <DialogHeader className="p-6 border-b border-black bg-white">
-          <DialogTitle className="font-serif text-2xl font-bold uppercase tracking-tight">
+      <DialogContent 
+        className="sm:max-w-2xl p-0 gap-0 rounded-[2rem] border border-gray-300 bg-white text-gray-900 shadow-[0_20px_60px_rgba(0,0,0,0.12)]"
+      >
+        <DialogHeader className="relative p-7 border-b border-gray-200">
+          <DialogTitle 
+            className="font-serif text-4xl font-black uppercase leading-tight tracking-[-0.06em] text-gray-900"
+            style={{ fontFamily: 'var(--font-playfair-display), "Times New Roman", serif' }}
+          >
             {t('dashboard.uploadResume')}
           </DialogTitle>
+          <p className="mt-3 text-sm font-medium text-gray-600">
+            Archive your resume and elevate it as a master variant for tailoring runs.
+          </p>
         </DialogHeader>
 
-        <div className="p-6 bg-[#F0F0E8]">
+        <div className="relative p-8 space-y-6">
           <div
             className={`
-                            relative border-2 border-dashed p-8 text-center transition-all duration-200
-                            ${isDragging ? 'border-blue-700 bg-blue-50' : 'border-gray-400 hover:border-black hover:bg-white'}
-                            ${currentFile ? 'bg-white border-solid border-black' : ''}
-                            ${!currentFile && !isRetryingProcessing ? 'cursor-pointer' : 'cursor-default'}
-                            ${isRetryingProcessing ? 'opacity-70' : ''}
-                        `}
+              relative overflow-hidden rounded-[1.6rem] border transition-all duration-300
+              ${isDragging 
+                ? 'border-blue-500 bg-blue-50 shadow-[0_20px_60px_rgba(59,130,246,0.15)]' 
+                : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
+              }
+              ${currentFile ? 'border-amber-300 bg-amber-50' : ''}
+              ${!currentFile && !isRetryingProcessing ? 'cursor-pointer' : 'cursor-default'}
+              ${isRetryingProcessing ? 'opacity-60 pointer-events-none' : ''}
+            `}
             onClick={!currentFile && !isRetryingProcessing ? openFileDialog : undefined}
             onDragEnter={isRetryingProcessing ? preventDropzoneInteraction : handleDragEnter}
             onDragLeave={isRetryingProcessing ? preventDropzoneInteraction : handleDragLeave}
@@ -232,23 +243,26 @@ export function ResumeUploadDialog({
             <input {...getInputProps()} />
 
             {isUploadingGlobal ? (
-              <div className="flex flex-col items-center py-4">
-                <Loader2Icon className="w-10 h-10 animate-spin text-blue-700 mb-4" />
-                <p className="font-mono text-sm font-bold uppercase text-blue-700">
-                  {t('common.uploading')}
+              <div className="relative flex flex-col items-center py-12">
+                <div className="flex h-16 w-16 items-center justify-center rounded-[1.2rem] border border-blue-300 bg-blue-100 shadow-[0_12px_40px_rgba(59,130,246,0.12)]">
+                  <Loader2Icon className="h-8 w-8 animate-spin text-blue-600" />
+                </div>
+                <p className="mt-5 text-[11px] font-semibold uppercase tracking-[0.32em] text-gray-600">
+                  processing resume
                 </p>
+                <p className="mt-2 text-sm font-medium text-gray-700">Analyzing content...</p>
               </div>
             ) : currentFile ? (
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3 text-left overflow-hidden">
-                  <div className="w-10 h-10 border border-black bg-gray-100 flex items-center justify-center shrink-0">
-                    <FileIcon className="w-5 h-5 text-black" />
+              <div className="relative flex items-center justify-between gap-4 p-4">
+                <div className="flex items-center gap-4 overflow-hidden">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.1rem] border border-amber-300 bg-amber-100 shadow-[0_8px_24px_rgba(217,119,6,0.1)]">
+                    <FileIcon className="h-6 w-6 text-amber-700" />
                   </div>
                   <div className="min-w-0">
-                    <p className="font-bold text-sm truncate max-w-[200px]">
+                    <p className="text-sm font-semibold text-gray-900 truncate">
                       {currentFile.file.name}
                     </p>
-                    <p className="font-mono text-xs text-gray-500">
+                    <p className="mt-1 text-xs font-mono text-gray-600 uppercase tracking-wider">
                       {formatBytes(currentFile.file.size)}
                     </p>
                   </div>
@@ -261,21 +275,27 @@ export function ResumeUploadDialog({
                     e.stopPropagation();
                     removeFile(currentFile.id);
                   }}
-                  className="hover:bg-red-100 text-red-600 rounded-none"
+                  className="h-10 w-10 shrink-0 rounded-[1rem] border border-red-300 bg-red-100 text-red-700 hover:border-red-400 hover:bg-red-200 transition-all"
                 >
-                  <XIcon className="w-5 h-5" />
+                  <XIcon className="h-5 w-5" />
                 </Button>
               </div>
             ) : (
-              <div className="flex flex-col items-center py-4">
-                <div className="w-12 h-12 border border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)] flex items-center justify-center mb-4">
-                  <UploadIcon className="w-6 h-6 text-black" />
+              <div className="relative flex flex-col items-center py-12">
+                <div className="flex h-16 w-16 items-center justify-center rounded-[1.2rem] border border-amber-300 bg-amber-100 shadow-[0_12px_40px_rgba(217,119,6,0.12)]">
+                  <UploadIcon className="h-8 w-8 text-amber-700" />
                 </div>
-                <p className="font-bold text-lg mb-1">
-                  {t('dashboard.uploadDialog.dropzoneTitle')}
+                <h3 
+                  className="mt-6 text-2xl font-black uppercase tracking-[-0.05em] text-gray-900"
+                  style={{ fontFamily: 'var(--font-playfair-display), "Times New Roman", serif' }}
+                >
+                  Drop Resume Here
+                </h3>
+                <p className="mt-3 max-w-sm text-sm leading-6 text-gray-700">
+                  PDF, DOCX, or DOC. Maximum 4MB. We'll parse and analyze intelligently.
                 </p>
-                <p className="font-mono text-xs text-gray-500 uppercase">
-                  {t('dashboard.uploadDialog.dropzoneSubtitle')}
+                <p className="mt-4 text-[11px] font-semibold uppercase tracking-[0.24em] text-gray-600">
+                  or click to browse
                 </p>
               </div>
             )}
@@ -283,53 +303,65 @@ export function ResumeUploadDialog({
 
           {/* Feedback Messages */}
           {displayErrors.length > 0 && (
-            <div className="mt-4 p-3 bg-red-50 border border-red-200 flex items-start gap-2 text-red-700 text-sm">
-              <AlertCircleIcon className="w-5 h-5 shrink-0" />
-              <div>
-                {displayErrors.map((err, i) => (
-                  <p key={i}>{err}</p>
-                ))}
+            <div className="rounded-[1.2rem] border border-red-300 bg-red-50 p-4 shadow-[0_8px_24px_rgba(239,68,68,0.08)]">
+              <div className="flex items-start gap-3">
+                <AlertCircleIcon className="h-5 w-5 shrink-0 text-red-600 mt-0.5" />
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-red-700 mb-1">
+                    Upload Issue
+                  </p>
+                  {displayErrors.map((err, i) => (
+                    <p key={i} className="text-sm leading-5 text-red-600">{err}</p>
+                  ))}
+                </div>
               </div>
             </div>
           )}
 
           {uploadFeedback?.type === 'success' && (
-            <div className="mt-4 p-3 bg-green-50 border border-green-200 flex items-center gap-2 text-green-700 text-sm font-bold">
-              <CheckCircle2Icon className="w-5 h-5 shrink-0" />
-              <p>{uploadFeedback.message}</p>
+            <div className="rounded-[1.2rem] border border-green-300 bg-green-50 p-4 shadow-[0_8px_24px_rgba(34,197,94,0.08)]">
+              <div className="flex items-center gap-3">
+                <CheckCircle2Icon className="h-5 w-5 shrink-0 text-green-600" />
+                <div>
+                  <p className="text-sm font-semibold text-green-700">{uploadFeedback.message}</p>
+                </div>
+              </div>
             </div>
           )}
         </div>
 
-        <div className="p-4 border-t border-black bg-white flex justify-end gap-2">
-          {uploadFeedback?.type === 'error' && failedResumeId && (
-            <Button
-              variant="outline"
-              className="rounded-none border-black hover:bg-gray-100"
-              onClick={handleRetryProcessing}
-              disabled={isRetryingProcessing}
-            >
-              {isRetryingProcessing
-                ? t('dashboard.retryingProcessing')
-                : t('dashboard.retryProcessing')}
-            </Button>
-          )}
-          {uploadFeedback?.type === 'error' && files.length > 0 && (
-            <Button
-              variant="outline"
-              className="rounded-none border-black hover:bg-gray-100"
-              disabled={isRetryingProcessing}
-              onClick={() => {
-                if (files[0]) removeFile(files[0].id);
-                setUploadFeedback(null);
-                setFailedResumeId(null);
-              }}
-            >
-              {t('dashboard.uploadDialog.tryDifferentFile')}
-            </Button>
-          )}
+        <div className="relative border-t border-gray-200 bg-white px-8 py-5 flex flex-col-reverse sm:flex-row justify-between gap-3 sm:items-center">
+          <div className="flex flex-wrap gap-2">
+            {uploadFeedback?.type === 'error' && failedResumeId && (
+              <Button
+                onClick={handleRetryProcessing}
+                disabled={isRetryingProcessing}
+                className="h-10 rounded-[1.1rem] border border-blue-300 bg-blue-100 px-4 text-blue-700 font-semibold hover:border-blue-400 hover:bg-blue-200 transition-all disabled:opacity-50"
+              >
+                {isRetryingProcessing
+                  ? t('dashboard.retryingProcessing')
+                  : t('dashboard.retryProcessing')}
+              </Button>
+            )}
+            {uploadFeedback?.type === 'error' && files.length > 0 && (
+              <Button
+                className="h-10 rounded-[1.1rem] border border-amber-300 bg-amber-100 px-4 text-amber-700 font-semibold hover:border-amber-400 hover:bg-amber-200 transition-all disabled:opacity-50"
+                disabled={isRetryingProcessing}
+                onClick={() => {
+                  if (files[0]) removeFile(files[0].id);
+                  setUploadFeedback(null);
+                  setFailedResumeId(null);
+                }}
+              >
+                {t('dashboard.uploadDialog.tryDifferentFile')}
+              </Button>
+            )}
+          </div>
           <DialogClose asChild>
-            <Button variant="outline" className="rounded-none border-black hover:bg-gray-100">
+            <Button 
+              variant="outline" 
+              className="h-10 rounded-[1.1rem] border border-gray-300 bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition-all"
+            >
               {t('common.cancel')}
             </Button>
           </DialogClose>

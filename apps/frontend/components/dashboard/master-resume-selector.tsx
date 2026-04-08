@@ -66,7 +66,7 @@ export default function MasterResumeSelector({
   if (loading) {
     return (
       <div className="space-y-3">
-        <label className="font-serif text-lg font-black uppercase tracking-tight text-slate-900 block px-1">
+        <label className="font-serif text-lg font-black uppercase tracking-tight text-[#f7efdd] block px-1">
           {displayLabel}
           {required && <span className="ml-1 text-red-600">*</span>}
         </label>
@@ -83,7 +83,7 @@ export default function MasterResumeSelector({
   if (error) {
     return (
       <div className="space-y-3">
-        <label className="font-serif text-lg font-black uppercase tracking-tight text-slate-900 block px-1">
+        <label className="font-serif text-lg font-black uppercase tracking-tight text-[#f7efdd] block px-1">
           {displayLabel}
           {required && <span className="ml-1 text-red-600">*</span>}
         </label>

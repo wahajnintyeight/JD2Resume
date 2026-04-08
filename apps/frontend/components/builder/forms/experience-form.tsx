@@ -154,15 +154,7 @@ export const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, onChange }
           </div>
         </div>
 
-        <div className="w-full shrink-0 lg:max-w-sm rounded-[1.5rem] border border-white/10 bg-white/5 px-4 py-3">
-          <p className="font-sans text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">
-            execution proof
-          </p>
-          <p className="mt-2 text-sm leading-relaxed text-slate-300">
-            Capture roles as compact proof points with clear scope, context, and measurable
-            outcomes.
-          </p>
-        </div>
+        
       </div>
 
       <div className="relative mb-5 flex justify-end">

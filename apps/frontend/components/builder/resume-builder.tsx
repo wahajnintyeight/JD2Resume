@@ -166,6 +166,7 @@ const ResumeBuilderContent = () => {
 
   // Fullscreen preview state
   const [isFullscreenPreview, setIsFullscreenPreview] = useState(false);
+  const [isMobileEditorOpen, setIsMobileEditorOpen] = useState(true);
 
   // AI Regenerate wizard
   const regenerateWizard = useRegenerateWizard({
@@ -299,6 +300,25 @@ const ResumeBuilderContent = () => {
     return () => {
       document.body.style.overflow = '';
     };
+  }, [isFullscreenPreview]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const syncMobilePanelState = () => {
+      if (window.innerWidth >= 1024) {
+        setIsMobileEditorOpen(true);
+      }
+    };
+
+    syncMobilePanelState();
+    window.addEventListener('resize', syncMobilePanelState);
+    return () => window.removeEventListener('resize', syncMobilePanelState);
+  }, []);
+
+  useEffect(() => {
+    if (!isFullscreenPreview) return;
+    setIsMobileEditorOpen(false);
   }, [isFullscreenPreview]);
 
   useEffect(() => {
@@ -667,47 +687,41 @@ const ResumeBuilderContent = () => {
       </div>
 
       <header className="relative z-30 border-b border-white/10 bg-slate-950/55 px-4 py-4 backdrop-blur-xl sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex flex-wrap items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.push('/dashboard')}
-              className="h-11 rounded-full border border-white/10 bg-white/5 px-4 font-sans text-xs font-bold uppercase tracking-[0.28em] text-slate-200 transition-all hover:border-cyan-300/40 hover:bg-cyan-300/10 hover:text-cyan-100"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              <span>{t('nav.backToDashboard')}</span>
-            </Button>
+        <div className="mx-auto flex max-w-7xl flex-col gap-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 items-start gap-3 sm:gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push('/dashboard')}
+                className="h-11 min-w-11 rounded-full border border-white/10 bg-white/5 px-3 font-sans text-[10px] font-bold uppercase tracking-[0.22em] text-slate-200 transition-all hover:border-cyan-300/40 hover:bg-cyan-300/10 hover:text-cyan-100 sm:px-4 sm:text-xs sm:tracking-[0.28em]"
+              >
+                <ArrowLeft className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">{t('nav.backToDashboard')}</span>
+              </Button>
 
-            <div className="hidden h-10 w-px bg-white/10 lg:block" />
-
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-1 font-sans text-[10px] font-bold uppercase tracking-[0.35em] text-amber-200">
-                  atelier
-                </span>
-                <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 font-sans text-[10px] font-bold uppercase tracking-[0.35em] text-cyan-100">
-                  {resumeId
-                    ? `${t('nav.builder')} · ${resumeId.slice(0, 8)}`
-                    : t('builder.unsavedDraft')}
-                </span>
-              </div>
-              <div>
-                <h1 className="font-serif text-3xl font-black uppercase tracking-[0.08em] text-white sm:text-4xl">
-                  {t('nav.builder')}
-                </h1>
-                <p className="max-w-2xl font-sans text-xs uppercase tracking-[0.28em] text-slate-400 sm:text-sm">
-                  Editorial drafting on the left. Live composition stage on the right.
-                </p>
+              <div className="min-w-0 space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-2.5 py-1 font-sans text-[9px] font-bold uppercase tracking-[0.26em] text-cyan-100 sm:px-3 sm:text-[10px]">
+                    mobile studio
+                  </span>
+                  <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 font-sans text-[9px] font-bold uppercase tracking-[0.24em] text-slate-300 sm:px-3 sm:text-[10px]">
+                    {resumeId ? t('builder.editMode') : t('builder.createAndPreview')}
+                  </span>
+                </div>
+                <div>
+                  <h1 className="truncate font-serif text-2xl font-black uppercase tracking-[0.08em] text-white sm:text-3xl lg:text-4xl">
+                    {t('nav.builder')}
+                  </h1>
+                  <p className="mt-1 max-w-2xl font-sans text-xs text-slate-300 sm:text-sm">
+                    Mobile-first editing with a focused preview flow and quick actions for save,
+                    reset, and export.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-2 font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-slate-300">
-                {resumeId ? t('builder.editMode') : t('builder.createAndPreview')}
-              </span>
+            <div className="hidden items-center gap-2 lg:flex">
               {hasUnsavedChanges ? (
                 <span className="flex items-center gap-2 rounded-full border border-amber-300/25 bg-amber-300/10 px-3 py-2 font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-amber-200">
                   <span className="h-2 w-2 rounded-full bg-amber-300 shadow-[0_0_12px_rgba(252,211,77,0.8)]" />
@@ -719,7 +733,93 @@ const ResumeBuilderContent = () => {
                 </span>
               )}
             </div>
+          </div>
 
+          <div className="grid gap-3 lg:hidden">
+            <div className="flex items-center gap-2 overflow-x-auto pb-1">
+              {hasUnsavedChanges ? (
+                <span className="flex shrink-0 items-center gap-2 rounded-full border border-amber-300/25 bg-amber-300/10 px-3 py-2 font-sans text-[10px] font-bold uppercase tracking-[0.24em] text-amber-200">
+                  <span className="h-2 w-2 rounded-full bg-amber-300 shadow-[0_0_12px_rgba(252,211,77,0.8)]" />
+                  {t('builder.unsavedDraft')}
+                </span>
+              ) : (
+                <span className="shrink-0 rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-2 font-sans text-[10px] font-bold uppercase tracking-[0.24em] text-emerald-200">
+                  archive synced
+                </span>
+              )}
+              <span className="shrink-0 rounded-full border border-white/10 bg-white/5 px-3 py-2 font-sans text-[10px] font-bold uppercase tracking-[0.24em] text-slate-300">
+                {activeTab === 'resume' ? 'resume board' : activeTab.replace('-', ' ')}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <Button
+                variant={isMobileEditorOpen ? 'outline' : 'ghost'}
+                onClick={() => {
+                  setIsMobileEditorOpen(true);
+                  setIsFullscreenPreview(false);
+                }}
+                className="h-11 rounded-2xl border-white/10 bg-white/5 px-3 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-slate-100"
+              >
+                Editor
+              </Button>
+              <Button
+                variant={!isMobileEditorOpen ? 'outline' : 'ghost'}
+                onClick={() => setIsMobileEditorOpen(false)}
+                className="h-11 rounded-2xl border-white/10 bg-white/5 px-3 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-slate-100"
+              >
+                Preview
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleSave}
+                disabled={isSaving || !hasUnsavedChanges}
+                className="h-11 rounded-2xl border-cyan-300/30 bg-cyan-300/10 px-3 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-100 disabled:opacity-40"
+              >
+                {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                <span className="ml-2">{t('common.save')}</span>
+              </Button>
+              <Button
+                variant="default"
+                onClick={handleDownload}
+                disabled={isDownloading}
+                className="h-11 rounded-2xl border border-amber-300/30 bg-[linear-gradient(135deg,rgba(251,191,36,0.92),rgba(249,115,22,0.92))] px-3 font-sans text-[10px] font-black uppercase tracking-[0.2em] text-slate-950 shadow-[0_18px_40px_rgba(249,115,22,0.22)]"
+              >
+                {isDownloading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4" />
+                )}
+                <span className="ml-2">{t('common.download')}</span>
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant="outline"
+                onClick={handleReset}
+                disabled={!hasUnsavedChanges}
+                className="h-11 rounded-2xl border-white/10 bg-white/5 px-3 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-slate-200 disabled:opacity-40"
+              >
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Reset
+              </Button>
+              <Button
+                variant="ghost"
+                onClick={() => setIsFullscreenPreview(!isFullscreenPreview)}
+                className="h-11 rounded-2xl border border-white/10 bg-white/5 px-3 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-slate-200"
+              >
+                {isFullscreenPreview ? (
+                  <Minimize2 className="mr-2 h-4 w-4" />
+                ) : (
+                  <Maximize2 className="mr-2 h-4 w-4" />
+                )}
+                Focus
+              </Button>
+            </div>
+          </div>
+
+          <div className="hidden flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end lg:flex">
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 variant="outline"
@@ -765,21 +865,29 @@ const ResumeBuilderContent = () => {
       <main className="relative z-10 flex flex-1 overflow-hidden">
         <div
           className={cn(
-            'flex h-full flex-col border-r border-white/10 bg-slate-950/45 backdrop-blur-xl transition-all duration-500',
-            isFullscreenPreview ? 'w-0 opacity-0 invisible' : 'w-full lg:w-[520px] xl:w-[620px]'
+            'h-full flex-col border-r border-white/10 bg-slate-950/45 backdrop-blur-xl transition-all duration-500',
+            isFullscreenPreview
+              ? 'hidden'
+              : isMobileEditorOpen
+                ? 'flex w-full lg:w-[520px] xl:w-[620px]'
+                : 'hidden lg:flex lg:w-[520px] xl:w-[620px]'
           )}
         >
-          <div className="border-b border-white/10 px-6 py-5 lg:px-8">
+          <div className="border-b border-white/10 px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
             <div className="flex items-center justify-between gap-3">
-              <div>
+              <div className="min-w-0">
                 <p className="font-sans text-[10px] font-bold uppercase tracking-[0.35em] text-cyan-200/80">
                   composition deck
                 </p>
-                <h2 className="mt-2 font-serif text-2xl font-black uppercase tracking-[0.08em] text-white">
+                <h2 className="mt-2 font-serif text-xl font-black uppercase tracking-[0.08em] text-white sm:text-2xl">
                   {resumeId ? t('builder.editMode') : t('builder.createAndPreview')}
                 </h2>
+                <p className="mt-2 max-w-xl text-sm text-slate-300 lg:hidden">
+                  Edit section-by-section with touch-friendly spacing and keep the preview one tap
+                  away.
+                </p>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-right">
+              <div className="hidden rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-right lg:block">
                 <p className="font-sans text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">
                   status
                 </p>
@@ -790,14 +898,19 @@ const ResumeBuilderContent = () => {
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto custom-scrollbar px-4 py-6 lg:px-6 xl:px-8">
-            <div className="mx-auto max-w-2xl rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.78),rgba(15,23,42,0.56))] p-4 shadow-[0_30px_80px_rgba(2,6,23,0.45)] sm:p-6">
+          <div className="flex-1 overflow-y-auto custom-scrollbar px-3 py-4 sm:px-4 sm:py-6 lg:px-6 xl:px-8">
+            <div className="mx-auto max-w-2xl rounded-[1.75rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.82),rgba(15,23,42,0.62))] p-3 shadow-[0_30px_80px_rgba(2,6,23,0.45)] sm:rounded-[2rem] sm:p-6">
               <ResumeForm resumeData={resumeData} onUpdate={handleUpdate} />
             </div>
           </div>
         </div>
 
-        <div className="relative flex flex-1 flex-col overflow-hidden">
+        <div
+          className={cn(
+            'relative flex flex-1 flex-col overflow-hidden',
+            !isMobileEditorOpen && !isFullscreenPreview ? 'flex' : ''
+          )}
+        >
           <div className="border-b border-white/10 bg-slate-950/35 px-4 py-4 backdrop-blur-xl sm:px-6 lg:px-8">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div className="space-y-3">
@@ -828,11 +941,11 @@ const ResumeBuilderContent = () => {
                   ]}
                   activeTab={activeTab}
                   onTabChange={(id) => setActiveTab(id as TabId)}
-                  className="rounded-full border border-white/10 bg-white/5 p-1.5"
+                  className="rounded-[1.25rem] border border-white/10 bg-white/5 p-1.5 sm:rounded-full"
                 />
               </div>
 
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="hidden flex-wrap items-center gap-2 sm:flex">
                 <Button
                   variant="outline"
                   onClick={handleDownloadDocx}
@@ -872,11 +985,44 @@ const ResumeBuilderContent = () => {
                   )}
                 </Button>
               </div>
+
+              <div className="grid grid-cols-3 gap-2 sm:hidden">
+                <Button
+                  variant="outline"
+                  onClick={handleDownloadDocx}
+                  disabled={!resumeId || isDownloadingDocx}
+                  className="h-10 rounded-2xl border-white/10 bg-white/5 px-3 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-slate-200 disabled:opacity-40"
+                >
+                  {isDownloadingDocx ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+                  <span className="ml-2">DOCX</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={handleSavePdf}
+                  disabled={!resumeId || isSavingPdf}
+                  className="h-10 rounded-2xl border-white/10 bg-white/5 px-3 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-slate-200 disabled:opacity-40"
+                >
+                  {isSavingPdf ? <Loader2 className="h-4 w-4 animate-spin" /> : <HardDrive className="h-4 w-4" />}
+                  <span className="ml-2">PDF</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => setIsFullscreenPreview(!isFullscreenPreview)}
+                  className="h-10 rounded-2xl border border-white/10 bg-white/5 px-3 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-slate-200"
+                >
+                  {isFullscreenPreview ? (
+                    <Minimize2 className="h-4 w-4" />
+                  ) : (
+                    <Maximize2 className="h-4 w-4" />
+                  )}
+                  <span className="ml-2">Focus</span>
+                </Button>
+              </div>
             </div>
           </div>
 
           <div className="flex-1 overflow-y-auto custom-scrollbar px-2 py-3 sm:px-4 sm:py-4 lg:px-6 lg:py-6">
-            <div className="mx-auto flex h-full max-w-6xl flex-col rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.44),rgba(15,23,42,0.24))] p-2 shadow-[0_30px_80px_rgba(2,6,23,0.4)] sm:p-4">
+            <div className="mx-auto flex h-full max-w-6xl flex-col rounded-[1.5rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.5),rgba(15,23,42,0.28))] p-2 shadow-[0_30px_80px_rgba(2,6,23,0.4)] sm:rounded-[2rem] sm:p-4">
               <div
                 className={cn(
                   'flex-1 transition-all duration-500 transform',
@@ -1022,18 +1168,40 @@ const ResumeBuilderContent = () => {
             </div>
           </div>
 
-          <div className="pointer-events-none absolute bottom-6 right-6 z-30 flex flex-col items-end gap-3">
-            <div className="rounded-full border border-white/10 bg-slate-950/70 px-4 py-2 font-sans text-[10px] font-bold uppercase tracking-[0.3em] text-slate-300 shadow-[0_10px_30px_rgba(2,6,23,0.35)] backdrop-blur-xl">
+          <div className="pointer-events-none absolute bottom-4 right-4 z-30 flex flex-col items-end gap-2 sm:bottom-6 sm:right-6 sm:gap-3">
+            <div className="rounded-full border border-white/10 bg-slate-950/70 px-3 py-2 font-sans text-[9px] font-bold uppercase tracking-[0.26em] text-slate-300 shadow-[0_10px_30px_rgba(2,6,23,0.35)] backdrop-blur-xl sm:px-4 sm:text-[10px] sm:tracking-[0.3em]">
               AI polish
             </div>
             <Button
               size="lg"
-              className="pointer-events-auto h-16 w-16 rounded-full border border-fuchsia-300/30 bg-[radial-gradient(circle_at_30%_30%,rgba(244,114,182,0.95),rgba(168,85,247,0.95)_55%,rgba(30,41,59,0.95)_100%)] p-0 text-white shadow-[0_24px_60px_rgba(168,85,247,0.42)] transition-all hover:scale-110 active:scale-95"
+              className="pointer-events-auto h-14 w-14 rounded-full border border-fuchsia-300/30 bg-[radial-gradient(circle_at_30%_30%,rgba(244,114,182,0.95),rgba(168,85,247,0.95)_55%,rgba(30,41,59,0.95)_100%)] p-0 text-white shadow-[0_24px_60px_rgba(168,85,247,0.42)] transition-all hover:scale-110 active:scale-95 sm:h-16 sm:w-16"
               onClick={() => regenerateWizard.startRegenerate()}
               disabled={!resumeId}
             >
-              <Sparkles className="h-7 w-7" />
+              <Sparkles className="h-6 w-6 sm:h-7 sm:w-7" />
             </Button>
+          </div>
+
+          <div className="sticky bottom-0 z-20 border-t border-white/10 bg-slate-950/80 px-3 py-3 backdrop-blur-xl lg:hidden">
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant={isMobileEditorOpen ? 'outline' : 'ghost'}
+                onClick={() => {
+                  setIsMobileEditorOpen(true);
+                  setIsFullscreenPreview(false);
+                }}
+                className="h-12 rounded-2xl border-white/10 bg-white/5 px-4 font-sans text-[10px] font-bold uppercase tracking-[0.22em] text-slate-100"
+              >
+                Edit Resume
+              </Button>
+              <Button
+                variant={!isMobileEditorOpen ? 'outline' : 'ghost'}
+                onClick={() => setIsMobileEditorOpen(false)}
+                className="h-12 rounded-2xl border-white/10 bg-white/5 px-4 font-sans text-[10px] font-bold uppercase tracking-[0.22em] text-slate-100"
+              >
+                Preview Mode
+              </Button>
+            </div>
           </div>
         </div>
       </main>
