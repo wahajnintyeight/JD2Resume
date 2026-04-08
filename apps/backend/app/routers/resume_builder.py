@@ -127,6 +127,10 @@ def _raise_improve_error(
     detail: str,
 ) -> NoReturn:
     logger.error("Resume %s failed during %s: %s", action, stage, error)
+    # Include the actual error message for better user feedback
+    error_message = str(error)
+    if error_message:
+        detail = f"{detail}: {error_message}"
     raise HTTPException(status_code=500, detail=detail)
 
 def _get_original_resume_data(resume: dict[str, Any]) -> dict[str, Any] | None:
@@ -695,7 +699,9 @@ async def improve_resume_endpoint(
         )
     except Exception as e:
         logger.error("Improvement failed: %s", e)
-        raise HTTPException(status_code=500, detail="Improvement failed")
+        error_message = str(e)
+        detail = f"Improvement failed: {error_message}" if error_message else "Improvement failed"
+        raise HTTPException(status_code=500, detail=detail)
 
 
 @router.post("/{resume_id}/generate-cover-letter", response_model=GenerateContentResponse)
@@ -733,7 +739,9 @@ async def generate_cover_letter_endpoint(
         return GenerateContentResponse(content=content, message="Cover letter generated")
     except Exception as e:
         logger.error("Cover letter generation failed: %s", e)
-        raise HTTPException(status_code=500, detail="Generation failed")
+        error_message = str(e)
+        detail = f"Generation failed: {error_message}" if error_message else "Generation failed"
+        raise HTTPException(status_code=500, detail=detail)
 
 
 @router.post("/{resume_id}/generate-outreach", response_model=GenerateContentResponse)
@@ -768,7 +776,9 @@ async def generate_outreach_endpoint(
         return GenerateContentResponse(content=content, message="Outreach message generated")
     except Exception as e:
         logger.error("Outreach generation failed: %s", e)
-        raise HTTPException(status_code=500, detail="Generation failed")
+        error_message = str(e)
+        detail = f"Generation failed: {error_message}" if error_message else "Generation failed"
+        raise HTTPException(status_code=500, detail=detail)
 
 
 @router.get("/{resume_id}/job-description")
