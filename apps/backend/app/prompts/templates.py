@@ -9,6 +9,29 @@ LANGUAGE_NAMES = {
     "pt": "Brazilian Portuguese",
 }
 
+STRONG_ACTION_VERBS = (
+    "Built",
+    "Developed",
+    "Implemented",
+    "Designed",
+    "Created",
+    "Optimized",
+    "Automated",
+    "Improved",
+    "Led",
+)
+
+STRONG_ACTION_VERBS_TEXT = ", ".join(STRONG_ACTION_VERBS)
+
+SKILL_RULES_BLOCK = """SKILL HANDLING RULES (CRITICAL):
+- PRESERVE EXISTING TECHNICAL SKILLS: Keep skills already present in the original resume unless the user explicitly asks to remove or narrow them
+- REMOVE SOFT SKILLS FROM technicalSkills: People skills, communication traits, leadership traits, business buzzwords, and vague concepts do not belong in the technicalSkills list
+- SOFT SKILLS BELONG IN BULLETS, NOT technicalSkills: If collaboration, communication, mentoring, or stakeholder-facing work is important and supported by the resume, express it inside accomplishment bullets with concrete context
+- ONLY ADD GENUINE TECHNICAL SKILLS: Only add technologies, tools, programming languages, frameworks, platforms, databases, cloud services, or technical methodologies
+- JD-AWARE METHODOLOGIES: Add items like "Agile" or "Scrum" only when the user explicitly requests them or the role clearly requires them and the resume supports them
+- VALIDATE BEFORE ADDING: Only add a skill if it is a recognized technical competency and is supported by the source resume or explicit user input
+- DO NOT ADD GENERIC CONCEPTS OR BUZZWORDS: Avoid terms like "data storytelling", "product thinking", "growth mindset", "problem solving", "teamwork", or "strategic planning" in technicalSkills"""
+
 
 def get_language_name(code: str) -> str:
     """Get full language name from code."""
@@ -150,25 +173,23 @@ CRITICAL_TRUTHFULNESS_RULES_TEMPLATE = """CRITICAL TRUTHFULNESS RULES - NEVER VI
 2. DO NOT invent numeric achievements (e.g., "increased by 30%") unless they exist in original
 3. DO NOT add company names not in the original
 4. DO NOT upgrade experience level (e.g., "Junior" -> "Senior")
-5. DO NOT add frameworks or platforms the candidate clearly hasn't used, UNLESS they are highly relevant to the job and can be reasonably inferred as skills the candidate likely possesses or should list for alignment.
+5. DO NOT add frameworks or platforms the candidate clearly hasn't used in bullet points. You may add JD-relevant technical skills to the technicalSkills list (where the candidate will review them), but NEVER embed unverified skills into accomplishment bullets as if the candidate used them.
 6. DO NOT extend employment dates or change timelines (start/end years)
 7. {rule_7}
 8. Preserve factual accuracy - only use information provided by the candidate as the primary foundation.
 9. SKILL ADDITION: You ARE encouraged to add relevant technical skills from the Job Description to the technicalSkills list to ensure a high ATS match, as these will be reviewed by the candidate.
 
-SKILL HANDLING RULES (CRITICAL):
-- PRESERVE ALL EXISTING SKILLS: You must NEVER remove skills already present in the original resume's technicalSkills list
-- ONLY ADD GENUINE TECHNICAL SKILLS: Only add skills that are actual technologies, tools, programming languages, frameworks, platforms, or technical methodologies
-- DO NOT ADD BUZZWORDS: Avoid adding soft skills ("communication", "leadership"), generic terms ("agile", "scrum" unless specifically requested), or business jargon ("stakeholder management", "strategic planning")
-- VALIDATE BEFORE ADDING: Only add a skill if it appears in the job description AND is a recognized technical competency (e.g., "Python", "Kubernetes", "AWS Lambda", "GraphQL", "TensorFlow")
-- DO NOT ADD: Concepts, processes, or soft skills disguised as technical terms ("cross-functional collaboration", "data storytelling", "product thinking", "growth mindset")
+{skill_rules}
 
 Violation of these rules could cause serious problems for the candidate in job interviews.
 """
 
 
 def _build_truthfulness_rules(rule_7: str) -> str:
-    return CRITICAL_TRUTHFULNESS_RULES_TEMPLATE.format(rule_7=rule_7)
+    return CRITICAL_TRUTHFULNESS_RULES_TEMPLATE.format(
+        rule_7=rule_7,
+        skill_rules=SKILL_RULES_BLOCK,
+    )
 
 
 # ATS-specific optimization rules that apply to all prompts
@@ -185,15 +206,15 @@ ATS_CORE_RULES = """ATS OPTIMIZATION RULES (CRITICAL FOR PASSING AUTOMATED SCREE
    - DO NOT include soft skills (communication, teamwork, leadership) in technicalSkills array
    - Place the most critical/required skills first in the list
    - Use flat comma-separated format - avoid nested categories for better ATS parsing
-   - PRESERVE ALL EXISTING SKILLS: Never remove skills already present in the original resume
+   - PRESERVE EXISTING TECHNICAL SKILLS: Never remove technical skills already present in the original resume unless the user explicitly asks to remove or narrow them
    - ADD ONLY TECHNICAL SKILLS: Only add actual technologies, tools, languages, frameworks - not buzzwords or concepts
 
 3. EXACT LANGUAGE MATCHING (CRITICAL):
-   - Use the EXACT phrases from the job description, not synonyms
-   - "stakeholder communication" stays "stakeholder communication" (not "client relations")
-   - "cross-functional collaboration" stays exactly as written (not "working with teams")
-   - "data storytelling" stays "data storytelling" (not "data visualization")
-   - ATS systems do NOT understand synonyms - they match literal strings
+   - Prefer exact phrases from the job description when they fit naturally and truthfully
+   - Preserve verbatim JD phrases that were intentionally inserted for ATS alignment
+   - "stakeholder communication" can stay "stakeholder communication" when the JD uses that phrasing
+   - "cross-functional collaboration" can stay exactly as written when it reflects the candidate's work
+   - Semantic variants may still match in modern ATS systems, but exact JD phrasing is usually the safer choice
 
 4. SUMMARY OPTIMIZATION:
    - First sentence: Include exact job title
@@ -213,16 +234,15 @@ ATS_CORE_RULES = """ATS OPTIMIZATION RULES (CRITICAL FOR PASSING AUTOMATED SCREE
    - Prioritize keywords that appear multiple times in the JD
 """
 
+TRUTHFULNESS_RULE_7 = {
+    "nudge": "DO NOT add new bullet points or content - only rephrase existing content",
+    "keywords": "You may rephrase existing bullet points to include keywords, but do NOT add new bullet points",
+    "full": "You may expand existing bullet points or add new ones that elaborate on existing work, but DO NOT invent entirely new responsibilities",
+}
+
 CRITICAL_TRUTHFULNESS_RULES = {
-    "nudge": _build_truthfulness_rules(
-        "DO NOT add new bullet points or content - only rephrase existing content"
-    ),
-    "keywords": _build_truthfulness_rules(
-        "You may rephrase existing bullet points to include keywords, but do NOT add new bullet points"
-    ),
-    "full": _build_truthfulness_rules(
-        "You may expand existing bullet points or add new ones that elaborate on existing work, but DO NOT invent entirely new responsibilities"
-    ),
+    prompt_id: _build_truthfulness_rules(rule_7)
+    for prompt_id, rule_7 in TRUTHFULNESS_RULE_7.items()
 }
 
 IMPROVE_RESUME_PROMPT_NUDGE = """Lightly nudge this resume toward the job description. Output ONLY the JSON object, no other text.

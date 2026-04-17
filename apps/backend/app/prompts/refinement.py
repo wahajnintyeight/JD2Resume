@@ -1,5 +1,7 @@
 """Prompt templates and blacklists for multi-pass resume refinement."""
 
+from app.prompts.templates import SKILL_RULES_BLOCK
+
 # AI Phrase Blacklist - Words and phrases that sound AI-generated
 AI_PHRASE_BLACKLIST: set[str] = {
     # Action verbs (overused in AI resume writing)
@@ -38,7 +40,6 @@ AI_PHRASE_BLACKLIST: set[str] = {
     "impactful",
     "proactive",
     "proactively",
-    "stakeholder",
     "deliverables",
     "bandwidth",
     "circle back",
@@ -104,7 +105,6 @@ AI_PHRASE_REPLACEMENTS: dict[str, str] = {
     "impactful": "effective",
     "proactive": "active",
     "proactively": "actively",
-    "stakeholder": "team member",
     "deliverables": "outputs",
     "bandwidth": "capacity",
     "circle back": "follow up",
@@ -144,14 +144,7 @@ CRITICAL RULES:
 4. Maintain the exact same JSON structure
 5. Do not use em-dashes (—) or their variants (---, --)
 
-SKILL HANDLING RULES (CRITICAL):
-- PRESERVE ALL EXISTING SKILLS: You must NEVER remove skills already present in the technicalSkills list
-- ONLY ADD GENUINE TECHNICAL SKILLS: Only add skills that are actual technologies, tools, programming languages, frameworks, platforms, databases, cloud services, or technical methodologies
-- DO NOT ADD BUZZWORDS OR SOFT SKILLS: Avoid adding terms like "communication", "leadership", "stakeholder management", "strategic thinking", "cross-functional collaboration"
-- DO NOT ADD GENERIC CONCEPTS: Do not add "agile", "scrum", "waterfall" unless specifically requested as hard requirements
-- VALIDATE BEFORE ADDING: Only add a skill if it is a recognized technical competency (e.g., "Python", "Kubernetes", "AWS Lambda", "GraphQL", "TensorFlow", "PostgreSQL", "Docker", "React")
-- EXAMPLES OF VALID TECHNICAL SKILLS: Programming languages, databases, cloud platforms, frameworks, libraries, tools, DevOps technologies, ML/AI frameworks, security tools, testing frameworks
-- EXAMPLES OF INVALID "SKILLS": "data storytelling", "product thinking", "growth mindset", "problem solving", "teamwork", "adaptability"
+{skill_rules}
 
 Keywords to inject (only if supported by master resume):
 {keywords_to_inject}
@@ -165,7 +158,9 @@ Master resume (source of truth):
 Job description context:
 {job_description}
 
-Output the complete resume JSON with keywords naturally integrated. Return ONLY valid JSON."""
+Output the complete resume JSON with keywords naturally integrated. Return ONLY valid JSON.""".replace(
+    "{skill_rules}", SKILL_RULES_BLOCK
+)
 
 
 # Prompt for validation and polish pass
@@ -182,13 +177,7 @@ VERIFY:
 - All certifications exist in the master resume
 - No fabricated metrics or achievements
 
-SKILL PRESERVATION RULES (CRITICAL):
-- PRESERVE ALL EXISTING SKILLS: You must NEVER remove skills already present in the technicalSkills list from the original resume
-- ONLY RETAIN GENUINE TECHNICAL SKILLS: Ensure all skills in technicalSkills are actual technologies, tools, programming languages, frameworks, platforms, databases, or cloud services
-- REMOVE SOFT SKILLS from technicalSkills: If "communication", "leadership", "teamwork" appear in technicalSkills, remove them
-- REMOVE BUSINESS CONCEPTS from technicalSkills: If generic terms like "stakeholder management", "strategic planning", "data storytelling" appear in technicalSkills, remove them
-- VALIDATE TECHNICAL SKILLS: Ensure all skills are recognized technical competencies (e.g., "Python", "Kubernetes", "AWS Lambda", "GraphQL", "PostgreSQL", "Docker", "React")
-- ONLY ADD TECHNICAL SKILLS: If adding new skills, only add actual technical tools/languages/frameworks from the job description that are supported by the master resume
+{skill_rules}
 
 Resume to polish:
 {resume}
@@ -196,4 +185,6 @@ Resume to polish:
 Master resume (verify all claims against this):
 {master_resume}
 
-Output the polished resume JSON. Return ONLY valid JSON."""
+Output the polished resume JSON. Return ONLY valid JSON.""".replace(
+    "{skill_rules}", SKILL_RULES_BLOCK
+)

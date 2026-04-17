@@ -29,7 +29,7 @@ class AnalysisResponse(BaseModel):
     """Response from AI resume analysis."""
 
     items_to_enrich: list[EnrichmentItem] = Field(default_factory=list)
-    questions: list[EnrichmentQuestion] = Field(default_factory=list)
+    questions: list[EnrichmentQuestion] = Field(default_factory=list, max_length=8)
     analysis_summary: str | None = None  # Optional overall summary
 
 
@@ -45,6 +45,8 @@ class EnhanceRequest(BaseModel):
 
     resume_id: str
     answers: list[AnswerInput]
+    items_to_enrich: list[EnrichmentItem] = Field(default_factory=list)
+    questions: list[EnrichmentQuestion] = Field(default_factory=list)
 
 
 class EnhancedDescription(BaseModel):

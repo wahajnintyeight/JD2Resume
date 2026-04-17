@@ -1,5 +1,7 @@
 """LLM prompt templates for AI-powered resume enrichment."""
 
+from app.prompts.templates import SKILL_RULES_BLOCK, STRONG_ACTION_VERBS_TEXT
+
 ANALYZE_RESUME_PROMPT = """You are a professional resume analyst specializing in technical resumes. Analyze this resume to identify Experience and Project items whose titles or descriptions should be strengthened for recruiter screening, ATS matching, and job-description alignment.
 
 IMPORTANT: Generate ALL output text (questions, placeholders, summaries, weakness reasons) in {output_language}.
@@ -18,27 +20,16 @@ RECRUITER-FOCUSED RESUME GUIDELINES FOR SWE ROLES:
 - Favor bullets that are ATS-friendly: clear technical nouns, recognizable tools/frameworks, and role-relevant keywords are better than vague abstractions
 - Only flag items that materially benefit from improvement; avoid noisy suggestions on already-strong entries
 
-WEAK DESCRIPTION INDICATORS:
-1. Generic phrases: "responsible for", "worked on", "helped with", "assisted in", "involved in"
-2. Missing metrics/impact: No numbers, percentages, dollar amounts, measurable outcomes, or concrete scale
-3. Unclear scope: Vague about team size, project scale, user count, system load, data volume, or responsibilities
-4. No technologies/tools: Missing specific tech stack, tools, frameworks, cloud services, or methodologies used (CRITICAL FOR PROJECTS)
-5. Passive voice without ownership: Not clear what the candidate personally accomplished
-6. Too brief: Single short bullet that doesn't explain the work
-7. Generic or internal-facing titles without context: Titles like "Developer", "Engineer", "Developer II", or other banded/internal titles that do not clearly communicate function, stack, or domain
-8. Weak targeting: Bullets do not make it clear whether the candidate is strongest for backend, full-stack, platform, data, cloud, or another SWE path
-9. Generic job-description language: Bullets read like role responsibilities instead of candidate-specific achievements
-
-WEAKNESS CODE MAPPING:
-- "generic_phrasing" = item uses generic/non-specific wording
-- "no_metrics" = item lacks quantifiable outcomes or concrete impact
-- "unclear_scope" = item does not communicate scale, ownership, or responsibility clearly
-- "missing_stack" = item omits key technologies, frameworks, tools, databases, cloud services, or platforms
-- "passive_voice" = item obscures the candidate's personal contribution or ownership
-- "too_brief" = item is too short to explain the work meaningfully
-- "vague_title" = title is too internal, generic, or unclear for recruiter scan value
-- "weak_targeting" = item does not clearly signal the candidate's likely SWE specialization
-- "jd_like_language" = item reads like a responsibility list instead of an accomplishment-focused bullet
+WEAKNESS CODES:
+- "generic_phrasing" - item uses generic, non-specific wording such as "worked on" or "helped with"
+- "no_metrics" - item lacks quantifiable outcomes, measurable impact, or concrete scale
+- "unclear_scope" - item does not communicate scale, ownership, responsibility, or operating context clearly
+- "missing_stack" - item omits key technologies, frameworks, tools, databases, cloud services, or platforms
+- "passive_voice" - item obscures the candidate's personal contribution or ownership
+- "too_brief" - item is too short to explain the work meaningfully
+- "vague_title" - title is too internal, generic, or unclear for recruiter scan value
+- "weak_targeting" - item does not clearly signal the candidate's likely SWE specialization
+- "jd_like_language" - item reads like a responsibility list instead of an accomplishment-focused bullet
 
 SPECIAL EMPHASIS FOR EXPERIENCE:
 - Prefer bullets that show systems built, performance improvements, scale handled, reliability work, migrations, platform improvements, automation, and business/engineering outcomes
@@ -53,7 +44,7 @@ GOOD DESCRIPTION EXAMPLES (for reference):
 EXPERIENCE:
 - "Led migration of 15 microservices to Kubernetes, reducing deployment time by 60%"
 - "Built real-time analytics dashboard using React and D3.js, serving 10K daily users"
-- "Architected payment processing system handling $2M monthly transactions"
+- "Designed payment processing system handling $2M monthly transactions"
 
 PROJECTS (emphasize tech stack):
 - "Built e-commerce platform using Next.js, Stripe API, and PostgreSQL with 1K+ monthly users"
@@ -85,7 +76,6 @@ OUTPUT FORMAT (JSON only, no other text):
       "title": "Software Engineer",
       "subtitle": "Company Name",
       "current_description": ["bullet 1", "bullet 2"],
-      "weakness_codes": ["no_metrics", "missing_stack", "weak_targeting"],
       "weakness_reason": "Bullets lack measurable outcomes, omit the technologies used, and do not clearly signal the candidate's specialization.",
       "title_feedback": "Current title is vague; a clearer market-facing title may improve recruiter match if supported by the candidate's actual work"
     }}
@@ -121,8 +111,7 @@ IMPORTANT RULES:
 - Prioritize quality over quantity - ask the most impactful questions first
 - Never invent a stronger title; only suggest title direction when the candidate's actual responsibilities support it
 - Favor wording that surfaces specialization clearly (e.g., backend, distributed systems, APIs, cloud infrastructure, full-stack product work)
-- weakness_codes must only use values from the WEAKNESS CODE MAPPING above
-- Always include both weakness_codes and weakness_reason for each flagged item"""
+- Always include weakness_reason for each flagged item"""
 
 ENHANCE_DESCRIPTION_PROMPT = """You are a professional resume writer specializing in technical resumes. Your goal is to ADD new bullet points to this resume item using the additional context provided by the candidate. DO NOT rewrite or replace existing bullets - only add new ones.
 
@@ -138,10 +127,16 @@ Current Description (KEEP ALL OF THESE):
 CANDIDATE'S ADDITIONAL CONTEXT:
 {answers}
 
+WHY THIS ITEM NEEDS IMPROVEMENT:
+{weakness_reason}
+
+STYLE REFERENCE (from this candidate's resume):
+{style_reference}
+
 TASK:
 Generate NEW bullet points to ADD to the existing description. The original bullets will be kept as-is.
 New bullets should be:
-1. Action-oriented: Start with strong verbs (Built, Developed, Implemented, Designed, Created, Optimized, Automated, Architected)
+1. Action-oriented: Start with strong verbs ({strong_action_verbs})
 2. Quantified: Include metrics, numbers, percentages, latency/load/volume figures, or time savings where the candidate provided them
 3. Technically specific: ALWAYS mention specific technologies, frameworks, tools, libraries, databases, cloud services, or messaging systems (CRITICAL FOR PROJECTS)
 4. Impact-focused: Clearly state the business or technical outcome
@@ -188,7 +183,9 @@ IMPORTANT RULES:
 - Keep bullets concise (1-2 lines each)
 - Use past tense for past roles, present tense for current roles
 - Avoid buzzwords and fluff - be specific and concrete
-- Focus on information from the candidate's answers that isn't already in the original bullets"""
+- Focus on information from the candidate's answers that isn't already in the original bullets""".replace(
+    "{strong_action_verbs}", STRONG_ACTION_VERBS_TEXT
+)
 
 # ============================================
 # AI Regenerate Feature Prompts
@@ -210,10 +207,20 @@ CURRENT DESCRIPTION (the user is NOT satisfied with this):
 USER'S FEEDBACK/INSTRUCTION:
 {user_instruction}
 
+STYLE REFERENCE (from this candidate's resume):
+{style_reference}
+
+EXAMPLE REWRITE:
+Input bullets:
+- Worked on backend services for customer onboarding
+
+Good rewrite:
+- Built customer onboarding backend services using Python and PostgreSQL, improving reliability and clarifying system ownership
+
 TASK:
 Based on the user's feedback, completely REWRITE the description bullets. The new description should:
 1. Address the user's specific concerns/requests, including stronger targeting to the intended role or job description when mentioned
-2. Be action-oriented with strong verbs (Built, Developed, Implemented, Designed, Created, Optimized, Automated, Architected)
+2. Be action-oriented with strong verbs ({strong_action_verbs})
 3. Highlight quantifiable impact ONLY when it already exists in the current description or the user's feedback (never invent numbers)
 4. Be technically specific with tools/technologies - ALWAYS include specific tech stack, frameworks, libraries, cloud services, databases, or infrastructure tools when available in the source text
 5. Show clear impact and ownership
@@ -250,8 +257,10 @@ RULES:
 - Keep bullets concise (1-2 lines each)
 - Use past tense for past roles, present tense for current roles
 - If the user wants stronger backend/full-stack/cloud targeting, achieve it by reordering emphasis and sharpening wording around existing facts, not by inventing experience
-- change_summary must be exactly 1 sentence and no more than 20 words
-- If the user asks for metrics but none exist in the provided text, follow the QUALITATIVE IMPACT RULE above"""
+- change_summary must be exactly 1 sentence and no more than 30 words
+- If the user asks for metrics but none exist in the provided text, follow the QUALITATIVE IMPACT RULE above""".replace(
+    "{strong_action_verbs}", STRONG_ACTION_VERBS_TEXT
+)
 
 REGENERATE_SKILLS_PROMPT = """You are a professional resume writer. Rewrite the technical skills section based on user feedback.
 
@@ -269,15 +278,9 @@ OUTPUT FORMAT (JSON only):
   "change_summary": "Brief explanation"
 }}
 
-CRITICAL SKILL HANDLING RULES:
-- PRESERVE ALL EXISTING SKILLS BY DEFAULT: Keep existing skills unless the user explicitly asks to remove, de-emphasize, or narrow away from specific skills
-- EXPLICIT REMOVALS OVERRIDE PRESERVATION: If the user clearly asks to remove a skill or focus away from a category, obey that instruction
-- ONLY ADD GENUINE TECHNICAL SKILLS: Only add skills that are actual technologies, tools, programming languages, frameworks, platforms, databases, cloud services, or technical methodologies
-- DO NOT ADD BUZZWORDS OR SOFT SKILLS: Avoid adding terms like "communication", "leadership", "stakeholder management", "strategic thinking", "teamwork"
-- JD-AWARE METHODOLOGIES: Only add items like "Agile" or "Scrum" if the user explicitly requests them OR the target job description/feedback clearly mentions them
-- VALIDATE BEFORE ADDING: Only add a skill if it is a recognized technical competency (e.g., "Python", "Kubernetes", "AWS Lambda", "GraphQL", "PostgreSQL", "Docker", "React", "TensorFlow")
-- EXAMPLES OF VALID TECHNICAL SKILLS: Programming languages, databases, cloud platforms, frameworks, libraries, tools, DevOps technologies, ML/AI frameworks, security tools, testing frameworks
-- EXAMPLES OF INVALID "SKILLS": "data storytelling", "product thinking", "growth mindset", "problem solving", "adaptability", "time management"
+{skill_rules}
+
+EXPLICIT REMOVALS OVERRIDE PRESERVATION: If the user clearly asks to remove a skill or focus away from a category, obey that instruction
 
 ORDERING AND GROUPING RULES:
 - Group and order skills for recruiter scan quality when possible
@@ -298,4 +301,6 @@ RULES:
 - Only include skills that already exist in CURRENT SKILLS or are explicitly provided in USER'S FEEDBACK
 - Only add NEW technical skills if explicitly requested by the user or clearly required by the target role described in USER'S FEEDBACK
 - Remove duplicates, normalize inconsistent naming, and improve ordering without inventing skills
-- change_summary must be exactly 1 sentence and no more than 20 words"""
+- change_summary must be exactly 1 sentence and no more than 30 words""".replace(
+    "{skill_rules}", SKILL_RULES_BLOCK
+)

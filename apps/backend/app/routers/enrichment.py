@@ -27,8 +27,6 @@ from app.schemas.enrichment import (
     EnhancedDescription,
     EnhanceRequest,
     EnhancementPreview,
-    EnrichmentItem,
-    EnrichmentQuestion,
     RegenerateItemError,
     RegenerateItemInput,
     RegenerateRequest,
@@ -39,6 +37,166 @@ from app.schemas.enrichment import (
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/enrichment", tags=["Enrichment"])
+
+
+def _extract_style_reference(processed_data: dict, limit: int = 2) -> str:
+    """Extract a few strong existing bullets to anchor generation style.
+
+    Scores bullets by a combination of:
+    - Contains a digit (metric, scale, count)
+    - Contains a recognizable technology/tool name
+    - Sufficient length to be substantive (>60 chars)
+    A bullet needs at least 2 of these 3 signals to qualify.
+    """
+    scored: list[tuple[int, str]] = []
+
+    for section_name in ("workExperience", "personalProjects"):
+        for item in processed_data.get(section_name, []):
+            for bullet in item.get("description", []):
+                if not isinstance(bullet, str):
+                    continue
+                stripped = bullet.strip()
+                if not stripped:
+                    continue
+
+                score = 0
+                if re.search(r"\d", stripped):
+                    score += 1
+                if re.search(
+                    r"\b("
+                    r"API|AWS|Azure|GCP|Docker|Kubernetes|Python|Java|JavaScript|TypeScript|"
+                    r"React|Node|PostgreSQL|MySQL|Redis|Kafka|GraphQL|FastAPI|Django|Flask|"
+                    r"Go|Rust|C\+\+|C#|Swift|Kotlin|Ruby|PHP|Scala|Elixir|"
+                    r"Terraform|Ansible|Jenkins|CI/CD|GitHub Actions|GitLab|"
+                    r"MongoDB|DynamoDB|Cassandra|Elasticsearch|RabbitMQ|"
+                    r"TensorFlow|PyTorch|pandas|NumPy|scikit-learn|Spark|Airflow|dbt|"
+                    r"Unity|Unreal|CUDA|OpenGL|Vulkan|"
+                    r"Spring|Rails|Laravel|Express|Next\.js|Vue|Angular|Svelte|"
+                    r"Linux|Nginx|S3|Lambda|EC2|ECS|EKS|Fargate|CloudFormation|CDK"
+                    r")\b",
+                    stripped,
+                    re.IGNORECASE,
+                ):
+                    score += 1
+                if len(stripped) > 60:
+                    score += 1
+
+                if score >= 2:
+                    scored.append((score, stripped))
+
+    # Sort by score descending, take top `limit`
+    scored.sort(key=lambda x: x[0], reverse=True)
+
+    unique_candidates: list[str] = []
+    seen: set[str] = set()
+    for _, bullet in scored:
+        normalized = bullet.lower()
+        if normalized in seen:
+            continue
+        seen.add(normalized)
+        unique_candidates.append(bullet)
+        if len(unique_candidates) >= limit:
+            break
+
+    if not unique_candidates:
+        return "- No strong existing bullet available; match the candidate's existing tone and specificity where possible"
+
+    return "\n".join(f"- {bullet}" for bullet in unique_candidates)
+
+
+def _parse_analysis_result(result: dict) -> AnalysisResponse:
+    """Validate and normalize the analysis payload returned by the LLM."""
+    return AnalysisResponse.model_validate(
+        {
+            "items_to_enrich": [
+                {
+                    "item_id": item.get("item_id", f"item_{i}"),
+                    "item_type": item.get("item_type", "experience"),
+                    "title": item.get("title", ""),
+                    "subtitle": item.get("subtitle"),
+                    "current_description": item.get("current_description", []),
+                    "weakness_reason": item.get("weakness_reason", ""),
+                }
+                for i, item in enumerate(result.get("items_to_enrich", []))
+            ],
+            "questions": [
+                {
+                    "question_id": q.get("question_id", f"q_{i}"),
+                    "item_id": q.get("item_id", ""),
+                    "question": q.get("question", ""),
+                    "placeholder": q.get("placeholder", ""),
+                }
+                for i, q in enumerate(result.get("questions", []))
+            ],
+            "analysis_summary": result.get("analysis_summary"),
+        }
+    )
+
+
+def _normalize_match_value(value: str | None) -> str:
+    return (value or "").strip().casefold()
+
+
+def _normalize_lines(value: object) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, list):
+        normalized: list[str] = []
+        for entry in value:
+            text = str(entry).strip()
+            if text:
+                normalized.append(text)
+        return normalized
+    text = str(value).strip()
+    return [text] if text else []
+
+
+def _lines_equal(left: object, right: object) -> bool:
+    left_norm = [line.casefold() for line in _normalize_lines(left)]
+    right_norm = [line.casefold() for line in _normalize_lines(right)]
+    return left_norm == right_norm
+
+
+def _find_unique_index_by_metadata(
+    entries: list[dict],
+    *,
+    title_key: str,
+    subtitle_key: str,
+    expected_title: str,
+    expected_subtitle: str | None,
+    expected_original_content: list[str],
+    content_key: str,
+) -> int | None:
+    expected_title_norm = _normalize_match_value(expected_title)
+    expected_subtitle_norm = _normalize_match_value(expected_subtitle)
+
+    if not expected_title_norm:
+        return None
+
+    matches: list[int] = []
+    for i, entry in enumerate(entries):
+        if not isinstance(entry, dict):
+            continue
+        entry_title = _normalize_match_value(str(entry.get(title_key, "")))
+        entry_subtitle = _normalize_match_value(str(entry.get(subtitle_key, "")))
+
+        if entry_title != expected_title_norm:
+            continue
+        if expected_subtitle_norm and entry_subtitle != expected_subtitle_norm:
+            continue
+        matches.append(i)
+
+    if len(matches) == 1:
+        return matches[0]
+
+    # If metadata is ambiguous, try to disambiguate using the original content.
+    matches_by_content = [
+        i for i in matches if _lines_equal(entries[i].get(content_key), expected_original_content)
+    ]
+    if len(matches_by_content) == 1:
+        return matches_by_content[0]
+
+    return None
 
 
 def _get_content_language() -> str:
@@ -90,34 +248,9 @@ async def analyze_resume(
         # Call LLM with increased max_tokens for non-English languages
         result = await complete_json(prompt, max_tokens=8192)
 
-        # Parse response into schema objects
-        items_to_enrich = [
-            EnrichmentItem(
-                item_id=item.get("item_id", f"item_{i}"),
-                item_type=item.get("item_type", "experience"),
-                title=item.get("title", ""),
-                subtitle=item.get("subtitle"),
-                current_description=item.get("current_description", []),
-                weakness_reason=item.get("weakness_reason", ""),
-            )
-            for i, item in enumerate(result.get("items_to_enrich", []))
-        ]
+        parsed = _parse_analysis_result(result)
 
-        questions = [
-            EnrichmentQuestion(
-                question_id=q.get("question_id", f"q_{i}"),
-                item_id=q.get("item_id", ""),
-                question=q.get("question", ""),
-                placeholder=q.get("placeholder", ""),
-            )
-            for i, q in enumerate(result.get("questions", []))
-        ]
-
-        return AnalysisResponse(
-            items_to_enrich=items_to_enrich,
-            questions=questions,
-            analysis_summary=result.get("analysis_summary"),
-        )
+        return parsed
 
     except Exception as e:
         logger.error(f"Resume analysis failed: {e}")
@@ -149,40 +282,23 @@ async def generate_enhancements(
             detail="Resume has no processed data.",
         )
 
-    # Group answers by item_id (extract from question_id pattern)
-    # Question IDs are like "q_0", "q_1", etc. but we need to know which item each belongs to
-    # First, we need to re-analyze to get the mapping, or we need the items passed in
-    # For simplicity, we'll call analyze again to get the question-to-item mapping
-
-    # Actually, let's parse the answers differently - the frontend should include item context
-    # For now, we'll get the analysis to build the mapping
-    resume_json = json.dumps(processed_data, indent=2)
-    language = _get_content_language()
-    output_language = get_language_name(language)
-    analysis_prompt = ANALYZE_RESUME_PROMPT.format(
-        resume_json=resume_json,
-        output_language=output_language
-    )
-
-    try:
-        analysis_result = await complete_json(analysis_prompt, max_tokens=8192)
-    except Exception as e:
-        logger.error(f"Failed to re-analyze resume: {e}")
+    # Use the analysis result passed from the frontend (avoids a redundant LLM call
+    # that could return non-deterministic results different from what the user saw).
+    if not request.items_to_enrich or not request.questions:
         raise HTTPException(
-            status_code=500,
-            detail="Failed to process enhancements. Please try again.",
+            status_code=400,
+            detail="items_to_enrich and questions are required. Pass the original analysis result.",
         )
 
-    # Build question_id -> item_id mapping
+    # Build question_id -> item_id mapping from the original analysis
     question_to_item: dict[str, str] = {}
-    for q in analysis_result.get("questions", []):
-        question_to_item[q.get("question_id", "")] = q.get("item_id", "")
+    for q in request.questions:
+        question_to_item[q.question_id] = q.item_id
 
     # Build item details mapping
     item_details: dict[str, dict] = {}
-    for item in analysis_result.get("items_to_enrich", []):
-        item_id = item.get("item_id", "")
-        item_details[item_id] = item
+    for item in request.items_to_enrich:
+        item_details[item.item_id] = item.model_dump()
 
     # Group answers by item_id
     answers_by_item: dict[str, list[AnswerInput]] = {}
@@ -196,6 +312,8 @@ async def generate_enhancements(
     # Generate enhanced descriptions for each item
     enhancements: list[EnhancedDescription] = []
 
+    style_reference = _extract_style_reference(processed_data)
+
     for item_id, answers in answers_by_item.items():
         item = item_details.get(item_id, {})
         if not item:
@@ -203,7 +321,7 @@ async def generate_enhancements(
 
         # Find the original questions to include context
         item_questions = [
-            q for q in analysis_result.get("questions", []) if q.get("item_id") == item_id
+            q.model_dump() for q in request.questions if q.item_id == item_id
         ]
 
         # Format answers with their questions for context
@@ -233,6 +351,8 @@ async def generate_enhancements(
             subtitle=item.get("subtitle", ""),
             current_description=current_desc_text,
             answers=answers_text.strip(),
+            weakness_reason=item.get("weakness_reason", "No additional context provided."),
+            style_reference=style_reference,
             output_language=output_language,
         )
 
@@ -287,40 +407,127 @@ async def apply_enhancements(
     updated_data = copy.deepcopy(processed_data)
 
     # Apply each enhancement by ADDING new bullets to existing description
+    # Uses fingerprint matching (title + subtitle + content) to avoid silently
+    # appending to the wrong item if the resume was edited between generate and apply.
+    apply_failures: list[str] = []
+
     for enhancement in request.enhancements:
         item_id = enhancement.item_id
         item_type = enhancement.item_type
         additional_bullets = enhancement.enhanced_description  # These are NEW bullets to add
+        original_desc = enhancement.original_description
 
         if item_type == "experience":
-            # Parse item_id like "exp_0" to get index
+            experiences = updated_data.get("workExperience", [])
+            if not isinstance(experiences, list):
+                apply_failures.append(item_id)
+                continue
+
             try:
                 index = int(item_id.split("_")[1])
-                if "workExperience" in updated_data and index < len(updated_data["workExperience"]):
-                    # Get existing description and ADD new bullets
-                    existing_desc = updated_data["workExperience"][index].get("description", [])
-                    if isinstance(existing_desc, list):
-                        updated_data["workExperience"][index]["description"] = existing_desc + additional_bullets
-                    else:
-                        # Handle edge case where description might be a string
-                        updated_data["workExperience"][index]["description"] = [existing_desc] + additional_bullets if existing_desc else additional_bullets
-            except (ValueError, IndexError) as e:
-                logger.warning(f"Could not apply experience enhancement for {item_id}: {e}")
+            except (ValueError, IndexError):
+                apply_failures.append(item_id)
+                continue
+
+            resolved_index: int | None = None
+            if 0 <= index < len(experiences):
+                entry = experiences[index] if isinstance(experiences[index], dict) else {}
+                entry_title = _normalize_match_value(str(entry.get("title", "")))
+                entry_company = _normalize_match_value(str(entry.get("company", "")))
+                expected_title = _normalize_match_value(enhancement.title)
+                if entry_title == expected_title and _lines_equal(entry.get("description"), original_desc):
+                    resolved_index = index
+
+            if resolved_index is None:
+                resolved_index = _find_unique_index_by_metadata(
+                    experiences,
+                    title_key="title",
+                    subtitle_key="company",
+                    expected_title=enhancement.title,
+                    expected_subtitle=None,
+                    expected_original_content=original_desc,
+                    content_key="description",
+                )
+
+            if resolved_index is None:
+                logger.warning(
+                    "apply-enhancements: experience item mismatch; resume may have changed. "
+                    f"resume_id={resume_id} item_id={item_id} title={enhancement.title!r}"
+                )
+                apply_failures.append(item_id)
+                continue
+
+            entry = experiences[resolved_index]
+            if isinstance(entry, dict):
+                existing_desc = entry.get("description", [])
+                if isinstance(existing_desc, list):
+                    entry["description"] = existing_desc + additional_bullets
+                else:
+                    entry["description"] = ([existing_desc] if existing_desc else []) + additional_bullets
+            else:
+                apply_failures.append(item_id)
 
         elif item_type == "project":
-            # Parse item_id like "proj_0" to get index
+            projects = updated_data.get("personalProjects", [])
+            if not isinstance(projects, list):
+                apply_failures.append(item_id)
+                continue
+
             try:
                 index = int(item_id.split("_")[1])
-                if "personalProjects" in updated_data and index < len(updated_data["personalProjects"]):
-                    # Get existing description and ADD new bullets
-                    existing_desc = updated_data["personalProjects"][index].get("description", [])
-                    if isinstance(existing_desc, list):
-                        updated_data["personalProjects"][index]["description"] = existing_desc + additional_bullets
-                    else:
-                        # Handle edge case where description might be a string
-                        updated_data["personalProjects"][index]["description"] = [existing_desc] + additional_bullets if existing_desc else additional_bullets
-            except (ValueError, IndexError) as e:
-                logger.warning(f"Could not apply project enhancement for {item_id}: {e}")
+            except (ValueError, IndexError):
+                apply_failures.append(item_id)
+                continue
+
+            resolved_index = None
+            if 0 <= index < len(projects):
+                entry = projects[index] if isinstance(projects[index], dict) else {}
+                entry_name = _normalize_match_value(str(entry.get("name", "")))
+                expected_name = _normalize_match_value(enhancement.title)
+                if entry_name == expected_name and _lines_equal(entry.get("description"), original_desc):
+                    resolved_index = index
+
+            if resolved_index is None:
+                resolved_index = _find_unique_index_by_metadata(
+                    projects,
+                    title_key="name",
+                    subtitle_key="role",
+                    expected_title=enhancement.title,
+                    expected_subtitle=None,
+                    expected_original_content=original_desc,
+                    content_key="description",
+                )
+
+            if resolved_index is None:
+                logger.warning(
+                    "apply-enhancements: project item mismatch; resume may have changed. "
+                    f"resume_id={resume_id} item_id={item_id} title={enhancement.title!r}"
+                )
+                apply_failures.append(item_id)
+                continue
+
+            entry = projects[resolved_index]
+            if isinstance(entry, dict):
+                existing_desc = entry.get("description", [])
+                if isinstance(existing_desc, list):
+                    entry["description"] = existing_desc + additional_bullets
+                else:
+                    entry["description"] = ([existing_desc] if existing_desc else []) + additional_bullets
+            else:
+                apply_failures.append(item_id)
+
+    if apply_failures:
+        logger.warning(
+            "apply-enhancements: refusing to apply due to mismatched/missing items. "
+            f"resume_id={resume_id} item_ids={apply_failures}"
+        )
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "Resume content changed or could not be uniquely matched. "
+                "Please re-analyze and try again."
+            ),
+        )
 
     # Update the resume in database
     updated_content = json.dumps(updated_data, indent=2)
@@ -361,6 +568,9 @@ async def _regenerate_experience_or_project(
         if item.current_content
         else "(No description)"
     )
+    style_reference = current_desc_text if item.current_content else (
+        "- No strong existing bullet available; prioritize specificity and concrete technologies"
+    )
 
     prompt = REGENERATE_ITEM_PROMPT.format(
         output_language=output_language,
@@ -369,6 +579,7 @@ async def _regenerate_experience_or_project(
         subtitle=item.subtitle or "",
         current_description=current_desc_text,
         user_instruction=instruction,
+        style_reference=style_reference,
     )
 
     result = await complete_json(prompt, max_tokens=4096)
@@ -499,68 +710,6 @@ async def apply_regenerated_items(
 
     # Make a copy to modify
     updated_data = copy.deepcopy(processed_data)
-
-    def _normalize_match_value(value: str | None) -> str:
-        return (value or "").strip().casefold()
-
-    def _normalize_lines(value: object) -> list[str]:
-        if value is None:
-            return []
-        if isinstance(value, list):
-            normalized: list[str] = []
-            for entry in value:
-                text = str(entry).strip()
-                if text:
-                    normalized.append(text)
-            return normalized
-        text = str(value).strip()
-        return [text] if text else []
-
-    def _lines_equal(left: object, right: object) -> bool:
-        left_norm = [line.casefold() for line in _normalize_lines(left)]
-        right_norm = [line.casefold() for line in _normalize_lines(right)]
-        return left_norm == right_norm
-
-    def _find_unique_index_by_metadata(
-        entries: list[dict],
-        *,
-        title_key: str,
-        subtitle_key: str,
-        expected_title: str,
-        expected_subtitle: str | None,
-        expected_original_content: list[str],
-        content_key: str,
-    ) -> int | None:
-        expected_title_norm = _normalize_match_value(expected_title)
-        expected_subtitle_norm = _normalize_match_value(expected_subtitle)
-
-        if not expected_title_norm:
-            return None
-
-        matches: list[int] = []
-        for i, entry in enumerate(entries):
-            if not isinstance(entry, dict):
-                continue
-            entry_title = _normalize_match_value(str(entry.get(title_key, "")))
-            entry_subtitle = _normalize_match_value(str(entry.get(subtitle_key, "")))
-
-            if entry_title != expected_title_norm:
-                continue
-            if expected_subtitle_norm and entry_subtitle != expected_subtitle_norm:
-                continue
-            matches.append(i)
-
-        if len(matches) == 1:
-            return matches[0]
-
-        # If metadata is ambiguous, try to disambiguate using the original content.
-        matches_by_content = [
-            i for i in matches if _lines_equal(entries[i].get(content_key), expected_original_content)
-        ]
-        if len(matches_by_content) == 1:
-            return matches_by_content[0]
-
-        return None
 
     def _parse_index(item_id: str, pattern: str) -> int | None:
         match = re.fullmatch(pattern, item_id)

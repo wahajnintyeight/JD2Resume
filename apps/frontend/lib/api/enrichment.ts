@@ -68,11 +68,15 @@ export async function analyzeResume(resumeId: string): Promise<AnalysisResponse>
  */
 export async function generateEnhancements(
   resumeId: string,
-  answers: AnswerInput[]
+  answers: AnswerInput[],
+  itemsToEnrich: EnrichmentItem[],
+  questions: EnrichmentQuestion[]
 ): Promise<EnhancementPreview> {
   const res = await apiPost('/enrichment/enhance', {
     resume_id: resumeId,
     answers,
+    items_to_enrich: itemsToEnrich,
+    questions,
   });
 
   if (!res.ok) {
