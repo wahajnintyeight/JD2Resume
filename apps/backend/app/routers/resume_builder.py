@@ -51,6 +51,115 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/resumes", tags=["Resumes"])
 
+_SOFT_SKILL_PATTERNS = [
+    # ── Original patterns ──────────────────────────────────────────────
+    r"\bcommunication\b",
+    r"\bleadership\b",
+    r"\bteamwork\b",
+    r"\bcollaboration\b",
+    r"\binterpersonal\b",
+    r"\bproblem[\s-]?solving\b",
+    r"\bcritical thinking\b",
+    r"\battention to detail\b",
+    r"\bdetail[- ]oriented\b",
+    r"\bcreative mindset\b",
+    r"\bcreativity\b",
+    r"\bpersistence\b",
+    r"\bpatience\b",
+    r"\badaptability\b",
+    r"\btime management\b",
+    r"\bstakeholder\b",
+    r"\borganizational\b",
+    r"\blogical and structured approach\b",
+
+    # ── Interpersonal / people traits ─────────────────────────────────
+    r"\bempathy\b",
+    r"\bemotional intelligence\b",
+    r"\beq\b",                          # "EQ" standalone
+    r"\bactive listening\b",
+    r"\bconflict resolution\b",
+    r"\binterpersonal skills\b",
+    r"\brelationship building\b",
+    r"\binfluencing\b",
+    r"\bpersuasion\b",
+    r"\bnegotiation skills\b",          # as a standalone trait, not the technical kind
+
+    # ── Work-ethic / attitude buzzwords ───────────────────────────────
+    r"\bself[- ]starter\b",
+    r"\bgo[- ]getter\b",
+    r"\bfast[- ]learner\b",
+    r"\bquick learner\b",
+    r"\bwilling to learn\b",
+    r"\bwork ethic\b",
+    r"\bhard[- ]working\b",
+    r"\bdedicated\b",                   # common filler on SWE resumes
+    r"\bpassionate\b",                  # appears on 90%+ of rejected resumes per ResumeAdapter
+    r"\bteam player\b",
+    r"\bplayer\b",                      # catches "team player" fragments
+    r"\bcollaborative spirit\b",
+    r"\bpositive attitude\b",
+    r"\bgrowth mindset\b",
+    r"\blifelong learner\b",
+    r"\bcontinuous learner\b",
+    r"\bcuriosity\b",
+    r"\baccount?ability\b",
+    r"\bownership mentality\b",         # vague when listed without evidence
+
+    # ── Leadership/management fluff ───────────────────────────────────
+    r"\bvisionary\b",
+    r"\bstrategic thinker\b",
+    r"\bstrategic thinking\b",
+    r"\bthought leader\b",
+    r"\bchange management\b",           # only when listed as a bare skill, not a JD phrase
+    r"\bcoaching\b",                    # bare skill; context in bullets is fine
+    r"\bmentoring\b",                   # same — belongs in bullets with evidence
+    r"\bpeople management\b",
+
+    # ── Process/project soft buzzwords ────────────────────────────────
+    r"\bproject management\b",          # flagged when not tied to a tool (Jira/Asana etc.)
+    r"\bcross[- ]functional\b",
+    r"\bcross[- ]team\b",
+    r"\bstakeholder management\b",
+    r"\bstakeholder communication\b",
+    r"\bstakeholder reporting\b",
+    r"\bstakeholder engagement\b",
+    r"\bcustomer[- ]centric\b",
+    r"\bcustomer[- ]focused\b",
+    r"\bresults[- ]oriented\b",
+    r"\bgoal[- ]oriented\b",
+    r"\bdata[- ]driven\b",              # overused to the point of meaninglessness as a bare skill
+    r"\bdetail[- ]focused\b",
+
+    # ── Presentation / communication variants ─────────────────────────
+    r"\bpresentation skills\b",
+    r"\bpublic speaking\b",
+    r"\bwritten communication\b",
+    r"\bverbal communication\b",
+    r"\bstorytelling\b",
+    r"\bdata storytelling\b",
+
+    # ── Culture-fit / DEI buzzwords (common in 2025-26 JDs) ───────────
+    r"\binclusion\b",
+    r"\bdiversity\b",
+    r"\bcultural fit\b",
+    r"\bbelonging\b",
+    r"\bcross[- ]cultural\b",
+    r"\bglobal mindset\b",
+
+    # ── Ambiguous single-word filler ──────────────────────────────────
+    r"\binnovative\b",
+    r"\bself[- ]motivated\b",
+    r"\bproactive\b",                   # also in AI_PHRASE_BLACKLIST — double-filtered
+    r"\bflexible\b",
+    r"\breliable\b",
+    r"\bdependable\b",
+    r"\bresourceful\b",
+    r"\banalytical\b",                  # vague without a tool or domain attached
+    r"\bcreative problem[- ]solver\b",
+    r"\boutside[- ]the[- ]box\b",
+]
+
+
 def _load_config() -> dict:
     """Load configuration from config file."""
     config_path = settings.config_path
@@ -201,6 +310,33 @@ def _validate_confirm_payload(
     ]
     if mismatches:
         raise ValueError(f"personalInfo fields changed: {', '.join(mismatches)}")
+
+
+def _sanitize_technical_skills(
+    resume_data: dict[str, Any],
+) -> tuple[dict[str, Any], list[str]]:
+    """Remove soft-skill phrases from additional.technicalSkills deterministically."""
+    sanitized = copy.deepcopy(resume_data)
+    additional = sanitized.setdefault("additional", {})
+    skills = additional.get("technicalSkills", [])
+    if not isinstance(skills, list):
+        return sanitized, []
+
+    kept: list[str] = []
+    removed: list[str] = []
+
+    for skill in skills:
+        skill_text = str(skill).strip()
+        if not skill_text:
+            continue
+        lower_skill = skill_text.casefold()
+        if any(re.search(pattern, lower_skill) for pattern in _SOFT_SKILL_PATTERNS):
+            removed.append(skill_text)
+            continue
+        kept.append(skill_text)
+
+    additional["technicalSkills"] = kept
+    return sanitized, removed
 
 async def _generate_auxiliary_messages(
     improved_data: dict[str, Any],
@@ -397,6 +533,13 @@ async def improve_resume_preview_endpoint(
         )
         response_warnings.extend(preserve_warnings)
 
+        improved_data, removed_soft_skills = _sanitize_technical_skills(improved_data)
+        if removed_soft_skills:
+            response_warnings.append(
+                "Removed non-technical skills from technicalSkills: "
+                + ", ".join(removed_soft_skills)
+            )
+
         stage = "refine_resume"
         refinement_stats: RefinementStats | None = None
         refinement_attempted = False
@@ -419,6 +562,12 @@ async def improve_resume_preview_endpoint(
                     config=RefinementConfig(),
                 )
                 improved_data = refinement_result.refined_data
+                improved_data, removed_soft_skills = _sanitize_technical_skills(improved_data)
+                if removed_soft_skills:
+                    response_warnings.append(
+                        "Removed non-technical skills from technicalSkills: "
+                        + ", ".join(removed_soft_skills)
+                    )
                 refinement_stats = RefinementStats(
                     passes_completed=refinement_result.passes_completed,
                     keywords_injected=len(refinement_result.keyword_analysis.injectable_keywords) if refinement_result.keyword_analysis else 0,
@@ -508,6 +657,15 @@ async def improve_resume_confirm_endpoint(
     try:
         improved_data = request.improved_data.model_dump()
         original_data = _get_original_resume_data(resume)
+
+        improved_data, removed_soft_skills = _sanitize_technical_skills(improved_data)
+        if removed_soft_skills:
+            response_warnings: list[str] = [
+                "Removed non-technical skills from technicalSkills: "
+                + ", ".join(removed_soft_skills)
+            ]
+        else:
+            response_warnings = []
         
         try:
             _validate_confirm_payload(original_data, improved_data)
@@ -522,7 +680,6 @@ async def improve_resume_confirm_endpoint(
              pass 
 
         stage = "calculate_diff"
-        response_warnings: list[str] = []
         diff_summary, detailed_changes, diff_error = _calculate_diff_from_resume(
             resume,
             improved_data,
@@ -536,6 +693,12 @@ async def improve_resume_confirm_endpoint(
                 detailed_changes,
                 request.change_decisions,
             )
+            final_data, removed_soft_skills = _sanitize_technical_skills(final_data)
+            if removed_soft_skills:
+                response_warnings.append(
+                    "Removed non-technical skills from technicalSkills: "
+                    + ", ".join(removed_soft_skills)
+                )
             response_warnings.extend(decision_warnings)
             # Recalculate diff
             diff_summary, detailed_changes, _ = _calculate_diff_from_resume(resume, final_data)

@@ -2,11 +2,124 @@
 
 import copy
 import logging
+import re
 from typing import Any
 
 from app.schemas.models import ResumeData
 
 logger = logging.getLogger(__name__)
+
+_SOFT_SKILL_PATTERNS = [
+    # ── Original patterns ──────────────────────────────────────────────
+    r"\bcommunication\b",
+    r"\bleadership\b",
+    r"\bteamwork\b",
+    r"\bcollaboration\b",
+    r"\binterpersonal\b",
+    r"\bproblem[\s-]?solving\b",
+    r"\bcritical thinking\b",
+    r"\battention to detail\b",
+    r"\bdetail[- ]oriented\b",
+    r"\bcreative mindset\b",
+    r"\bcreativity\b",
+    r"\bpersistence\b",
+    r"\bpatience\b",
+    r"\badaptability\b",
+    r"\btime management\b",
+    r"\bstakeholder\b",
+    r"\borganizational\b",
+    r"\blogical and structured approach\b",
+
+    # ── Interpersonal / people traits ─────────────────────────────────
+    r"\bempathy\b",
+    r"\bemotional intelligence\b",
+    r"\beq\b",                          # "EQ" standalone
+    r"\bactive listening\b",
+    r"\bconflict resolution\b",
+    r"\binterpersonal skills\b",
+    r"\brelationship building\b",
+    r"\binfluencing\b",
+    r"\bpersuasion\b",
+    r"\bnegotiation skills\b",          # as a standalone trait, not the technical kind
+
+    # ── Work-ethic / attitude buzzwords ───────────────────────────────
+    r"\bself[- ]starter\b",
+    r"\bgo[- ]getter\b",
+    r"\bfast[- ]learner\b",
+    r"\bquick learner\b",
+    r"\bwilling to learn\b",
+    r"\bwork ethic\b",
+    r"\bhard[- ]working\b",
+    r"\bdedicated\b",                   # common filler on SWE resumes
+    r"\bpassionate\b",                  # appears on 90%+ of rejected resumes per ResumeAdapter
+    r"\bteam player\b",
+    r"\bplayer\b",                      # catches "team player" fragments
+    r"\bcollaborative spirit\b",
+    r"\bpositive attitude\b",
+    r"\bgrowth mindset\b",
+    r"\blifelong learner\b",
+    r"\bcontinuous learner\b",
+    r"\bcuriosity\b",
+    r"\baccount?ability\b",
+    r"\bownership mentality\b",         # vague when listed without evidence
+
+    # ── Leadership/management fluff ───────────────────────────────────
+    r"\bvisionary\b",
+    r"\bstrategic thinker\b",
+    r"\bstrategic thinking\b",
+    r"\bthought leader\b",
+    r"\bchange management\b",           # only when listed as a bare skill, not a JD phrase
+    r"\bcoaching\b",                    # bare skill; context in bullets is fine
+    r"\bmentoring\b",                   # same — belongs in bullets with evidence
+    r"\bpeople management\b",
+
+    # ── Process/project soft buzzwords ────────────────────────────────
+    r"\bproject management\b",          # flagged when not tied to a tool (Jira/Asana etc.)
+    r"\bcross[- ]functional\b",
+    r"\bcross[- ]team\b",
+    r"\bstakeholder management\b",
+    r"\bstakeholder communication\b",
+    r"\bstakeholder reporting\b",
+    r"\bstakeholder engagement\b",
+    r"\bcustomer[- ]centric\b",
+    r"\bcustomer[- ]focused\b",
+    r"\bresults[- ]oriented\b",
+    r"\bgoal[- ]oriented\b",
+    r"\bdata[- ]driven\b",              # overused to the point of meaninglessness as a bare skill
+    r"\bdetail[- ]focused\b",
+
+    # ── Presentation / communication variants ─────────────────────────
+    r"\bpresentation skills\b",
+    r"\bpublic speaking\b",
+    r"\bwritten communication\b",
+    r"\bverbal communication\b",
+    r"\bstorytelling\b",
+    r"\bdata storytelling\b",
+
+    # ── Culture-fit / DEI buzzwords (common in 2025-26 JDs) ───────────
+    r"\binclusion\b",
+    r"\bdiversity\b",
+    r"\bcultural fit\b",
+    r"\bbelonging\b",
+    r"\bcross[- ]cultural\b",
+    r"\bglobal mindset\b",
+
+    # ── Ambiguous single-word filler ──────────────────────────────────
+    r"\binnovative\b",
+    r"\bself[- ]motivated\b",
+    r"\bproactive\b",                   # also in AI_PHRASE_BLACKLIST — double-filtered
+    r"\bflexible\b",
+    r"\breliable\b",
+    r"\bdependable\b",
+    r"\bresourceful\b",
+    r"\banalytical\b",                  # vague without a tool or domain attached
+    r"\bcreative problem[- ]solver\b",
+    r"\boutside[- ]the[- ]box\b",
+]
+
+def _is_soft_skill(text: str) -> bool:
+    value = (text or "").strip().casefold()
+    return any(re.search(pattern, value) for pattern in _SOFT_SKILL_PATTERNS)
 
 
 def apply_ats_suggestions(
@@ -58,6 +171,8 @@ def apply_ats_suggestions(
         # Append missing keywords at the end
         for keyword in missing_keywords:
             keyword_lower = keyword.lower().strip()
+            if _is_soft_skill(keyword_lower):
+                continue
             # Only add if not already present (case-insensitive check)
             if keyword_lower not in existing_skills_lower:
                 modified["additional"]["technicalSkills"].append(keyword)
@@ -251,9 +366,12 @@ def _apply_action_plan_recommendations(
                     for skill in modified["additional"]["technicalSkills"]
                 }
                 for keyword in missing_keywords:
-                    if keyword.lower().strip() not in existing_skills_lower:
+                    keyword_norm = keyword.lower().strip()
+                    if _is_soft_skill(keyword_norm):
+                        continue
+                    if keyword_norm not in existing_skills_lower:
                         modified["additional"]["technicalSkills"].append(keyword)
-                        existing_skills_lower.add(keyword.lower().strip())
+                        existing_skills_lower.add(keyword_norm)
                         logger.info(f"Applied action plan: Added skill {keyword}")
         
         # Handle soft skills removal
@@ -308,9 +426,12 @@ def _apply_general_recommendations(
                     for skill in modified["additional"]["technicalSkills"]
                 }
                 for keyword in missing_keywords:
-                    if keyword.lower().strip() not in existing_skills_lower:
+                    keyword_norm = keyword.lower().strip()
+                    if _is_soft_skill(keyword_norm):
+                        continue
+                    if keyword_norm not in existing_skills_lower:
                         modified["additional"]["technicalSkills"].append(keyword)
-                        existing_skills_lower.add(keyword.lower().strip())
+                        existing_skills_lower.add(keyword_norm)
                         logger.info(f"Applied recommendation: Added skill {keyword}")
         
         # Handle soft skills removal
