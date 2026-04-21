@@ -107,6 +107,24 @@ def _coerce_string_list(value: Any) -> list[str]:
     return [coerced] if coerced else []
 
 
+def _coerce_string_list_map(value: Any) -> dict[str, list[str]]:
+    """Coerce nested values into a dict[str, list[str]]."""
+    if value is None:
+        return {}
+
+    if not isinstance(value, dict):
+        return {}
+
+    normalized: dict[str, list[str]] = {}
+    for raw_key, raw_items in value.items():
+        key = _coerce_text(raw_key)
+        if not key:
+            continue
+        normalized[key] = _coerce_string_list(raw_items)
+
+    return normalized
+
+
 # Section Type Enum for dynamic sections
 class SectionType(str, Enum):
     """Types of resume sections."""
@@ -183,6 +201,7 @@ class AdditionalInfo(BaseModel):
     """Additional information section."""
 
     technicalSkills: list[str] = Field(default_factory=list)
+    skillSections: dict[str, list[str]] = Field(default_factory=dict)
     languages: list[str] = Field(default_factory=list)
     certificationsTraining: list[str] = Field(default_factory=list)
     awards: list[str] = Field(default_factory=list)
@@ -197,6 +216,13 @@ class AdditionalInfo(BaseModel):
     @classmethod
     def _normalize_string_fields(cls, value: Any) -> list[str]:
         return _coerce_string_list(value)
+
+    @field_validator("skillSections", mode="before")
+    @classmethod
+    def _normalize_skill_sections(
+        cls, value: Any
+    ) -> dict[str, list[str]]:
+        return _coerce_string_list_map(value)
 
 
 # Section Metadata Models for dynamic section management

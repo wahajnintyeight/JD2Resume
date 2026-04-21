@@ -43,6 +43,7 @@ interface ProcessedResume {
   }>;
   additional?: {
     technicalSkills?: string[];
+    skillSections?: Record<string, string[]>;
     languages?: string[];
     certificationsTraining?: string[];
     awards?: string[];

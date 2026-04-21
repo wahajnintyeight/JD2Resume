@@ -470,6 +470,44 @@ def calculate_resume_diff(
             confidence="medium"
         ))
 
+    # 3b. Compare categorized skill sections (order changes are intentionally ignored)
+    original_skill_sections = original.get("additional", {}).get("skillSections", {})
+    improved_skill_sections = improved.get("additional", {}).get("skillSections", {})
+
+    if isinstance(original_skill_sections, dict) and isinstance(improved_skill_sections, dict):
+        section_keys = sorted(set(original_skill_sections) | set(improved_skill_sections))
+        for section_key in section_keys:
+            field_path = f"additional.skillSections.{section_key}"
+            orig_section_skills = _build_string_index(
+                original_skill_sections.get(section_key, []),
+                field_path,
+            )
+            new_section_skills = _build_string_index(
+                improved_skill_sections.get(section_key, []),
+                field_path,
+            )
+
+            orig_section_keys = set(orig_section_skills)
+            new_section_keys = set(new_section_skills)
+
+            for skill_key in new_section_keys - orig_section_keys:
+                changes.append(ResumeFieldDiff(
+                    field_path=field_path,
+                    field_type="skill",
+                    change_type="added",
+                    new_value=new_section_skills[skill_key],
+                    confidence="high"
+                ))
+
+            for skill_key in orig_section_keys - new_section_keys:
+                changes.append(ResumeFieldDiff(
+                    field_path=field_path,
+                    field_type="skill",
+                    change_type="removed",
+                    original_value=orig_section_skills[skill_key],
+                    confidence="medium"
+                ))
+
     # 4. Compare work experience descriptions
     original_experiences = original.get("workExperience", [])
     improved_experiences = improved.get("workExperience", [])

@@ -30,7 +30,15 @@ SKILL_RULES_BLOCK = """SKILL HANDLING RULES (CRITICAL):
 - ONLY ADD GENUINE TECHNICAL SKILLS: Only add technologies, tools, programming languages, frameworks, platforms, databases, cloud services, or technical methodologies
 - JD-AWARE METHODOLOGIES: Add items like "Agile" or "Scrum" only when the user explicitly requests them or the role clearly requires them and the resume supports them
 - VALIDATE BEFORE ADDING: Only add a skill if it is a recognized technical competency and is supported by the source resume or explicit user input
-- DO NOT ADD GENERIC CONCEPTS OR BUZZWORDS: Avoid terms like "data storytelling", "product thinking", "growth mindset", "problem solving", "teamwork", or "strategic planning" in technicalSkills"""
+- DO NOT ADD GENERIC CONCEPTS OR BUZZWORDS: Avoid terms like "data storytelling", "product thinking", "growth mindset", "problem solving", "teamwork", or "strategic planning" in technicalSkills
+- SUPPORT MULTI-SECTION SKILLS: Use additional.skillSections for non-tool skill groupings and keep technicalSkills focused on concrete technologies
+- ROUTING EXAMPLES:
+  - "Python", "PostgreSQL", "Docker", "AWS" -> technicalSkills
+  - "Microservices", "Event-driven architecture", "Distributed systems" -> skillSections.domainExpertise
+  - "Agile", "Scrum", "CI/CD", "TDD" -> skillSections.practices
+  - "REST API Design", "System Design", "Performance Tuning" -> skillSections.engineeringCapabilities
+  - "Git", "Jira", "Kubernetes", "Terraform" -> skillSections.toolsPlatforms
+- DO NOT DUPLICATE ACROSS BUCKETS: A skill should appear in one best-fit bucket only unless duplication is explicitly requested"""
 
 
 def get_language_name(code: str) -> str:
@@ -88,6 +96,12 @@ RESUME_SCHEMA_EXAMPLE = """{
   ],
   "additional": {
     "technicalSkills": ["Python", "JavaScript", "AWS", "Docker"],
+    "skillSections": {
+      "toolsPlatforms": ["Git", "GitHub Actions", "Terraform", "Kubernetes"],
+      "practices": ["Agile", "Scrum", "CI/CD", "TDD"],
+      "domainExpertise": ["Microservices", "Distributed Systems", "Cloud Architecture"],
+      "engineeringCapabilities": ["REST API Design", "System Design", "Performance Optimization"]
+    },
     "languages": ["English (Native)", "Spanish (Conversational)"],
     "certificationsTraining": ["AWS Solutions Architect"],
     "awards": ["Employee of the Year 2022"]
@@ -133,6 +147,8 @@ Rules:
 - Use "" for missing text fields, [] for missing arrays, null for optional fields
 - Number IDs starting from 1
 - Format years as "YYYY - YYYY" or "YYYY - Present"
+- Keep tool/language/framework keywords in additional.technicalSkills
+- Put non-tool capability clusters in additional.skillSections (e.g., "Microservices" under domainExpertise, "Agile" under practices)
 - Use snake_case for custom section keys (e.g., "volunteer_work", "publications", "domain_expertise")
 - Preserve the original section name as a descriptive key
 - Normalize dates: "Jan 2020" → "2020", "2020-2021" → "2020 - 2021", "Current"/"Ongoing" → "Present"
@@ -177,7 +193,7 @@ CRITICAL_TRUTHFULNESS_RULES_TEMPLATE = """CRITICAL TRUTHFULNESS RULES - NEVER VI
 6. DO NOT extend employment dates or change timelines (start/end years)
 7. {rule_7}
 8. Preserve factual accuracy - only use information provided by the candidate as the primary foundation.
-9. SKILL ADDITION: You ARE encouraged to add relevant technical skills from the Job Description to the technicalSkills list to ensure a high ATS match, as these will be reviewed by the candidate.
+9. SKILL ADDITION: You ARE encouraged to add relevant technical skills from the Job Description to technicalSkills and place non-tool competency keywords in skillSections to improve ATS and recruiter readability.
 
 {skill_rules}
 
@@ -205,7 +221,8 @@ ATS_CORE_RULES = """ATS OPTIMIZATION RULES (CRITICAL FOR PASSING AUTOMATED SCREE
    - Use EXACT terminology from JD (e.g., "Python" not "programming languages")
    - DO NOT include soft skills (communication, teamwork, leadership) in technicalSkills array
    - Place the most critical/required skills first in the list
-   - Use flat comma-separated format - avoid nested categories for better ATS parsing
+  - Keep technicalSkills as flat hard-skill terms for ATS parsing
+  - Use additional.skillSections for non-tool groupings (practices/domain expertise/capabilities) to improve human readability
    - PRESERVE EXISTING TECHNICAL SKILLS: Never remove technical skills already present in the original resume unless the user explicitly asks to remove or narrow them
    - ADD ONLY TECHNICAL SKILLS: Only add actual technologies, tools, languages, frameworks - not buzzwords or concepts
 

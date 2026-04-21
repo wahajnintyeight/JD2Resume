@@ -413,30 +413,67 @@ def _apply_change_decisions(
     if not rejected_changes:
         return result_data, warnings
 
-    # Handle skill rejections by rebuilding the technicalSkills list
+    # Handle skill rejections by rebuilding each skill bucket list
     rejected_skill_changes = [c for c in rejected_changes if c.field_type == "skill"]
     if rejected_skill_changes:
-        orig_skills: list[str] = (
-            original_data.get("additional", {}).get("technicalSkills", []) or []
-        )
-        improved_skills: list[str] = (
-            result_data.get("additional", {}).get("technicalSkills", []) or []
-        )
-        orig_lower = {s.casefold(): s for s in orig_skills}
-        improved_lower = {s.casefold(): s for s in improved_skills}
-
+        bucket_changes: dict[str, list[ResumeFieldDiff]] = {}
         for change in rejected_skill_changes:
-            if change.change_type == "added" and change.new_value:
-                # Remove the added skill
-                key = change.new_value.casefold()
-                improved_lower.pop(key, None)
-            elif change.change_type == "removed" and change.original_value:
-                # Restore the removed skill
-                key = change.original_value.casefold()
-                if key not in improved_lower:
-                    improved_lower[key] = orig_lower.get(key, change.original_value)
+            bucket_path = change.field_path or "additional.technicalSkills"
+            bucket_changes.setdefault(bucket_path, []).append(change)
 
-        result_data.setdefault("additional", {})["technicalSkills"] = list(improved_lower.values())
+        for bucket_path, changes_for_bucket in bucket_changes.items():
+            if bucket_path.startswith("additional.skillSections."):
+                section_key = bucket_path.removeprefix("additional.skillSections.")
+                if not section_key:
+                    continue
+
+                orig_skills: list[str] = (
+                    original_data.get("additional", {})
+                    .get("skillSections", {})
+                    .get(section_key, [])
+                    or []
+                )
+                improved_skills: list[str] = (
+                    result_data.get("additional", {})
+                    .get("skillSections", {})
+                    .get(section_key, [])
+                    or []
+                )
+                orig_lower = {s.casefold(): s for s in orig_skills}
+                improved_lower = {s.casefold(): s for s in improved_skills}
+
+                for change in changes_for_bucket:
+                    if change.change_type == "added" and change.new_value:
+                        improved_lower.pop(change.new_value.casefold(), None)
+                    elif change.change_type == "removed" and change.original_value:
+                        key = change.original_value.casefold()
+                        if key not in improved_lower:
+                            improved_lower[key] = orig_lower.get(key, change.original_value)
+
+                result_data.setdefault("additional", {}).setdefault("skillSections", {})[
+                    section_key
+                ] = list(improved_lower.values())
+            else:
+                orig_skills = (
+                    original_data.get("additional", {}).get("technicalSkills", []) or []
+                )
+                improved_skills = (
+                    result_data.get("additional", {}).get("technicalSkills", []) or []
+                )
+                orig_lower = {s.casefold(): s for s in orig_skills}
+                improved_lower = {s.casefold(): s for s in improved_skills}
+
+                for change in changes_for_bucket:
+                    if change.change_type == "added" and change.new_value:
+                        improved_lower.pop(change.new_value.casefold(), None)
+                    elif change.change_type == "removed" and change.original_value:
+                        key = change.original_value.casefold()
+                        if key not in improved_lower:
+                            improved_lower[key] = orig_lower.get(key, change.original_value)
+
+                result_data.setdefault("additional", {})["technicalSkills"] = list(
+                    improved_lower.values()
+                )
 
     # Handle non-skill rejections by reverting via field path
     for change in rejected_changes:

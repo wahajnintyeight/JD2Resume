@@ -8,6 +8,7 @@ import { getSortedSections } from '@/lib/utils/section-helpers';
 import { formatDateRange } from '@/lib/utils';
 import { DynamicResumeSection } from './dynamic-resume-section';
 import { SafeHtml } from './safe-html';
+import { getAdditionalSkillSections } from './skill-sections';
 import baseStyles from './styles/_base.module.css';
 import styles from './styles/classic-ats.module.css';
 
@@ -179,13 +180,17 @@ export const ResumeClassicAts: React.FC<ResumeClassicAtsProps> = ({
 
       case 'additional':
         if (!additional) return null;
+        const categorizedSkillSections = getAdditionalSkillSections(additional);
         const hasSkills = additional.technicalSkills && additional.technicalSkills.length > 0;
         const hasLanguages = additional.languages && additional.languages.length > 0;
         const hasCerts =
           additional.certificationsTraining && additional.certificationsTraining.length > 0;
         const hasAwards = additional.awards && additional.awards.length > 0;
+        const hasCategorizedSkills = categorizedSkillSections.length > 0;
 
-        if (!hasSkills && !hasLanguages && !hasCerts && !hasAwards) return null;
+        if (!hasSkills && !hasCategorizedSkills && !hasLanguages && !hasCerts && !hasAwards) {
+          return null;
+        }
 
         return (
           <div key={section.id} className={styles.section}>
@@ -206,6 +211,12 @@ export const ResumeClassicAts: React.FC<ResumeClassicAtsProps> = ({
                   </span>
                 </div>
               )}
+              {categorizedSkillSections.map((section) => (
+                <div key={section.key} className={styles.skillCategory}>
+                  <span className={styles.skillLabel}>{section.label}:</span>
+                  <span className={styles.skillValues}> {section.skills.join(', ')}</span>
+                </div>
+              ))}
               {hasLanguages && (
                 <div className={styles.skillCategory}>
                   <span className={styles.skillLabel}>Languages:</span>

@@ -409,8 +409,16 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
 
                 {results.job_description && (
                   <div className={`${surfaceClass} rounded-[24px] overflow-hidden`}>
-                    <button
+                    <div
+                      role="button"
+                      tabIndex={0}
                       onClick={() => setShowJobDescription(!showJobDescription)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          setShowJobDescription(!showJobDescription);
+                        }
+                      }}
                       className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left transition-colors duration-200 hover:bg-white/[0.03]"
                     >
                       <div className="flex items-center gap-3">
@@ -446,7 +454,7 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                           <ChevronDown className="h-5 w-5 text-slate-300" />
                         )}
                       </div>
-                    </button>
+                    </div>
 
                     {showJobDescription && (
                       <div className="border-t border-white/10 bg-slate-950/30 px-5 py-5">

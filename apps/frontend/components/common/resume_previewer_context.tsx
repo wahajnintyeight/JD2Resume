@@ -40,6 +40,7 @@ export interface ProjectEntry {
 
 export interface AdditionalInfo {
   technicalSkills: string[];
+  skillSections?: Record<string, string[]>;
   languages: string[];
   certificationsTraining: string[];
   awards: string[];

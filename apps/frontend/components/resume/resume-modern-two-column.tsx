@@ -9,6 +9,7 @@ import { getSortedSections, getSectionMeta } from '@/lib/utils/section-helpers';
 import { formatDateRange } from '@/lib/utils';
 import { DynamicResumeSection } from './dynamic-resume-section';
 import { SafeHtml } from './safe-html';
+import { getAdditionalSkillSections } from './skill-sections';
 import baseStyles from './styles/_base.module.css';
 import styles from './styles/modern-two-column.module.css';
 
@@ -72,6 +73,7 @@ export const ResumeModernTwoColumn: React.FC<ResumeModernTwoColumnProps> = ({
 
   // Get custom sections (non-default)
   const customSections = sortedSections.filter((s) => !s.isDefault);
+  const categorizedSkillSections = getAdditionalSkillSections(additional);
 
   // Icon mapping for contact types
   const contactIcons: Record<string, React.ReactNode> = {
@@ -362,21 +364,35 @@ export const ResumeModernTwoColumn: React.FC<ResumeModernTwoColumnProps> = ({
 
           {/* Skills Section */}
           {isSectionVisible('additional') &&
-            additional?.technicalSkills &&
-            additional.technicalSkills.length > 0 && (
+            ((additional?.technicalSkills && additional.technicalSkills.length > 0) ||
+              categorizedSkillSections.length > 0) && (
               <div className={baseStyles['resume-section']}>
                 <h3
                   className={`${baseStyles['resume-section-title-sm']} text-[var(--resume-accent-primary)]`}
                 >
                   {headingFallbacks.skills}
                 </h3>
-                <div className="flex flex-wrap gap-1">
-                  {additional.technicalSkills.map((skill, index) => (
-                    <span key={index} className={baseStyles['resume-skill-pill']}>
-                      {skill}
-                    </span>
-                  ))}
-                </div>
+                {additional?.technicalSkills && additional.technicalSkills.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {additional.technicalSkills.map((skill, index) => (
+                      <span key={index} className={baseStyles['resume-skill-pill']}>
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {categorizedSkillSections.map((section) => (
+                  <div key={section.key} className="mt-2">
+                    <p className={`${baseStyles['resume-meta-sm']} uppercase`}>{section.label}</p>
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      {section.skills.map((skill, index) => (
+                        <span key={`${section.key}-${index}`} className={baseStyles['resume-skill-pill']}>
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 

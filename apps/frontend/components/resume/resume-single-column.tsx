@@ -9,6 +9,7 @@ import { getSortedSections } from '@/lib/utils/section-helpers';
 import { formatDateRange } from '@/lib/utils';
 import { DynamicResumeSection } from './dynamic-resume-section';
 import { SafeHtml } from './safe-html';
+import { getAdditionalSkillSections } from './skill-sections';
 import baseStyles from './styles/_base.module.css';
 import styles from './styles/swiss-single.module.css';
 
@@ -367,10 +368,18 @@ const AdditionalSection: React.FC<{
 
   const {
     technicalSkills = [],
+    skillSections,
     languages = [],
     certificationsTraining = [],
     awards = [],
   } = additional;
+  const categorizedSkillSections = getAdditionalSkillSections({
+    technicalSkills,
+    skillSections,
+    languages,
+    certificationsTraining,
+    awards,
+  });
 
   const mergedLabels: AdditionalSectionLabels = {
     technicalSkills: labels?.technicalSkills ?? 'Technical Skills:',
@@ -381,6 +390,7 @@ const AdditionalSection: React.FC<{
 
   const hasContent =
     technicalSkills.length > 0 ||
+    categorizedSkillSections.length > 0 ||
     languages.length > 0 ||
     certificationsTraining.length > 0 ||
     awards.length > 0;
@@ -397,6 +407,12 @@ const AdditionalSection: React.FC<{
             <span>{technicalSkills.join(', ')}</span>
           </div>
         )}
+        {categorizedSkillSections.map((section) => (
+          <div key={section.key} className="flex">
+            <span className="font-bold w-32 shrink-0">{section.label}:</span>
+            <span>{section.skills.join(', ')}</span>
+          </div>
+        ))}
         {languages.length > 0 && (
           <div className="flex">
             <span className="font-bold w-32 shrink-0">{mergedLabels.languages}</span>

@@ -21,7 +21,9 @@ const textareaClassName =
 export const AdditionalForm: React.FC<AdditionalFormProps> = ({ data, onChange }) => {
   const { t } = useTranslations();
 
-  const handleArrayChange = (field: keyof AdditionalInfo, value: string) => {
+  type ArrayField = 'technicalSkills' | 'languages' | 'certificationsTraining' | 'awards';
+
+  const handleArrayChange = (field: ArrayField, value: string) => {
     const items = value.split('\n').filter((item) => item.trim() !== '');
     onChange({
       ...data,
@@ -40,7 +42,7 @@ export const AdditionalForm: React.FC<AdditionalFormProps> = ({ data, onChange }
   };
 
   const fields: Array<{
-    id: keyof AdditionalInfo;
+    id: ArrayField;
     label: string;
     placeholder: string;
     icon: React.ReactNode;
