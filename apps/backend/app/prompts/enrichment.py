@@ -181,7 +181,7 @@ IMPORTANT RULES:
 - Don't invent metrics or details not given by the candidate
 - If candidate's answers are brief, add fewer bullets rather than padding with fluff
 - Keep bullets concise (1-2 lines each)
-- Use past tense for past roles, present tense for current roles
+- Use past tense always — all bullets describe past work, tasks, and achievements regardless of whether the role is current
 - Avoid buzzwords and fluff - be specific and concrete
 - Focus on information from the candidate's answers that isn't already in the original bullets""".replace(
     "{strong_action_verbs}", STRONG_ACTION_VERBS_TEXT
@@ -255,7 +255,7 @@ RULES:
 - Directly address the user's instruction
 - Do NOT add any new facts, metrics, dates, companies, titles, or accomplishments that are not already present in CURRENT DESCRIPTION or USER'S FEEDBACK/INSTRUCTION
 - Keep bullets concise (1-2 lines each)
-- Use past tense for past roles, present tense for current roles
+- Use past tense always — all bullets describe past work, tasks, and achievements regardless of whether the role is current
 - If the user wants stronger backend/full-stack/cloud targeting, achieve it by reordering emphasis and sharpening wording around existing facts, not by inventing experience
 - change_summary must be exactly 1 sentence and no more than 30 words
 - If the user asks for metrics but none exist in the provided text, follow the QUALITATIVE IMPACT RULE above""".replace(
