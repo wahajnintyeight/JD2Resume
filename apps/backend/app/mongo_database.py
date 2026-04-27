@@ -213,9 +213,49 @@ class MongoDatabase:
         return updated
 
     def delete_resume(self, resume_id: str, user_id: str | None = None) -> bool:
+        """Delete a resume and cascade delete all related records.
+        
+        This will delete:
+        - The resume itself
+        - Associated job descriptions (linked via resume_id)
+        - Improvement records (linked via tailored_resume_id)
+        - ATS scan results (linked via resume_id)
+        
+        Args:
+            resume_id: The resume ID to delete
+            user_id: Optional user ID (defaults to current user from context)
+            
+        Returns:
+            True if the resume was deleted, False if not found
+        """
         user_id = self._get_user_id(user_id)
+        
+        # Delete the resume first
         res = self._resumes.delete_one({"user_id": user_id, "resume_id": resume_id})
-        return res.deleted_count > 0
+        
+        if res.deleted_count > 0:
+            # Cascade delete related records
+            # Delete job descriptions associated with this resume
+            jobs_deleted = self._jobs.delete_many({"user_id": user_id, "resume_id": resume_id})
+            
+            # Delete improvement records for this tailored resume
+            improvements_deleted = self._improvements.delete_many(
+                {"user_id": user_id, "tailored_resume_id": resume_id}
+            )
+            
+            # Delete ATS scan results for this resume
+            ats_deleted = self._ats_scans.delete_many({"user_id": user_id, "resume_id": resume_id})
+            
+            logger.info(
+                f"Cascade delete for resume {resume_id}: "
+                f"jobs={jobs_deleted.deleted_count}, "
+                f"improvements={improvements_deleted.deleted_count}, "
+                f"ats_scans={ats_deleted.deleted_count}"
+            )
+            
+            return True
+        
+        return False
 
     def list_resumes(self, user_id: str | None = None) -> list[dict[str, Any]]:
         user_id = self._get_user_id(user_id)
