@@ -48,6 +48,7 @@ export function DiffPreviewModal({
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(['title', 'summary', 'skills', 'descriptions', 'experience'])
   );
+  const [isStatsExpanded, setIsStatsExpanded] = useState(true);
   const [changeDecisions, setChangeDecisions] = useState<Record<number, ChangeDecision>>({});
 
   useEffect(() => {
@@ -234,37 +235,57 @@ export function DiffPreviewModal({
                 </Button>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 lg:grid-cols-6">
-                <StatCard
-                  label={t('tailor.diffModal.skillsAdded')}
-                  value={diffSummary.skills_added}
-                  variant="success"
-                />
-                <StatCard
-                  label={t('tailor.diffModal.skillsRemoved')}
-                  value={diffSummary.skills_removed}
-                  variant="warning"
-                />
-                <StatCard
-                  label={t('tailor.diffModal.certificationsAdded')}
-                  value={diffSummary.certifications_added}
-                  variant="info"
-                />
-                <StatCard
-                  label={t('tailor.diffModal.descriptionsModified')}
-                  value={diffSummary.descriptions_modified}
-                  variant="info"
-                />
-                <StatCard
-                  label={t('tailor.diffModal.titleChanged')}
-                  value={diffSummary.title_changed ? 1 : 0}
-                  variant={diffSummary.title_changed ? 'info' : 'success'}
-                />
-                <StatCard
-                  label={t('tailor.diffModal.highRiskChanges')}
-                  value={diffSummary.high_risk_changes}
-                  variant={diffSummary.high_risk_changes > 0 ? 'danger' : 'success'}
-                />
+              <div className="overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-sm">
+                <button
+                  onClick={() => setIsStatsExpanded(!isStatsExpanded)}
+                  className="flex w-full items-center justify-between rounded-t-[28px] px-4 py-3 text-left transition hover:bg-white/[0.03] sm:px-5"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-2xl border border-white/10 bg-white/5 p-2 text-slate-300">
+                      {isStatsExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                    </div>
+                    <div>
+                      <span className="block font-serif text-lg text-white">Change Summary</span>
+                      <span className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Statistics</span>
+                    </div>
+                  </div>
+                </button>
+                {isStatsExpanded && (
+                  <div className="border-t border-white/8 p-3 sm:p-4">
+                    <div className="grid grid-cols-2 gap-3 lg:grid-cols-6">
+                      <StatCard
+                        label={t('tailor.diffModal.skillsAdded')}
+                        value={diffSummary.skills_added}
+                        variant="success"
+                      />
+                      <StatCard
+                        label={t('tailor.diffModal.skillsRemoved')}
+                        value={diffSummary.skills_removed}
+                        variant="warning"
+                      />
+                      <StatCard
+                        label={t('tailor.diffModal.certificationsAdded')}
+                        value={diffSummary.certifications_added}
+                        variant="info"
+                      />
+                      <StatCard
+                        label={t('tailor.diffModal.descriptionsModified')}
+                        value={diffSummary.descriptions_modified}
+                        variant="info"
+                      />
+                      <StatCard
+                        label={t('tailor.diffModal.titleChanged')}
+                        value={diffSummary.title_changed ? 1 : 0}
+                        variant={diffSummary.title_changed ? 'info' : 'success'}
+                      />
+                      <StatCard
+                        label={t('tailor.diffModal.highRiskChanges')}
+                        value={diffSummary.high_risk_changes}
+                        variant={diffSummary.high_risk_changes > 0 ? 'danger' : 'success'}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               {diffSummary.high_risk_changes > 0 && (
