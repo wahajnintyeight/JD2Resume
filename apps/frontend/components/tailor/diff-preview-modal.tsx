@@ -128,16 +128,16 @@ export function DiffPreviewModal({
               <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/80 to-transparent" />
             </div>
 
-            <DialogHeader className="relative border-b border-white/10 px-4 pb-5 pt-5 text-left sm:px-6 sm:pb-6 sm:pt-6">
+            <DialogHeader className="relative border-b border-white/10 px-4 py-3 sm:px-6 sm:py-4 text-left">
               <div className="flex items-start gap-3">
-                <div className="rounded-2xl border border-amber-300/25 bg-amber-300/10 p-2.5 text-amber-200 shadow-[0_10px_30px_rgba(245,158,11,0.12)]">
-                  <ShieldAlert className="h-5 w-5" />
+                <div className="rounded-xl border border-amber-300/25 bg-amber-300/10 p-2 text-amber-200">
+                  <ShieldAlert className="h-4 w-4" />
                 </div>
                 <div>
-                  <DialogTitle className="font-serif text-2xl leading-tight text-white sm:text-3xl">
+                  <DialogTitle className="font-serif text-xl leading-tight text-white">
                     {t('tailor.missingDiffDialog.title')}
                   </DialogTitle>
-                  <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300 sm:text-[15px]">
+                  <p className="mt-1 max-w-2xl text-xs text-slate-400">
                     {t('tailor.missingDiffDialog.description')}
                   </p>
                 </div>
@@ -145,16 +145,16 @@ export function DiffPreviewModal({
             </DialogHeader>
 
             <div className="relative flex-1 p-4 sm:p-6">
-              <div className="rounded-[28px] border border-white/10 bg-white/[0.04] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-sm">
+              <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 backdrop-blur-sm">
                 <div className="flex items-start gap-3">
-                  <div className="rounded-2xl border border-amber-400/25 bg-amber-400/10 p-2 text-amber-200">
-                    <AlertTriangle className="h-4 w-4" />
+                  <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-1.5 text-amber-200">
+                    <AlertTriangle className="h-3.5 w-3.5" />
                   </div>
-                  <div className="space-y-2">
-                    <p className="text-[11px] uppercase tracking-[0.24em] text-slate-400">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
                       {t('tailor.missingDiffDialog.confirmLabel')}
                     </p>
-                    <p className="text-sm leading-6 text-slate-200">
+                    <p className="text-xs text-slate-300">
                       {t('tailor.missingDiffDialog.description')}
                     </p>
                   </div>
@@ -162,18 +162,18 @@ export function DiffPreviewModal({
               </div>
             </div>
 
-            <div className="relative flex flex-col items-stretch gap-3 border-t border-white/10 bg-slate-950/80 p-4 backdrop-blur-xl sm:flex-row sm:justify-end sm:px-6 sm:py-4">
+            <div className="relative flex flex-col items-stretch gap-3 border-t border-white/10 bg-slate-950/80 p-4 backdrop-blur-xl sm:flex-row sm:justify-end sm:px-6 sm:py-3">
               <Button
                 variant="outline"
                 onClick={onClose}
-                className="h-11 w-full rounded-2xl border-white/15 bg-white/5 text-slate-100 hover:border-white/25 hover:bg-white/10 sm:w-auto"
+                className="h-9 w-full rounded-xl border-white/15 bg-white/5 text-xs text-slate-100 hover:border-white/25 hover:bg-white/10 sm:w-auto"
               >
                 {t('common.cancel')}
               </Button>
               <Button
                 variant="warning"
                 onClick={() => onConfirm()}
-                className="h-11 w-full rounded-2xl border border-amber-300/25 bg-gradient-to-r from-amber-300 via-amber-400 to-orange-400 text-slate-950 shadow-[0_12px_35px_rgba(245,158,11,0.22)] sm:w-auto"
+                className="h-9 w-full rounded-xl border border-amber-300/25 bg-gradient-to-r from-amber-300 via-amber-400 to-orange-400 text-xs text-slate-950 sm:w-auto"
               >
                 {t('tailor.missingDiffDialog.confirmLabel')}
               </Button>
@@ -199,24 +199,24 @@ export function DiffPreviewModal({
       <DialogContent className="fixed inset-0 m-0 flex h-screen w-screen max-w-none flex-col gap-0 overflow-hidden border-0 bg-slate-950/70 p-0 outline-none backdrop-blur-xl">
         <div className="relative mx-auto flex h-full w-full flex-col overflow-hidden bg-slate-950 text-slate-100 md:border-x md:border-white/10">
           <div className="pointer-events-none absolute inset-0">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.16),transparent_28%),radial-gradient(circle_at_top_right,rgba(217,70,239,0.14),transparent_26%),radial-gradient(circle_at_bottom,rgba(251,191,36,0.12),transparent_34%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_top_right,rgba(217,70,239,0.1),transparent_26%),radial-gradient(circle_at_bottom,rgba(251,191,36,0.08),transparent_34%)]" />
             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/80 to-transparent" />
             <div className="absolute inset-y-0 left-0 w-px bg-gradient-to-b from-transparent via-fuchsia-400/25 to-transparent" />
           </div>
 
-          <DialogHeader className="relative shrink-0 border-b border-white/10 px-4 pb-5 pt-5 text-left sm:px-6 sm:pb-6 sm:pt-6 lg:px-8">
-            <div className="flex flex-col gap-5">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div className="space-y-3">
-                  <div className="inline-flex w-fit items-center gap-2 rounded-full border border-cyan-400/25 bg-cyan-400/10 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.22em] text-cyan-200">
-                    <Sparkles className="h-3.5 w-3.5" />
+          <DialogHeader className="relative shrink-0 border-b border-white/10 px-4 py-3 sm:px-6 sm:py-3.5 lg:px-8">
+            <div className="relative z-10 flex flex-col gap-3">
+              <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-1">
+                  <div className="inline-flex w-fit items-center gap-1.5 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-cyan-300">
+                    <Sparkles className="h-3 w-3" />
                     {t('tailor.diffModal.summary')}
                   </div>
                   <div>
-                    <DialogTitle className="font-serif text-2xl leading-tight text-white sm:text-3xl">
+                    <DialogTitle className="font-serif text-lg leading-tight text-white sm:text-xl">
                       {t('tailor.diffModal.title')}
                     </DialogTitle>
-                    <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-300 sm:text-[15px]">
+                    <p className="mt-0.5 text-xs text-slate-400">
                       {t('tailor.diffModal.subtitle')}
                     </p>
                   </div>
@@ -228,31 +228,31 @@ export function DiffPreviewModal({
                   variant="success"
                   onClick={acceptAllChanges}
                   disabled={detailedChanges.length === 0 || allAccepted}
-                  className="h-11 w-full rounded-2xl border border-emerald-300/20 bg-emerald-400/15 px-4 text-emerald-100 hover:bg-emerald-400/20 sm:w-auto"
+                  className="h-8 rounded-lg border border-emerald-500/20 bg-emerald-500/15 px-3 text-xs text-emerald-300 hover:bg-emerald-500/25 sm:w-auto"
                 >
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
                   {t('tailor.diffModal.acceptAll')}
                 </Button>
               </div>
 
-              <div className="overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-sm">
+              <div className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.02] backdrop-blur-sm">
                 <button
                   onClick={() => setIsStatsExpanded(!isStatsExpanded)}
-                  className="flex w-full items-center justify-between rounded-t-[28px] px-4 py-3 text-left transition hover:bg-white/[0.03] sm:px-5"
+                  className="flex w-full items-center justify-between px-3 py-1.5 text-left transition hover:bg-white/[0.03]"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-2xl border border-white/10 bg-white/5 p-2 text-slate-300">
-                      {isStatsExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                  <div className="flex items-center gap-2">
+                    <div className="rounded-lg border border-white/10 bg-white/5 p-1 text-slate-300">
+                      {isStatsExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
                     </div>
                     <div>
-                      <span className="block font-serif text-lg text-white">Change Summary</span>
-                      <span className="text-[11px] uppercase tracking-[0.2em] text-slate-400">Statistics</span>
+                      <span className="block font-serif text-xs font-semibold text-white">Change Summary</span>
+                      <span className="text-[9px] uppercase tracking-wider text-slate-500">Statistics</span>
                     </div>
                   </div>
                 </button>
                 {isStatsExpanded && (
-                  <div className="border-t border-white/8 p-3 sm:p-4">
-                    <div className="grid grid-cols-2 gap-3 lg:grid-cols-6">
+                  <div className="border-t border-white/5 p-2.5">
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
                       <StatCard
                         label={t('tailor.diffModal.skillsAdded')}
                         value={diffSummary.skills_added}
@@ -289,16 +289,16 @@ export function DiffPreviewModal({
               </div>
 
               {diffSummary.high_risk_changes > 0 && (
-                <div className="rounded-[24px] border border-amber-400/25 bg-gradient-to-br from-amber-400/12 via-amber-300/8 to-transparent p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
-                  <div className="flex items-start gap-3">
-                    <div className="rounded-2xl border border-amber-300/25 bg-amber-300/12 p-2 text-amber-200">
-                      <AlertTriangle className="h-4 w-4" />
+                <div className="rounded-xl border border-amber-500/20 bg-amber-500/[0.04] p-2.5 px-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="rounded-lg border border-amber-500/20 bg-amber-500/10 p-1.5 text-amber-300 shrink-0">
+                      <AlertTriangle className="h-3.5 w-3.5" />
                     </div>
-                    <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-100">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-amber-200">
                         {t('tailor.diffModal.warningTitle', { count: diffSummary.high_risk_changes })}
                       </p>
-                      <p className="mt-2 text-sm leading-6 text-amber-50/90">
+                      <p className="text-xs text-amber-100/80 leading-normal mt-0.5">
                         {t('tailor.diffModal.warningMessage')}
                       </p>
                     </div>
@@ -307,48 +307,24 @@ export function DiffPreviewModal({
               )}
 
               {errorMessage && (
-                <div className="rounded-[22px] border border-red-400/25 bg-red-500/10 p-3 text-sm text-red-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
+                <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-2 text-xs text-red-200">
                   {errorMessage}
                 </div>
               )}
             </div>
           </DialogHeader>
 
-          <div className="relative flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5 lg:px-8">
-            <div className="space-y-4">
+          <div className="relative flex-1 overflow-y-auto px-4 py-3 sm:px-6 sm:py-4 lg:px-8">
+            <div className="space-y-3">
               {[
-                { id: 'title', title: t('tailor.diffModal.titleChanges'), items: titleChanges },
-                {
-                  id: 'summary',
-                  title: t('tailor.diffModal.summaryChanges'),
-                  items: summaryChanges,
-                },
-                { id: 'skills', title: t('tailor.diffModal.skillChanges'), items: skillChanges },
-                {
-                  id: 'experience',
-                  title: t('tailor.diffModal.experienceChanges'),
-                  items: experienceChanges,
-                },
-                {
-                  id: 'descriptions',
-                  title: t('tailor.diffModal.descriptionChanges'),
-                  items: descChanges,
-                },
-                {
-                  id: 'education',
-                  title: t('tailor.diffModal.educationChanges'),
-                  items: educationChanges,
-                },
-                {
-                  id: 'project',
-                  title: t('tailor.diffModal.projectChanges'),
-                  items: projectChanges,
-                },
-                {
-                  id: 'certifications',
-                  title: t('tailor.diffModal.certificationChanges'),
-                  items: certChanges,
-                },
+                { id: 'title', title: t('tailor.diffModal.titleChanges'), items: titleChanges, isGrid: true },
+                { id: 'summary', title: t('tailor.diffModal.summaryChanges'), items: summaryChanges, isGrid: false },
+                { id: 'skills', title: t('tailor.diffModal.skillChanges'), items: skillChanges, isGrid: true },
+                { id: 'experience', title: t('tailor.diffModal.experienceChanges'), items: experienceChanges, isGrid: false },
+                { id: 'descriptions', title: t('tailor.diffModal.descriptionChanges'), items: descChanges, isGrid: false },
+                { id: 'education', title: t('tailor.diffModal.educationChanges'), items: educationChanges, isGrid: false },
+                { id: 'project', title: t('tailor.diffModal.projectChanges'), items: projectChanges, isGrid: false },
+                { id: 'certifications', title: t('tailor.diffModal.certificationChanges'), items: certChanges, isGrid: true },
               ].map(
                 (section) =>
                   section.items.length > 0 && (
@@ -361,6 +337,7 @@ export function DiffPreviewModal({
                       onAcceptAll={() => acceptSectionChanges(section.items.map((i) => i.index))}
                       acceptLabel={t('tailor.diffModal.acceptSection')}
                       isAccepted={isSectionAccepted(section.items)}
+                      isGrid={section.isGrid}
                     >
                       {section.items.map(({ change, index }) => (
                         <ChangeItem
@@ -377,21 +354,21 @@ export function DiffPreviewModal({
             </div>
           </div>
 
-          <div className="relative flex shrink-0 flex-col items-stretch gap-3 border-t border-white/10 bg-slate-950/80 p-4 backdrop-blur-xl sm:flex-row sm:justify-between sm:px-6 lg:px-8">
+          <div className="relative flex shrink-0 flex-col items-stretch gap-3 border-t border-white/10 bg-slate-950/80 p-3 backdrop-blur-xl sm:flex-row sm:justify-between sm:px-6 lg:px-8">
             <Button
               variant="outline"
               onClick={onReject}
-              className="h-11 w-full justify-center gap-2 rounded-2xl border-white/15 bg-white/5 text-slate-100 hover:border-white/25 hover:bg-white/10 sm:w-auto"
+              className="h-9 w-full justify-center gap-1.5 rounded-lg border-white/10 bg-white/5 text-xs text-slate-100 hover:border-white/20 hover:bg-white/10 sm:w-auto"
             >
-              <X className="h-4 w-4" />
+              <X className="h-3.5 w-3.5" />
               {t('tailor.diffModal.rejectButton')}
             </Button>
             <Button
               onClick={() => onConfirm(changeDecisions)}
               disabled={isSaving}
-              className="h-11 w-full justify-center gap-2 rounded-2xl border border-cyan-300/30 bg-gradient-to-r from-cyan-400 via-sky-400 to-fuchsia-500 text-slate-950 shadow-[0_12px_35px_rgba(34,211,238,0.28)] hover:shadow-[0_16px_45px_rgba(34,211,238,0.38)] sm:w-auto"
+              className="h-9 w-full justify-center gap-1.5 rounded-lg border border-cyan-500/20 bg-gradient-to-r from-cyan-400 via-sky-400 to-fuchsia-500 text-xs text-slate-950 sm:w-auto"
             >
-              {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4" />}
+              {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <CheckCircle className="h-3.5 w-3.5" />}
               {t('tailor.diffModal.confirmButton')}
             </Button>
           </div>
@@ -403,24 +380,21 @@ export function DiffPreviewModal({
 
 function StatCard({ label, value, variant }: { label: string; value: number; variant: string }) {
   const colors: Record<string, string> = {
-    success:
-      'border-emerald-400/20 bg-gradient-to-br from-emerald-400/14 via-emerald-400/8 to-transparent text-emerald-100',
-    warning:
-      'border-amber-400/20 bg-gradient-to-br from-amber-400/14 via-amber-400/8 to-transparent text-amber-100',
-    danger:
-      'border-red-400/20 bg-gradient-to-br from-red-400/14 via-red-400/8 to-transparent text-red-100',
-    info: 'border-cyan-400/20 bg-gradient-to-br from-cyan-400/14 via-cyan-400/8 to-transparent text-cyan-100',
+    success: 'border-emerald-500/15 bg-emerald-500/5 text-emerald-300',
+    warning: 'border-amber-500/15 bg-amber-500/5 text-amber-300',
+    danger: 'border-red-500/15 bg-red-500/5 text-red-300',
+    info: 'border-cyan-500/15 bg-cyan-500/5 text-cyan-300',
   };
 
   return (
     <div
       className={cn(
-        'rounded-[22px] border p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-sm sm:p-4',
+        'rounded-lg border p-2 px-2.5 shadow-sm backdrop-blur-sm transition-all hover:bg-white/[0.02]',
         colors[variant]
       )}
     >
-      <div className="text-2xl font-semibold tracking-tight sm:text-3xl">{value}</div>
-      <div className="mt-2 text-[10px] uppercase tracking-[0.2em] text-current/80 sm:text-[11px]">
+      <div className="text-base font-bold tracking-tight sm:text-lg">{value}</div>
+      <div className="mt-0.5 text-[8px] font-semibold uppercase tracking-wider opacity-80 sm:text-[9px]">
         {label}
       </div>
     </div>
@@ -435,22 +409,23 @@ function ChangeSection({
   onAcceptAll,
   acceptLabel,
   isAccepted,
+  isGrid,
   children,
 }: any) {
   return (
-    <div className="overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.04] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-sm">
-      <div className="flex flex-col gap-3 border-b border-white/8 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+    <div className="overflow-hidden rounded-xl border border-white/10 bg-white/[0.02] shadow-sm backdrop-blur-sm">
+      <div className="flex flex-col gap-2 border-b border-white/5 px-3 py-2 sm:flex-row sm:items-center sm:justify-between sm:px-4">
         <button
           onClick={onToggle}
-          className="flex flex-1 items-center justify-between rounded-2xl px-1 py-1 text-left transition hover:bg-white/[0.03]"
+          className="flex flex-1 items-center justify-between rounded-lg px-1 py-1 text-left transition hover:bg-white/[0.03]"
         >
-          <div className="flex items-center gap-3">
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-2 text-slate-300">
-              {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          <div className="flex items-center gap-2">
+            <div className="rounded-lg border border-white/10 bg-white/5 p-1 text-slate-300">
+              {isExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
             </div>
             <div>
-              <span className="block font-serif text-lg text-white">{title}</span>
-              <span className="text-[11px] uppercase tracking-[0.2em] text-slate-400">{count}</span>
+              <span className="block font-serif text-[14px] font-medium text-white">{title}</span>
+              <span className="text-[9px] uppercase tracking-wider text-slate-400">{count} items</span>
             </div>
           </div>
         </button>
@@ -459,104 +434,143 @@ function ChangeSection({
           variant="success"
           onClick={onAcceptAll}
           disabled={isAccepted}
-          className="h-10 w-full rounded-2xl border border-emerald-300/20 bg-emerald-400/15 text-emerald-100 hover:bg-emerald-400/20 sm:w-auto"
+          className="h-7 rounded-lg border border-emerald-500/20 bg-emerald-500/10 px-2.5 text-xs text-emerald-300 hover:bg-emerald-500/20 sm:w-auto"
         >
-          <CheckCircle2 className="mr-2 h-4 w-4" />
+          <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
           {acceptLabel}
         </Button>
       </div>
-      {isExpanded && <div className="space-y-3 p-3 sm:p-4">{children}</div>}
+      {isExpanded && (
+        <div
+          className={cn(
+            'p-3 sm:p-4',
+            isGrid
+              ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3'
+              : 'grid grid-cols-1 xl:grid-cols-2 gap-4'
+          )}
+        >
+          {children}
+        </div>
+      )}
     </div>
   );
 }
 
 function ChangeItem({ change, decision, onDecisionChange, labels }: any) {
+  const isShortField = ['skill', 'certification', 'title'].includes(change.field_type);
+
   const typeStyles: Record<string, string> = {
-    added: 'border-emerald-400/20 bg-gradient-to-br from-emerald-400/[0.08] via-transparent to-transparent',
-    removed: 'border-red-400/20 bg-gradient-to-br from-red-400/[0.08] via-transparent to-transparent',
-    modified: 'border-cyan-400/20 bg-gradient-to-br from-cyan-400/[0.08] via-transparent to-transparent',
+    added: 'border-emerald-500/15 bg-gradient-to-br from-emerald-500/[0.04] via-transparent to-transparent',
+    removed: 'border-rose-500/15 bg-gradient-to-br from-rose-500/[0.04] via-transparent to-transparent',
+    modified: 'border-cyan-500/15 bg-gradient-to-br from-cyan-500/[0.04] via-transparent to-transparent',
   };
+
+  const boxPadding = isShortField ? 'px-2.5 py-1.5' : 'px-3.5 py-2.5';
 
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-[24px] border shadow-[0_12px_40px_rgba(2,6,23,0.25)]',
+        'overflow-hidden rounded-xl border shadow-sm transition-all duration-200 hover:border-white/15',
         typeStyles[change.change_type]
       )}
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/8 bg-white/[0.04] px-4 py-3">
-        <div className="flex items-center gap-2">
-          <div className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[10px] uppercase tracking-[0.2em] text-slate-300">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/5 bg-white/[0.02] px-3 py-1.5">
+        <div className="flex items-center gap-1.5">
+          <div
+            className={cn(
+              'rounded-full border px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider',
+              change.change_type === 'added' && 'border-emerald-500/30 bg-emerald-500/15 text-emerald-300',
+              change.change_type === 'removed' && 'border-rose-500/30 bg-rose-500/15 text-rose-300',
+              change.change_type === 'modified' && 'border-cyan-500/30 bg-cyan-500/15 text-cyan-300'
+            )}
+          >
             {change.change_type}
           </div>
-          <div className="rounded-full border border-fuchsia-400/20 bg-fuchsia-400/10 px-2.5 py-1 text-[10px] uppercase tracking-[0.2em] text-fuchsia-100">
+          <div className="rounded-full border border-fuchsia-500/20 bg-fuchsia-500/5 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider text-fuchsia-300">
             <span className="inline-flex items-center gap-1">
-              <Wand2 className="h-3 w-3" />
+              <Wand2 className="h-2.5 w-2.5" />
               {change.field_type}
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] uppercase tracking-[0.18em] text-slate-400">{labels.decision}</span>
-          <span
-            className={cn(
-              'rounded-full border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em]',
-              decision === 'accepted' && 'border-emerald-300/25 bg-emerald-400/15 text-emerald-100',
-              decision === 'rejected' && 'border-red-300/25 bg-red-400/15 text-red-100',
-              decision === 'pending' && 'border-white/10 bg-white/5 text-slate-300'
-            )}
-          >
-            {labels[decision]}
-          </span>
-        </div>
-      </div>
-
-      <div className="grid gap-3 p-4 lg:grid-cols-[1fr_auto_1fr]">
-        <div className="rounded-[20px] border border-red-400/15 bg-red-400/[0.05] p-4">
-          {change.original_value ? (
-            <div className="text-sm leading-6 text-red-100/90 line-through">{change.original_value}</div>
-          ) : (
-            <div className="text-sm italic leading-6 text-slate-500">—</div>
-          )}
-        </div>
-
-        <div className="flex items-center justify-center">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-cyan-200">
-            <Sparkles className="h-4 w-4" />
-          </div>
-        </div>
-
-        <div className="rounded-[20px] border border-emerald-400/15 bg-emerald-400/[0.06] p-4">
-          <div className="text-sm leading-6 text-slate-100">{change.new_value}</div>
-        </div>
-      </div>
-
-      <div className="flex flex-col justify-between gap-3 border-t border-white/8 px-4 py-3 sm:flex-row sm:items-center">
-        <div className="text-xs uppercase tracking-[0.16em] text-slate-400">{labels.decision}</div>
-        <div className="flex flex-col gap-2 sm:flex-row">
+        <div className="flex items-center gap-1.5">
           <Button
             size="sm"
-            variant={decision === 'accepted' ? 'success' : 'outline'}
             onClick={() => onDecisionChange('accepted')}
             className={cn(
-              'rounded-2xl',
-              decision !== 'accepted' && 'border-white/15 bg-white/5 text-slate-100 hover:bg-white/10'
+              'h-[26px] rounded-lg text-[10px] px-2 font-medium transition-all duration-200',
+              decision === 'accepted'
+                ? 'bg-emerald-500 text-white shadow-sm border-transparent hover:bg-emerald-600'
+                : 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white'
             )}
           >
             {labels.accept}
           </Button>
           <Button
             size="sm"
-            variant={decision === 'rejected' ? 'destructive' : 'outline'}
             onClick={() => onDecisionChange('rejected')}
             className={cn(
-              'rounded-2xl',
-              decision !== 'rejected' && 'border-white/15 bg-white/5 text-slate-100 hover:bg-white/10'
+              'h-[26px] rounded-lg text-[10px] px-2 font-medium transition-all duration-200',
+              decision === 'rejected'
+                ? 'bg-red-500 text-white shadow-sm border-transparent hover:bg-red-600'
+                : 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white'
             )}
           >
             {labels.reject}
           </Button>
+        </div>
+      </div>
+
+      <div
+        className={cn(
+          'p-2.5',
+          isShortField
+            ? 'grid grid-cols-[1fr_auto_1fr] items-center gap-2'
+            : 'grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] items-center gap-2.5'
+        )}
+      >
+        <div
+          className={cn(
+            'rounded-lg border text-red-200/80',
+            change.original_value ? 'border-red-500/10 bg-red-500/[0.03]' : 'border-white/5 bg-white/[0.01]',
+            boxPadding
+          )}
+        >
+          {change.original_value ? (
+            <div
+              className={cn(
+                'leading-relaxed line-through break-words',
+                isShortField ? 'text-xs font-mono font-medium' : 'text-[13px]'
+              )}
+            >
+              {change.original_value}
+            </div>
+          ) : (
+            <div className="text-xs italic text-slate-600">—</div>
+          )}
+        </div>
+
+        <div className="flex items-center justify-center">
+          <div className="flex h-6 w-6 items-center justify-center rounded-lg border border-white/5 bg-white/5 text-cyan-400">
+            <Sparkles className="h-3 w-3" />
+          </div>
+        </div>
+
+        <div
+          className={cn(
+            'rounded-lg border border-emerald-500/10 bg-emerald-500/[0.04]',
+            boxPadding
+          )}
+        >
+          <div
+            className={cn(
+              'leading-relaxed text-slate-100 break-words',
+              isShortField ? 'text-xs font-mono font-medium' : 'text-[13px]'
+            )}
+          >
+            {change.new_value}
+          </div>
         </div>
       </div>
     </div>
