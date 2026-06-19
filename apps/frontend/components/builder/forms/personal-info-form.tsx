@@ -120,8 +120,6 @@ export const PersonalInfoForm: React.FC<PersonalInfoFormProps> = ({ data, onChan
             </h3>
           </div>
         </div>
-
-         
       </div>
 
       <div className="relative grid grid-cols-1 gap-4 md:grid-cols-2 xl:gap-5">

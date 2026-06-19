@@ -207,13 +207,9 @@ export function ResumeUploadDialog({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent 
-        className="sm:max-w-2xl p-0 gap-0 rounded-[2rem] border border-gray-300 bg-white text-gray-900 shadow-[0_20px_60px_rgba(0,0,0,0.12)]"
-      >
+      <DialogContent className="sm:max-w-2xl p-0 gap-0 rounded-[2rem] border border-gray-300 bg-white text-gray-900 shadow-[0_20px_60px_rgba(0,0,0,0.12)]">
         <DialogHeader className="relative p-7 border-b border-gray-200">
-          <DialogTitle 
-            className="font-serif text-4xl font-black uppercase leading-tight tracking-[-0.06em] text-gray-900 [font-family:var(--font-playfair-display),'Times_New_Roman',serif]"
-          >
+          <DialogTitle className="font-serif text-4xl font-black uppercase leading-tight tracking-[-0.06em] text-gray-900 [font-family:var(--font-playfair-display),'Times_New_Roman',serif]">
             {t('dashboard.uploadResume')}
           </DialogTitle>
           <p className="mt-3 text-sm font-medium text-gray-600">
@@ -225,9 +221,10 @@ export function ResumeUploadDialog({
           <div
             className={`
               relative overflow-hidden rounded-[1.6rem] border transition-all duration-300
-              ${isDragging 
-                ? 'border-blue-500 bg-blue-50 shadow-[0_20px_60px_rgba(59,130,246,0.15)]' 
-                : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
+              ${
+                isDragging
+                  ? 'border-blue-500 bg-blue-50 shadow-[0_20px_60px_rgba(59,130,246,0.15)]'
+                  : 'border-gray-300 hover:border-gray-400 hover:bg-gray-50'
               }
               ${currentFile ? 'border-amber-300 bg-amber-50' : ''}
               ${!currentFile && !isRetryingProcessing ? 'cursor-pointer' : 'cursor-default'}
@@ -284,7 +281,7 @@ export function ResumeUploadDialog({
                 <div className="flex h-16 w-16 items-center justify-center rounded-[1.2rem] border border-amber-300 bg-amber-100 shadow-[0_12px_40px_rgba(217,119,6,0.12)]">
                   <UploadIcon className="h-8 w-8 text-amber-700" />
                 </div>
-                <h3 
+                <h3
                   className="mt-6 text-2xl font-black uppercase tracking-[-0.05em] text-gray-900"
                   style={{ fontFamily: 'var(--font-playfair-display), "Times New Roman", serif' }}
                 >
@@ -310,7 +307,9 @@ export function ResumeUploadDialog({
                     Upload Issue
                   </p>
                   {displayErrors.map((err, i) => (
-                    <p key={i} className="text-sm leading-5 text-red-600">{err}</p>
+                    <p key={i} className="text-sm leading-5 text-red-600">
+                      {err}
+                    </p>
                   ))}
                 </div>
               </div>
@@ -357,8 +356,8 @@ export function ResumeUploadDialog({
             )}
           </div>
           <DialogClose asChild>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               className="h-10 rounded-[1.1rem] border border-gray-300 bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition-all"
             >
               {t('common.cancel')}

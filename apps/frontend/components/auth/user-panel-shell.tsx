@@ -92,19 +92,22 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
         {/* Ambient effects */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(59,130,246,0.08),transparent_50%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(139,92,246,0.06),transparent_50%)]" />
-        
+
         {/* Animated gradient orbs */}
         <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-gradient-to-br from-blue-500/10 via-cyan-500/10 to-transparent blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-gradient-to-tr from-violet-500/8 via-purple-500/8 to-transparent blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-        
+        <div
+          className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-gradient-to-tr from-violet-500/8 via-purple-500/8 to-transparent blur-3xl animate-pulse"
+          style={{ animationDelay: '1s' }}
+        />
+
         <div className="relative flex flex-col items-center gap-6 rounded-xl border border-white/10 bg-slate-900/80 backdrop-blur-xl px-12 py-10 shadow-[0_32px_120px_rgba(0,0,0,0.5)]">
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-400/50 to-transparent" />
-          
+
           <div className="relative flex h-16 w-16 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500/20 to-blue-600/10 ring-1 ring-blue-400/30 backdrop-blur-sm">
             <div className="absolute inset-0 bg-blue-400/20 blur-xl animate-pulse rounded-lg" />
             <div className="h-8 w-8 rounded border-2 border-blue-400 border-t-transparent animate-spin relative z-10" />
           </div>
-          
+
           <div className="space-y-2 text-center">
             <p className="font-['Geist',_system-ui] text-sm font-semibold tracking-wide text-blue-300">
               Loading Workspace
@@ -127,15 +130,15 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
       <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(59,130,246,0.1),transparent_50%)]" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_70%,rgba(139,92,246,0.08),transparent_50%)]" />
-        
+
         <Card className="relative w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-slate-900/80 backdrop-blur-xl p-0 shadow-[0_32px_120px_rgba(0,0,0,0.5)]">
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-blue-400/50 to-transparent" />
-          
+
           <div className="relative space-y-8 p-10 text-center md:p-12">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br from-blue-500/20 to-blue-600/10 ring-1 ring-blue-400/40 text-blue-400 shadow-[0_0_24px_rgba(59,130,246,0.2)]">
               <Zap className="h-7 w-7" />
             </div>
-            
+
             <div className="space-y-4">
               <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-500/10 px-4 py-1.5">
                 <Sparkles className="w-3 h-3 text-blue-400" />
@@ -143,17 +146,18 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
                   Professional Platform
                 </span>
               </div>
-              
+
               <div className="space-y-3">
                 <h2 className="font-['Playfair_Display',_Georgia,_serif] text-4xl font-bold tracking-tight text-slate-100 md:text-5xl">
                   Welcome Back
                 </h2>
                 <p className="mx-auto max-w-sm font-['Geist',_system-ui] text-sm leading-relaxed text-slate-400">
-                  Sign in to access your resume workspace, AI-powered tailoring tools, and professional document builder.
+                  Sign in to access your resume workspace, AI-powered tailoring tools, and
+                  professional document builder.
                 </p>
               </div>
             </div>
-            
+
             <div className="space-y-4">
               <a href={loginUrl} className="block">
                 <Button className="h-12 w-full rounded-xl font-['Geist',_system-ui] text-base font-semibold bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-[0_0_24px_rgba(59,130,246,0.3)] hover:shadow-[0_0_32px_rgba(59,130,246,0.4)] transition-all duration-300">
@@ -325,7 +329,9 @@ export default function UserPanelShell({ children }: { children: React.ReactNode
             )}
           >
             <LogOut size={18} />
-            {!isCollapsed && <span className="font-['Geist',_system-ui] text-sm font-medium">Sign Out</span>}
+            {!isCollapsed && (
+              <span className="font-['Geist',_system-ui] text-sm font-medium">Sign Out</span>
+            )}
           </Button>
         </div>
       </aside>

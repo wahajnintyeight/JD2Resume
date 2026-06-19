@@ -153,8 +153,6 @@ export const ExperienceForm: React.FC<ExperienceFormProps> = ({ data, onChange }
             </h3>
           </div>
         </div>
-
-        
       </div>
 
       <div className="relative mb-5 flex justify-end">

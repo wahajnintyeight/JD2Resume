@@ -34,10 +34,15 @@ export function CoverLetterEditor({
   const charCount = content.length;
 
   return (
-    <div className={cn('flex flex-col h-full rounded-lg overflow-hidden bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-sm border border-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.4)]', className)}>
+    <div
+      className={cn(
+        'flex flex-col h-full rounded-lg overflow-hidden bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-sm border border-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.4)]',
+        className
+      )}
+    >
       {/* Ambient glow effect */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-indigo-500/5 pointer-events-none" />
-      
+
       {/* Header */}
       <div className="relative flex items-center justify-between px-5 py-4 border-b border-white/5 bg-white/[0.02]">
         <div className="flex items-center gap-3">
@@ -55,13 +60,17 @@ export function CoverLetterEditor({
               {t('builder.contentStats.wordsChars', { wordCount, charCount })}
             </span>
           </div>
-          <Button 
-            size="sm" 
-            onClick={onSave} 
+          <Button
+            size="sm"
+            onClick={onSave}
             disabled={isSaving}
             className="h-9 px-4 bg-gradient-to-r from-blue-500/20 to-blue-600/10 hover:from-blue-500/30 hover:to-blue-600/20 ring-1 ring-blue-400/40 hover:ring-blue-400/60 text-blue-200 shadow-[0_0_12px_rgba(59,130,246,0.2)] transition-all duration-300"
           >
-            {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" /> : <Save className="w-3.5 h-3.5 mr-2" />}
+            {isSaving ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" />
+            ) : (
+              <Save className="w-3.5 h-3.5 mr-2" />
+            )}
             {isSaving ? t('common.saving') : t('common.save')}
           </Button>
         </div>

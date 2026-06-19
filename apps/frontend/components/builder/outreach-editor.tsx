@@ -46,10 +46,15 @@ export function OutreachEditor({
   };
 
   return (
-    <div className={cn('flex flex-col h-full rounded-lg overflow-hidden bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-sm border border-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.4)]', className)}>
+    <div
+      className={cn(
+        'flex flex-col h-full rounded-lg overflow-hidden bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-sm border border-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.4)]',
+        className
+      )}
+    >
       {/* Ambient glow effect */}
       <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 via-transparent to-pink-500/5 pointer-events-none" />
-      
+
       {/* Header */}
       <div className="relative flex items-center justify-between px-5 py-4 border-b border-white/5 bg-white/[0.02]">
         <div className="flex items-center gap-3">
@@ -67,25 +72,29 @@ export function OutreachEditor({
               {t('builder.contentStats.wordsChars', { wordCount, charCount })}
             </span>
           </div>
-          <Button 
-            size="sm" 
-            variant="outline" 
-            onClick={onSave} 
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={onSave}
             disabled={isSaving}
             className="h-9 px-4 bg-white/[0.02] hover:bg-white/[0.05] border-white/10 hover:border-white/20 text-slate-300 hover:text-white transition-all duration-300"
           >
-            {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" /> : <Save className="w-3.5 h-3.5 mr-2" />}
+            {isSaving ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin mr-2" />
+            ) : (
+              <Save className="w-3.5 h-3.5 mr-2" />
+            )}
             {isSaving ? t('common.saving') : t('common.save')}
           </Button>
-          <Button 
-            size="sm" 
-            onClick={handleCopy} 
+          <Button
+            size="sm"
+            onClick={handleCopy}
             disabled={!content}
             className={cn(
-              "h-9 px-4 transition-all duration-300",
-              isCopied 
-                ? "bg-gradient-to-r from-green-500/20 to-green-600/10 ring-1 ring-green-400/40 text-green-200 shadow-[0_0_12px_rgba(34,197,94,0.2)]"
-                : "bg-gradient-to-r from-purple-500/20 to-purple-600/10 hover:from-purple-500/30 hover:to-purple-600/20 ring-1 ring-purple-400/40 hover:ring-purple-400/60 text-purple-200 shadow-[0_0_12px_rgba(168,85,247,0.2)]"
+              'h-9 px-4 transition-all duration-300',
+              isCopied
+                ? 'bg-gradient-to-r from-green-500/20 to-green-600/10 ring-1 ring-green-400/40 text-green-200 shadow-[0_0_12px_rgba(34,197,94,0.2)]'
+                : 'bg-gradient-to-r from-purple-500/20 to-purple-600/10 hover:from-purple-500/30 hover:to-purple-600/20 ring-1 ring-purple-400/40 hover:ring-purple-400/60 text-purple-200 shadow-[0_0_12px_rgba(168,85,247,0.2)]'
             )}
           >
             {isCopied ? (

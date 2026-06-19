@@ -31,6 +31,52 @@ def test_skill_order_is_ignored() -> None:
     assert summary.skills_removed == 0
 
 
+def test_skill_bucket_move_is_ignored() -> None:
+    original = {
+        "additional": {
+            "technicalSkills": ["Python", "React"],
+            "skillSections": {"Frameworks": []},
+        }
+    }
+    improved = {
+        "additional": {
+            "technicalSkills": ["Python"],
+            "skillSections": {"Frameworks": ["React"]},
+        }
+    }
+
+    summary, changes = calculate_resume_diff(original, improved)
+
+    skill_changes = [c for c in changes if c.field_type == "skill"]
+    assert skill_changes == []
+    assert summary.skills_added == 0
+    assert summary.skills_removed == 0
+
+
+def test_only_new_skills_are_reported_as_added() -> None:
+    original = {
+        "additional": {
+            "technicalSkills": ["Python"],
+            "skillSections": {"Tools": ["Docker"]},
+        }
+    }
+    improved = {
+        "additional": {
+            "technicalSkills": ["Python", "Docker", "Kubernetes"],
+            "skillSections": {"Tools": []},
+        }
+    }
+
+    summary, changes = calculate_resume_diff(original, improved)
+
+    added = [c for c in changes if c.field_type == "skill" and c.change_type == "added"]
+    removed = [c for c in changes if c.field_type == "skill" and c.change_type == "removed"]
+    assert [c.new_value for c in added] == ["Kubernetes"]
+    assert removed == []
+    assert summary.skills_added == 1
+    assert summary.skills_removed == 0
+
+
 def test_description_modified_count_is_strict() -> None:
     original = {"workExperience": [{"description": ["Built APIs", "Led team"]}]}
     improved = {"workExperience": [{"description": ["Built APIs", "Led squad"]}]}

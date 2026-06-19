@@ -699,8 +699,6 @@ const ResumeBuilderContent = () => {
                 <ArrowLeft className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">{t('nav.backToDashboard')}</span>
               </Button>
-
-              
             </div>
 
             <div className="hidden items-center gap-2 lg:flex">
@@ -758,7 +756,11 @@ const ResumeBuilderContent = () => {
                 disabled={isSaving || !hasUnsavedChanges}
                 className="h-11 rounded-2xl border-cyan-300/30 bg-cyan-300/10 px-3 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-cyan-100 disabled:opacity-40"
               >
-                {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                {isSaving ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4" />
+                )}
                 <span className="ml-2">{t('common.save')}</span>
               </Button>
               <Button
@@ -869,7 +871,6 @@ const ResumeBuilderContent = () => {
                   away.
                 </p>
               </div>
-              
             </div>
           </div>
 
@@ -968,7 +969,11 @@ const ResumeBuilderContent = () => {
                   disabled={!resumeId || isDownloadingDocx}
                   className="h-10 rounded-2xl border-white/10 bg-white/5 px-3 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-slate-200 disabled:opacity-40"
                 >
-                  {isDownloadingDocx ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+                  {isDownloadingDocx ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <FileText className="h-4 w-4" />
+                  )}
                   <span className="ml-2">DOCX</span>
                 </Button>
                 <Button
@@ -977,7 +982,11 @@ const ResumeBuilderContent = () => {
                   disabled={!resumeId || isSavingPdf}
                   className="h-10 rounded-2xl border-white/10 bg-white/5 px-3 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-slate-200 disabled:opacity-40"
                 >
-                  {isSavingPdf ? <Loader2 className="h-4 w-4 animate-spin" /> : <HardDrive className="h-4 w-4" />}
+                  {isSavingPdf ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <HardDrive className="h-4 w-4" />
+                  )}
                   <span className="ml-2">PDF</span>
                 </Button>
                 <Button

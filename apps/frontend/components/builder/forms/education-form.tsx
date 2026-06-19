@@ -88,8 +88,6 @@ export const EducationForm: React.FC<EducationFormProps> = ({ data, onChange }) 
             </h3>
           </div>
         </div>
-
-       
       </div>
 
       {data.length > 0 && (

@@ -63,7 +63,7 @@ export function JDComparisonView({ jobDescription, resumeData }: JDComparisonVie
     <div className="h-full flex flex-col bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95">
       {/* Ambient glow effect */}
       <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-cyan-500/5 pointer-events-none" />
-      
+
       {/* Stats Bar */}
       <div className="relative flex items-center justify-between px-6 py-4 border-b border-white/5 bg-white/[0.02] backdrop-blur-sm">
         <div className="flex items-center gap-6">

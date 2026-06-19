@@ -81,8 +81,7 @@ export const RegenerateDialog: React.FC<RegenerateDialogProps> = ({
   };
 
   const hasItems = experienceItems.length > 0 || projectItems.length > 0 || skillsItem !== null;
-  const totalAvailableItems =
-    experienceItems.length + projectItems.length + (skillsItem ? 1 : 0);
+  const totalAvailableItems = experienceItems.length + projectItems.length + (skillsItem ? 1 : 0);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -122,13 +121,17 @@ export const RegenerateDialog: React.FC<RegenerateDialogProps> = ({
                       <p className="text-xs font-bold tracking-[0.25em] text-cyan-400 font-mono">
                         {t('builder.regenerate.selectDialog.experience').toUpperCase()}
                       </p>
-                      <p className="mt-2 text-2xl font-bold text-cyan-100">{experienceItems.length}</p>
+                      <p className="mt-2 text-2xl font-bold text-cyan-100">
+                        {experienceItems.length}
+                      </p>
                     </div>
                     <div className="border border-fuchsia-400/30 bg-slate-950/50 backdrop-blur-sm px-4 py-3">
                       <p className="text-xs font-bold tracking-[0.25em] text-fuchsia-400 font-mono">
                         {t('builder.regenerate.selectDialog.projects').toUpperCase()}
                       </p>
-                      <p className="mt-2 text-2xl font-bold text-fuchsia-100">{projectItems.length}</p>
+                      <p className="mt-2 text-2xl font-bold text-fuchsia-100">
+                        {projectItems.length}
+                      </p>
                     </div>
                     <div className="border border-amber-400/30 bg-slate-950/50 backdrop-blur-sm px-4 py-3">
                       <p className="text-xs font-bold tracking-[0.25em] text-amber-400 font-mono">
@@ -244,7 +247,9 @@ export const RegenerateDialog: React.FC<RegenerateDialogProps> = ({
                     className="min-h-11 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold tracking-[0.15em] text-sm border border-cyan-400/40 hover:border-cyan-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-mono relative overflow-hidden group"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/0 via-white/20 to-cyan-400/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                    <span className="relative z-10">{t('builder.regenerate.selectDialog.continueButton').toUpperCase()}</span>
+                    <span className="relative z-10">
+                      {t('builder.regenerate.selectDialog.continueButton').toUpperCase()}
+                    </span>
                   </Button>
                 </div>
               </div>
@@ -310,7 +315,12 @@ const SectionCard: React.FC<SectionCardProps> = ({
         className="flex w-full items-center justify-between gap-4 px-4 py-4 text-left transition-colors hover:bg-white/[0.03] sm:px-5"
       >
         <div className="flex min-w-0 items-center gap-3">
-          <div className={cn('flex h-11 w-11 shrink-0 items-center justify-center border-2', accentClasses.icon)}>
+          <div
+            className={cn(
+              'flex h-11 w-11 shrink-0 items-center justify-center border-2',
+              accentClasses.icon
+            )}
+          >
             <Icon className="h-5 w-5" />
           </div>
           <div className="min-w-0">
@@ -318,7 +328,12 @@ const SectionCard: React.FC<SectionCardProps> = ({
               <span className="font-mono text-sm font-bold tracking-[0.2em] text-white uppercase">
                 {title}
               </span>
-              <span className={cn('border px-2.5 py-1 text-xs font-bold tracking-[0.2em] uppercase font-mono', accentClasses.badge)}>
+              <span
+                className={cn(
+                  'border px-2.5 py-1 text-xs font-bold tracking-[0.2em] uppercase font-mono',
+                  accentClasses.badge
+                )}
+              >
                 {count}
               </span>
             </div>
@@ -330,7 +345,9 @@ const SectionCard: React.FC<SectionCardProps> = ({
         </div>
       </button>
 
-      {expanded && <div className="border-t-2 border-white/10 bg-slate-950/30 p-2 sm:p-3">{children}</div>}
+      {expanded && (
+        <div className="border-t-2 border-white/10 bg-slate-950/30 p-2 sm:p-3">{children}</div>
+      )}
     </section>
   );
 };

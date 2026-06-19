@@ -100,8 +100,6 @@ export class ErrorBoundary extends Component<Props, State> {
                     </div>
                   </div>
 
-               
-
                   {process.env.NODE_ENV === 'development' && this.state.error && (
                     <div className="mt-6 rounded-[1.5rem] border border-rose-400/20 bg-slate-950/70 p-4 sm:p-5">
                       <div className="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-rose-200/90">
@@ -126,9 +124,7 @@ export class ErrorBoundary extends Component<Props, State> {
                       <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-400">
                         Recovery actions
                       </p>
-                      <h3 className="mt-3 font-serif text-2xl text-white">
-                        Get back on track
-                      </h3>
+                      <h3 className="mt-3 font-serif text-2xl text-white">Get back on track</h3>
                       <p className="mt-2 text-sm leading-6 text-slate-400">
                         Start with a soft reset, then reload the page if the issue persists.
                       </p>

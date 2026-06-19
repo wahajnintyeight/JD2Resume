@@ -3,9 +3,9 @@
 import React from 'react';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { AdditionalInfo } from '@/components/dashboard/resume-component';
+import type { AdditionalInfo } from '@/components/dashboard/resume-component';
 import { useTranslations } from '@/lib/i18n';
-import { Sparkles, Languages, Award, BadgeCheck, Cpu } from 'lucide-react';
+import { Sparkles, Languages, Award, BadgeCheck, Cpu, Plus, Trash2 } from 'lucide-react';
 
 interface AdditionalFormProps {
   data: AdditionalInfo;
@@ -20,11 +20,15 @@ const textareaClassName =
 
 export const AdditionalForm: React.FC<AdditionalFormProps> = ({ data, onChange }) => {
   const { t } = useTranslations();
+  const [newSkillSectionName, setNewSkillSectionName] = React.useState('');
 
   type ArrayField = 'technicalSkills' | 'languages' | 'certificationsTraining' | 'awards';
 
   const handleArrayChange = (field: ArrayField, value: string) => {
-    const items = value.split('\n').filter((item) => item.trim() !== '');
+    const items = value
+      .split('\n')
+      .map((item) => item.trim())
+      .filter(Boolean);
     onChange({
       ...data,
       [field]: items,
@@ -33,6 +37,79 @@ export const AdditionalForm: React.FC<AdditionalFormProps> = ({ data, onChange }
 
   const formatArray = (arr?: string[]) => {
     return arr?.join('\n') || '';
+  };
+
+  const formatSkillSectionLabel = (key: string) => {
+    const withSpaces = key
+      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+      .replace(/[_-]+/g, ' ')
+      .trim();
+
+    if (!withSpaces) return 'Skill Section';
+
+    return withSpaces
+      .split(/\s+/)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  const normalizeSkillSectionKey = (value: string) => {
+    return value
+      .trim()
+      .replace(/[^a-zA-Z0-9\s_-]/g, '')
+      .replace(/[_-]+/g, ' ')
+      .replace(/\s+(.)/g, (_, char: string) => char.toUpperCase())
+      .replace(/^\w/, (char) => char.toLowerCase());
+  };
+
+  const handleSkillSectionChange = (sectionKey: string, value: string) => {
+    const items = value
+      .split('\n')
+      .map((item) => item.trim())
+      .filter(Boolean);
+    onChange({
+      ...data,
+      skillSections: {
+        ...(data.skillSections || {}),
+        [sectionKey]: items,
+      },
+    });
+  };
+
+  const handleAddSkillSection = () => {
+    const sectionKey = normalizeSkillSectionKey(newSkillSectionName);
+    if (!sectionKey || data.skillSections?.[sectionKey]) return;
+
+    onChange({
+      ...data,
+      skillSections: {
+        ...(data.skillSections || {}),
+        [sectionKey]: [],
+      },
+    });
+    setNewSkillSectionName('');
+  };
+
+  const handleRenameSkillSection = (oldKey: string, value: string) => {
+    const nextKey = normalizeSkillSectionKey(value);
+    if (!nextKey || nextKey === oldKey || data.skillSections?.[nextKey]) return;
+
+    const nextSections = { ...(data.skillSections || {}) };
+    nextSections[nextKey] = nextSections[oldKey] || [];
+    delete nextSections[oldKey];
+    onChange({
+      ...data,
+      skillSections: nextSections,
+    });
+  };
+
+  const handleRemoveSkillSection = (sectionKey: string) => {
+    const nextSections = { ...(data.skillSections || {}) };
+    delete nextSections[sectionKey];
+    onChange({
+      ...data,
+      skillSections: nextSections,
+    });
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -88,6 +165,10 @@ export const AdditionalForm: React.FC<AdditionalFormProps> = ({ data, onChange }
     },
   ];
 
+  const skillSections = Object.entries(data.skillSections || {}).sort(([a], [b]) =>
+    formatSkillSectionLabel(a).localeCompare(formatSkillSectionLabel(b))
+  );
+
   return (
     <section className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.92),rgba(15,23,42,0.68))] p-6 shadow-[0_24px_60px_rgba(2,6,23,0.38)] sm:p-8">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.14),transparent_26%),radial-gradient(circle_at_82%_18%,rgba(251,191,36,0.12),transparent_22%),radial-gradient(circle_at_bottom_right,rgba(244,114,182,0.08),transparent_24%)]" />
@@ -106,8 +187,6 @@ export const AdditionalForm: React.FC<AdditionalFormProps> = ({ data, onChange }
             </h3>
           </div>
         </div>
-
-        
       </div>
 
       <div className="relative grid grid-cols-1 gap-4 xl:grid-cols-2 xl:gap-5">
@@ -134,6 +213,79 @@ export const AdditionalForm: React.FC<AdditionalFormProps> = ({ data, onChange }
             />
           </div>
         ))}
+      </div>
+
+      <div className="relative mt-5 space-y-4">
+        <div className={panelClassName}>
+          <div className="mb-4 h-1 rounded-full bg-gradient-to-r from-blue-300/35 via-cyan-300/18 to-slate-400/10" />
+          <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <Label className="mb-2 block px-1 font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-slate-400">
+                Additional Skill Sections
+              </Label>
+              <p className="px-1 font-sans text-xs leading-5 text-slate-500">
+                Add grouped skills such as databases, DevOps, cloud platforms, practices, or domain
+                expertise.
+              </p>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <input
+                value={newSkillSectionName}
+                onChange={(e) => setNewSkillSectionName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddSkillSection();
+                  }
+                }}
+                placeholder="Database, DevOps, Cloud"
+                className="min-h-11 rounded-[1rem] border border-white/10 bg-white/5 px-4 py-2 text-sm text-white placeholder:text-slate-500 focus-visible:border-cyan-300/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/10"
+              />
+              <button
+                type="button"
+                onClick={handleAddSkillSection}
+                className="inline-flex min-h-11 items-center justify-center gap-2 rounded-[1rem] border border-cyan-300/30 bg-cyan-300/10 px-4 text-xs font-bold uppercase tracking-[0.2em] text-cyan-100 transition hover:bg-cyan-300/15"
+              >
+                <Plus className="h-4 w-4" />
+                Add
+              </button>
+            </div>
+          </div>
+
+          {skillSections.length > 0 && (
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+              {skillSections.map(([sectionKey, skills]) => (
+                <div
+                  key={sectionKey}
+                  className="rounded-[1.25rem] border border-white/10 bg-slate-950/30 p-3"
+                >
+                  <div className="mb-3 flex items-center gap-2">
+                    <input
+                      defaultValue={formatSkillSectionLabel(sectionKey)}
+                      onBlur={(e) => handleRenameSkillSection(sectionKey, e.target.value)}
+                      className="min-h-10 flex-1 rounded-[0.9rem] border border-white/10 bg-white/5 px-3 text-xs font-bold uppercase tracking-[0.18em] text-slate-200 focus-visible:border-cyan-300/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveSkillSection(sectionKey)}
+                      aria-label={`Remove ${formatSkillSectionLabel(sectionKey)}`}
+                      className="inline-flex h-10 w-10 items-center justify-center rounded-[0.9rem] border border-red-300/25 bg-red-400/10 text-red-100 transition hover:bg-red-400/15"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                  <Textarea
+                    value={formatArray(skills)}
+                    onChange={(e) => handleSkillSectionChange(sectionKey, e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder={'PostgreSQL\nRedis\nMongoDB'}
+                    className={textareaClassName}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );

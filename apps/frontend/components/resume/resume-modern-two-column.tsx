@@ -386,7 +386,10 @@ export const ResumeModernTwoColumn: React.FC<ResumeModernTwoColumnProps> = ({
                     <p className={`${baseStyles['resume-meta-sm']} uppercase`}>{section.label}</p>
                     <div className="mt-1 flex flex-wrap gap-1">
                       {section.skills.map((skill, index) => (
-                        <span key={`${section.key}-${index}`} className={baseStyles['resume-skill-pill']}>
+                        <span
+                          key={`${section.key}-${index}`}
+                          className={baseStyles['resume-skill-pill']}
+                        >
                           {skill}
                         </span>
                       ))}

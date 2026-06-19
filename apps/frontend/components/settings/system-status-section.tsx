@@ -148,8 +148,6 @@ export function SystemStatusSection({
           </div>
 
           <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
-            
-
             <Button
               variant="ghost"
               size="sm"

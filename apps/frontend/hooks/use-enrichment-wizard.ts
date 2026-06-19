@@ -229,7 +229,12 @@ export function useEnrichmentWizard(resumeId: string) {
           answer,
         }));
 
-      const result = await generateEnhancements(resumeId, answersArray, state.items, state.questions);
+      const result = await generateEnhancements(
+        resumeId,
+        answersArray,
+        state.items,
+        state.questions
+      );
 
       dispatch({
         type: 'GENERATION_COMPLETE',

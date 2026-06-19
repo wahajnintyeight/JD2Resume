@@ -1,0 +1,182 @@
+description = "Use when exploring codebase, architecture, or call flows"
+developer_instructions = """
+Use the `navigator` skill to help explore the codebase. You can ask for file locations, project structure explanations, or guidance on where to find specific components or features within the code.\r
+\r
+# Understand Codebase\r
+\r
+Use when navigating code, tracing how functions/classes connect, finding where symbols are defined or called, or answering "how does this work" questions about a codebase.\r
+\r
+## Tool Selection\r
+\r
+| Need                                                         | Tool            |\r
+| ------------------------------------------------------------ | --------------- |\r
+| Structural patterns (functions, classes, syntax, call flows) | `sg` (ast-grep) |\r
+| Text patterns (strings, comments, names)                     | `rg` (ripgrep)  |\r
+| File discovery by name/extension                             | `fd`            |\r
+\r
+### Choose ripgrep (`rg`) for\r
+\r
+- Text-based searches (strings, comments, variable names)\r
+- Fast, simple pattern matching across many files\r
+- When exact code structure doesn't matter\r
+- Regex searches with context lines\r
+- Searching binary files or non-code text\r
+\r
+### Choose ast-grep (`sg`) for\r
+\r
+- Structural code searches (function signatures, class definitions)\r
+- Syntax-aware matching that understands code semantics\r
+- Finding patterns that span multiple lines naturally\r
+- Refactoring analysis (matching specific AST node types)\r
+- When you need to match code regardless of formatting/whitespace\r
+\r
+### Choose fd for\r
+\r
+- Finding files by name, extension, or path pattern\r
+- Filtering by modification time or file size\r
+- Building file lists to pipe into `rg` or `sg`\r
+- Batch operations on matched files\r
+\r
+### Decision Flow\r
+\r
+1. Need to find files first? → `fd`, then pipe to `rg` or `sg`\r
+2. Need syntax-aware matching (functions, classes, imports)? → `sg`\r
+3. Need fast text/regex search? → `rg`\r
+4. Uncertain? Start with `rg` (faster), escalate to `sg` if structure matters\r
+\r
+## Quick Start\r
+\r
+### ast-grep (structural search)\r
+\r
+```bash\r
+# Find pattern with metavariables\r
+sg -p 'console.log($MSG)' -l js\r
+\r
+# Find function definitions\r
+sg -p 'function $NAME($$$ARGS) { $$$ }' -l js\r
+\r
+# Find async functions containing await\r
+sg -p 'async function $NAME($$$) { $$$ }' --has 'await $EXPR' -l js\r
+```\r
+\r
+### ripgrep (text search)\r
+\r
+```bash\r
+# Basic search\r
+rg 'TODO' --type js\r
+\r
+# Case-insensitive with context\r
+rg -i 'error' -C 2\r
+\r
+# Fixed string (no regex)\r
+rg -F 'user.email' src/\r
+```\r
+\r
+### fd (file finding)\r
+\r
+```bash\r
+# Find by extension\r
+fd -e ts -e tsx src/\r
+\r
+# Find files, then search content\r
+fd -e py | xargs rg 'import numpy'\r
+```\r
+\r
+## Common Patterns\r
+\r
+### Codebase Exploration\r
+\r
+```bash\r
+# Find entry points\r
+sg -p 'export default $COMPONENT' -l tsx\r
+rg 'if __name__.*main' --type py\r
+\r
+# Find class definitions\r
+sg -p 'class $NAME { $$$ }' -l ts\r
+rg '^class \\w+' --type py\r
+\r
+# Find all imports of a module\r
+sg -p 'import $$$IMPORTS from "react"' -l tsx\r
+rg '^import.*from ["\\x27]lodash' --type ts\r
+```\r
+\r
+### Pre-Refactoring Analysis\r
+\r
+```bash\r
+# Find all usages of a function\r
+sg -p '$FUNC($$$)' -l js   # where $FUNC matches your function name\r
+rg 'myFunction\\(' --type js\r
+\r
+# Find method calls on objects\r
+sg -p '$OBJ.methodName($$$)' -l js\r
+\r
+# Find variable assignments\r
+sg -p 'const $VAR = $VALUE' -l ts\r
+```\r
+\r
+### Security Audits\r
+\r
+```bash\r
+# Hardcoded secrets\r
+rg '(password|secret|api_key)\\s*[:=]\\s*["\\x27][^"\\x27]+["\\x27]' -i\r
+\r
+# SQL injection risks\r
+sg -p 'query($SQL)' -l js\r
+rg 'execute\\(.*\\+.*\\)' --type py\r
+\r
+# Eval usage\r
+sg -p 'eval($CODE)' -l js\r
+rg '\\beval\\s*\\(' --type py\r
+\r
+# Console statements (for cleanup)\r
+sg -p 'console.$METHOD($$$)' -l js\r
+```\r
+\r
+### Error Handling Analysis\r
+\r
+```bash\r
+# Find try-catch blocks\r
+sg -p 'try { $$$ } catch ($E) { $$$ }' -l js\r
+\r
+# Find empty catch blocks\r
+sg -p 'try { $$$ } catch ($E) { }' -l js\r
+\r
+# Find functions without error handling\r
+sg -p 'async function $NAME($$$) { $$$ }' --not-has 'try' -l js\r
+```\r
+\r
+### Dependency Analysis\r
+\r
+```bash\r
+# Find all imports from a package\r
+rg '^import.*from ["\\x27]@company/' --type ts\r
+\r
+# Find require statements\r
+sg -p 'require($PATH)' -l js\r
+\r
+# Find dynamic imports\r
+sg -p 'import($PATH)' -l js\r
+```\r
+\r
+## Performance Tips\r
+\r
+1. **Limit scope first**: Use `fd` to narrow files, then search content\r
+\r
+   ```bash\r
+   fd -e py src/ | xargs rg 'class.*Test'\r
+   ```\r
+\r
+2. **Use file type filters**: Both `rg` and `sg` are faster with type hints\r
+\r
+   ```bash\r
+   rg 'pattern' --type rust    # vs searching all files\r
+   sg -p 'pattern' -l rs       # language-specific parsing\r
+   ```\r
+\r
+3. **Exclude build artifacts**:\r
+\r
+   ```bash\r
+   rg 'pattern' -g '!node_modules' -g '!dist' -g '!build'\r
+   fd -e js -E node_modules -E dist\r
+   ```"""
+name = "codebase-navigator"

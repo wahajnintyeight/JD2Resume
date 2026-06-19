@@ -413,6 +413,8 @@ def _apply_change_decisions(
     if not rejected_changes:
         return result_data, warnings
 
+    original_skill_keys = _collect_resume_skill_keys(original_data)
+
     # Handle skill rejections by rebuilding each skill bucket list
     rejected_skill_changes = [c for c in rejected_changes if c.field_type == "skill"]
     if rejected_skill_changes:
@@ -420,6 +422,14 @@ def _apply_change_decisions(
         for change in rejected_skill_changes:
             bucket_path = change.field_path or "additional.technicalSkills"
             bucket_changes.setdefault(bucket_path, []).append(change)
+
+        rejected_new_skill_keys = {
+            change.new_value.casefold()
+            for change in rejected_skill_changes
+            if change.change_type == "added"
+            and change.new_value
+            and change.new_value.casefold() not in original_skill_keys
+        }
 
         for bucket_path, changes_for_bucket in bucket_changes.items():
             if bucket_path.startswith("additional.skillSections."):
@@ -475,6 +485,9 @@ def _apply_change_decisions(
                     improved_lower.values()
                 )
 
+        if rejected_new_skill_keys:
+            _remove_skills_from_all_containers(result_data, rejected_new_skill_keys)
+
     # Handle non-skill rejections by reverting via field path
     for change in rejected_changes:
         if change.field_type == "skill":
@@ -485,6 +498,58 @@ def _apply_change_decisions(
             warnings.append(f"Failed to revert change at {change.field_path}: {str(e)}")
 
     return result_data, warnings
+
+
+def _collect_resume_skill_keys(resume_data: dict[str, Any]) -> set[str]:
+    """Collect normalized skill names from all supported skill containers."""
+    additional = resume_data.get("additional", {})
+    skill_keys = {
+        str(skill).casefold()
+        for skill in additional.get("technicalSkills", []) or []
+        if isinstance(skill, str) and skill.strip()
+    }
+
+    skill_sections = additional.get("skillSections", {})
+    if isinstance(skill_sections, dict):
+        for skills in skill_sections.values():
+            if not isinstance(skills, list):
+                continue
+            skill_keys.update(
+                str(skill).casefold()
+                for skill in skills
+                if isinstance(skill, str) and skill.strip()
+            )
+
+    return skill_keys
+
+
+def _remove_skills_from_all_containers(
+    resume_data: dict[str, Any],
+    skill_keys: set[str],
+) -> None:
+    """Remove rejected new skills from every supported skill container."""
+    additional = resume_data.get("additional")
+    if not isinstance(additional, dict):
+        return
+
+    technical_skills = additional.get("technicalSkills")
+    if isinstance(technical_skills, list):
+        additional["technicalSkills"] = [
+            skill
+            for skill in technical_skills
+            if not isinstance(skill, str) or skill.casefold() not in skill_keys
+        ]
+
+    skill_sections = additional.get("skillSections")
+    if isinstance(skill_sections, dict):
+        for section_key, skills in skill_sections.items():
+            if not isinstance(skills, list):
+                continue
+            skill_sections[section_key] = [
+                skill
+                for skill in skills
+                if not isinstance(skill, str) or skill.casefold() not in skill_keys
+            ]
 
 
 def _set_nested_value(data: dict[str, Any], path: str, value: Any, original_data: dict[str, Any]) -> None:

@@ -41,8 +41,6 @@ export const SummaryForm: React.FC<SummaryFormProps> = ({ value, onChange }) => 
             </Label>
           </div>
         </div>
-
-         
       </div>
 
       <div className="relative rounded-[1.6rem] border border-white/10 bg-white/[0.035] p-4">

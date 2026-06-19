@@ -106,11 +106,7 @@ export const RegenerateWizard: React.FC<RegenerateWizardProps> = ({
   ] as const;
 
   const currentVisualStep =
-    step === 'generating'
-      ? 'instructing'
-      : step === 'complete'
-        ? 'previewing'
-        : step;
+    step === 'generating' ? 'instructing' : step === 'complete' ? 'previewing' : step;
   // Handle dialog open state based on step
   const isSelectDialogOpen = step === 'selecting';
   const isInstructionDialogOpen = step === 'instructing' || step === 'generating';
@@ -229,9 +225,7 @@ export const RegenerateWizard: React.FC<RegenerateWizardProps> = ({
                               <p className="mt-1 font-sans text-sm font-semibold uppercase tracking-[0.14em] text-white">
                                 {label}
                               </p>
-                              <p className="mt-1 text-xs leading-5 text-slate-300">
-                                {description}
-                              </p>
+                              <p className="mt-1 text-xs leading-5 text-slate-300">{description}</p>
                             </div>
                           </div>
                         </div>

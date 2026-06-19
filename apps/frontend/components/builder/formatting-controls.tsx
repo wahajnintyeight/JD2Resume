@@ -140,7 +140,7 @@ export const FormattingControls: React.FC<FormattingControlsProps> = ({ settings
     <div className="relative mb-6 rounded-lg overflow-hidden bg-gradient-to-br from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-sm border border-white/5 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
       {/* Ambient glow effect */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 pointer-events-none" />
-      
+
       {/* Header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
@@ -199,7 +199,9 @@ export const FormattingControls: React.FC<FormattingControlsProps> = ({ settings
                   </div>
                   <span
                     className={`font-['Geist_Mono',_monospace] text-[9px] uppercase tracking-wider font-semibold text-center leading-tight transition-colors ${
-                      settings.template === template.id ? 'text-blue-300' : 'text-slate-400 group-hover:text-slate-300'
+                      settings.template === template.id
+                        ? 'text-blue-300'
+                        : 'text-slate-400 group-hover:text-slate-300'
                     }`}
                   >
                     {templateLabels[template.id].name}
@@ -235,7 +237,11 @@ export const FormattingControls: React.FC<FormattingControlsProps> = ({ settings
                       className="w-5 h-5 rounded-sm ring-1 ring-white/20 shadow-inner transition-transform group-hover:scale-110"
                       style={{ backgroundColor: ACCENT_COLOR_MAP[color].primary }}
                     />
-                    <span className={settings.accentColor === color ? 'text-white font-medium' : 'text-slate-400'}>
+                    <span
+                      className={
+                        settings.accentColor === color ? 'text-white font-medium' : 'text-slate-400'
+                      }
+                    >
                       {t(`builder.formatting.accentColors.${color}`)}
                     </span>
                   </button>
@@ -268,7 +274,9 @@ export const FormattingControls: React.FC<FormattingControlsProps> = ({ settings
                   <div className="font-semibold">
                     {size === 'A4' ? 'A4' : t('builder.pageSize.usLetter')}
                   </div>
-                  <div className="text-[10px] opacity-60 mt-0.5">{PAGE_SIZE_INFO[size].dimensions}</div>
+                  <div className="text-[10px] opacity-60 mt-0.5">
+                    {PAGE_SIZE_INFO[size].dimensions}
+                  </div>
                 </button>
               ))}
             </div>
@@ -355,7 +363,7 @@ export const FormattingControls: React.FC<FormattingControlsProps> = ({ settings
                 value={settings.fontSize.headerScale}
                 onChange={(v) => handleFontChange('headerScale', v)}
               />
-              
+
               {/* Header Font Family */}
               <div className="flex items-center gap-3">
                 <span className="font-['Geist',_system-ui] text-xs text-slate-400 w-24 shrink-0">
@@ -385,7 +393,7 @@ export const FormattingControls: React.FC<FormattingControlsProps> = ({ settings
                   ))}
                 </div>
               </div>
-              
+
               {/* Body Font Family */}
               <div className="flex items-center gap-3">
                 <span className="font-['Geist',_system-ui] text-xs text-slate-400 w-24 shrink-0">
@@ -497,16 +505,20 @@ export const FormattingControls: React.FC<FormattingControlsProps> = ({ settings
                   {t('builder.formatting.effectiveLineHeight')}: {lineHeightValue.toFixed(2)}
                 </div>
                 <div>
-                  {t('builder.formatting.effectiveBaseFont')}: {FONT_SIZE_MAP[settings.fontSize.base]}
+                  {t('builder.formatting.effectiveBaseFont')}:{' '}
+                  {FONT_SIZE_MAP[settings.fontSize.base]}
                 </div>
                 <div>
-                  {t('builder.formatting.effectiveHeaderScale')}: {HEADER_SCALE_MAP[settings.fontSize.headerScale]}x
+                  {t('builder.formatting.effectiveHeaderScale')}:{' '}
+                  {HEADER_SCALE_MAP[settings.fontSize.headerScale]}x
                 </div>
                 <div>
-                  {t('builder.formatting.effectiveHeaderFont')}: {getFontLabel(settings.fontSize.headerFont)}
+                  {t('builder.formatting.effectiveHeaderFont')}:{' '}
+                  {getFontLabel(settings.fontSize.headerFont)}
                 </div>
                 <div>
-                  {t('builder.formatting.effectiveBodyFont')}: {getFontLabel(settings.fontSize.bodyFont)}
+                  {t('builder.formatting.effectiveBodyFont')}:{' '}
+                  {getFontLabel(settings.fontSize.bodyFont)}
                 </div>
               </div>
               {settings.compactMode && (
@@ -515,11 +527,11 @@ export const FormattingControls: React.FC<FormattingControlsProps> = ({ settings
                 </div>
               )}
             </div>
-            
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleReset} 
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleReset}
               className="w-full bg-white/[0.02] hover:bg-white/[0.05] border-white/10 hover:border-white/20 text-slate-300 hover:text-white transition-all duration-300"
             >
               <RotateCcw className="w-3.5 h-3.5 mr-2" />
@@ -541,7 +553,9 @@ interface MarginSliderProps {
 const MarginSlider: React.FC<MarginSliderProps> = ({ label, value, onChange }) => {
   return (
     <div className="flex items-center gap-3">
-      <span className="font-['Geist',_system-ui] text-xs text-slate-400 w-14 shrink-0">{label}</span>
+      <span className="font-['Geist',_system-ui] text-xs text-slate-400 w-14 shrink-0">
+        {label}
+      </span>
       <input
         type="range"
         min={5}
@@ -569,7 +583,9 @@ const MarginSlider: React.FC<MarginSliderProps> = ({ label, value, onChange }) =
                    [&::-moz-range-thumb]:border-none
                    [&::-moz-range-thumb]:cursor-pointer"
       />
-      <span className="font-['Geist_Mono',_monospace] text-xs w-8 text-right text-slate-300 font-semibold">{value}</span>
+      <span className="font-['Geist_Mono',_monospace] text-xs w-8 text-right text-slate-300 font-semibold">
+        {value}
+      </span>
     </div>
   );
 };
@@ -585,7 +601,9 @@ const SpacingSelector: React.FC<SpacingSelectorProps> = ({ label, value, onChang
 
   return (
     <div className="flex items-center gap-3">
-      <span className="font-['Geist',_system-ui] text-xs text-slate-400 w-24 shrink-0">{label}</span>
+      <span className="font-['Geist',_system-ui] text-xs text-slate-400 w-24 shrink-0">
+        {label}
+      </span>
       <div className="flex gap-1.5">
         {levels.map((level) => (
           <button

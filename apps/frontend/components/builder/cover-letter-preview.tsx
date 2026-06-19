@@ -3,7 +3,17 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { useTranslations } from '@/lib/i18n';
-import { User, Mail, Phone, MapPin, Globe, Linkedin, Github, Calendar, FileText } from 'lucide-react';
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Globe,
+  Linkedin,
+  Github,
+  Calendar,
+  FileText,
+} from 'lucide-react';
 
 export interface CoverLetterPersonalInfo {
   name?: string;
@@ -115,8 +125,8 @@ export function CoverLetterPreview({
         <div className="space-y-5">
           {paragraphs.length > 0 ? (
             paragraphs.map((para, idx) => (
-              <p 
-                key={idx} 
+              <p
+                key={idx}
                 className="font-['Crimson_Pro',_Georgia,_serif] text-base leading-relaxed text-slate-300 first-letter:text-2xl first-letter:font-bold first-letter:text-blue-400 first-letter:mr-1"
               >
                 {para}

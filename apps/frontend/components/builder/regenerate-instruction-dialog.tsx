@@ -86,7 +86,7 @@ export const RegenerateInstructionDialog: React.FC<RegenerateInstructionDialogPr
           {/* Background layers */}
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(34,211,238,0.16),_transparent_28%),radial-gradient(circle_at_top_right,_rgba(244,114,182,0.16),_transparent_24%),linear-gradient(180deg,_rgba(2,6,23,0.96),_rgba(15,23,42,0.95))]" />
           <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/50 to-transparent" />
-          
+
           <div className="relative">
             <DialogHeader className="border-b-2 border-cyan-400/30 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 px-6 pb-5 pt-6">
               <div className="inline-flex items-center gap-2 mb-4 px-4 py-2 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/40 backdrop-blur-md w-fit">
@@ -107,7 +107,9 @@ export const RegenerateInstructionDialog: React.FC<RegenerateInstructionDialogPr
               {error && (
                 <div className="border-2 border-rose-500/60 bg-rose-950/30 backdrop-blur-sm p-4 relative overflow-hidden">
                   <div className="absolute inset-0 bg-gradient-to-r from-rose-500/10 to-red-500/10 animate-pulse" />
-                  <p className="font-mono text-sm text-rose-200 relative z-10">{resolveErrorMessage(error)}</p>
+                  <p className="font-mono text-sm text-rose-200 relative z-10">
+                    {resolveErrorMessage(error)}
+                  </p>
                 </div>
               )}
 
@@ -118,11 +120,18 @@ export const RegenerateInstructionDialog: React.FC<RegenerateInstructionDialogPr
                 </label>
                 <div className="border border-cyan-400/40 bg-slate-950/50 backdrop-blur-sm p-4 space-y-2 max-h-40 overflow-y-auto">
                   {selectedItems.map((item) => (
-                    <div key={item.item_id} className="flex items-center gap-3 text-sm border-l-2 border-cyan-400/30 pl-3 py-1">
+                    <div
+                      key={item.item_id}
+                      className="flex items-center gap-3 text-sm border-l-2 border-cyan-400/30 pl-3 py-1"
+                    >
                       <span className="text-cyan-400">{getItemIcon(item.item_type)}</span>
-                      <span className="font-semibold text-cyan-100 truncate font-mono">{item.title}</span>
+                      <span className="font-semibold text-cyan-100 truncate font-mono">
+                        {item.title}
+                      </span>
                       {item.subtitle && (
-                        <span className="text-cyan-300/60 text-xs truncate font-mono">| {item.subtitle}</span>
+                        <span className="text-cyan-300/60 text-xs truncate font-mono">
+                          | {item.subtitle}
+                        </span>
                       )}
                     </div>
                   ))}
@@ -147,9 +156,7 @@ export const RegenerateInstructionDialog: React.FC<RegenerateInstructionDialogPr
                   className="min-h-[140px] border border-cyan-400/40 bg-slate-950/50 text-cyan-100 font-mono text-sm px-4 py-3 focus:border-cyan-400 focus:ring-2 focus:ring-cyan-400/20 transition-all placeholder:text-cyan-700 backdrop-blur-sm resize-none"
                   disabled={isGenerating}
                 />
-                <p className="text-xs text-cyan-400/60 font-mono">
-                  {instruction.length}/2000
-                </p>
+                <p className="text-xs text-cyan-400/60 font-mono">{instruction.length}/2000</p>
               </div>
             </div>
 
@@ -163,8 +170,8 @@ export const RegenerateInstructionDialog: React.FC<RegenerateInstructionDialogPr
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 {t('builder.regenerate.instructionDialog.backButton').toUpperCase()}
               </Button>
-              <Button 
-                onClick={onGenerate} 
+              <Button
+                onClick={onGenerate}
                 disabled={isGenerating}
                 className="h-12 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold tracking-[0.15em] text-sm border border-cyan-400/40 hover:border-cyan-400 transition-all disabled:opacity-50 font-mono relative overflow-hidden group"
               >

@@ -134,7 +134,8 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
         text: 'text-emerald-100',
         ring: 'ring-emerald-400/50',
         chip: 'bg-emerald-500/20 text-emerald-100 border border-emerald-300/30',
-        panel: 'border-emerald-300/30 bg-[linear-gradient(135deg,rgba(16,185,129,0.16),rgba(5,10,24,0.85))]',
+        panel:
+          'border-emerald-300/30 bg-[linear-gradient(135deg,rgba(16,185,129,0.16),rgba(5,10,24,0.85))]',
         fill: 'from-emerald-400 via-teal-300 to-cyan-300',
       };
     }
@@ -143,7 +144,8 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
         text: 'text-cyan-100',
         ring: 'ring-cyan-400/50',
         chip: 'bg-cyan-500/20 text-cyan-100 border border-cyan-300/30',
-        panel: 'border-cyan-300/30 bg-[linear-gradient(135deg,rgba(34,211,238,0.14),rgba(5,10,24,0.85))]',
+        panel:
+          'border-cyan-300/30 bg-[linear-gradient(135deg,rgba(34,211,238,0.14),rgba(5,10,24,0.85))]',
         fill: 'from-cyan-400 via-sky-300 to-blue-300',
       };
     }
@@ -152,7 +154,8 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
         text: 'text-amber-100',
         ring: 'ring-amber-400/50',
         chip: 'bg-amber-500/20 text-amber-100 border border-amber-300/30',
-        panel: 'border-amber-300/30 bg-[linear-gradient(135deg,rgba(251,191,36,0.16),rgba(5,10,24,0.85))]',
+        panel:
+          'border-amber-300/30 bg-[linear-gradient(135deg,rgba(251,191,36,0.16),rgba(5,10,24,0.85))]',
         fill: 'from-amber-300 via-orange-300 to-yellow-200',
       };
     }
@@ -160,7 +163,8 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
       text: 'text-rose-100',
       ring: 'ring-rose-400/50',
       chip: 'bg-rose-500/20 text-rose-100 border border-rose-300/30',
-      panel: 'border-rose-300/30 bg-[linear-gradient(135deg,rgba(244,63,94,0.16),rgba(5,10,24,0.85))]',
+      panel:
+        'border-rose-300/30 bg-[linear-gradient(135deg,rgba(244,63,94,0.16),rgba(5,10,24,0.85))]',
       fill: 'from-rose-400 via-red-300 to-orange-200',
     };
   };
@@ -173,9 +177,12 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
   };
 
   const getScoreBgColor = (score: number) => {
-    if (score >= 90) return 'border-emerald-300/30 bg-[linear-gradient(135deg,rgba(16,185,129,0.18),rgba(15,23,42,0.9))]';
-    if (score >= 75) return 'border-cyan-300/30 bg-[linear-gradient(135deg,rgba(34,211,238,0.18),rgba(15,23,42,0.9))]';
-    if (score >= 60) return 'border-amber-300/30 bg-[linear-gradient(135deg,rgba(251,191,36,0.18),rgba(15,23,42,0.9))]';
+    if (score >= 90)
+      return 'border-emerald-300/30 bg-[linear-gradient(135deg,rgba(16,185,129,0.18),rgba(15,23,42,0.9))]';
+    if (score >= 75)
+      return 'border-cyan-300/30 bg-[linear-gradient(135deg,rgba(34,211,238,0.18),rgba(15,23,42,0.9))]';
+    if (score >= 60)
+      return 'border-amber-300/30 bg-[linear-gradient(135deg,rgba(251,191,36,0.18),rgba(15,23,42,0.9))]';
     return 'border-rose-300/30 bg-[linear-gradient(135deg,rgba(244,63,94,0.18),rgba(15,23,42,0.9))]';
   };
 
@@ -268,12 +275,13 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
             </div>
           </div>
 
-          <div className="relative overflow-y-auto px-5 py-5 md:px-8 md:py-7" style={{ maxHeight: 'calc(90vh - 120px)' }}>
+          <div
+            className="relative overflow-y-auto px-5 py-5 md:px-8 md:py-7"
+            style={{ maxHeight: 'calc(90vh - 120px)' }}
+          >
             {!results && !loading && !error && (
               <div className="mx-auto max-w-3xl py-6">
                 <div className="grid gap-6 ">
-                  
-
                   <div className={`${surfaceClass} rounded-[28px] p-5 md:p-6`}>
                     <div className={sectionLabelClass}>Job Description</div>
                     <h4 className='mt-3 font-["Fraunces",Georgia,serif] text-2xl font-semibold text-white'>
@@ -358,7 +366,9 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
             )}
 
             {error && (
-              <div className={`${surfaceClass} rounded-[26px] border border-rose-300/25 bg-[linear-gradient(135deg,rgba(244,63,94,0.15),rgba(15,23,42,0.95))] p-6`}>
+              <div
+                className={`${surfaceClass} rounded-[26px] border border-rose-300/25 bg-[linear-gradient(135deg,rgba(244,63,94,0.15),rgba(15,23,42,0.95))] p-6`}
+              >
                 <div className="flex items-start gap-4">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-rose-300/30 bg-rose-500/15">
                     <AlertCircle className="h-6 w-6 text-rose-200" />
@@ -386,7 +396,9 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
 
             {results && (
               <div className="space-y-6">
-                <div className={`${surfaceClass} rounded-[24px] border border-cyan-300/20 bg-[linear-gradient(135deg,rgba(34,211,238,0.15),rgba(14,165,233,0.08),rgba(15,23,42,0.9))] p-5`}>
+                <div
+                  className={`${surfaceClass} rounded-[24px] border border-cyan-300/20 bg-[linear-gradient(135deg,rgba(34,211,238,0.15),rgba(14,165,233,0.08),rgba(15,23,42,0.9))] p-5`}
+                >
                   <div className="flex items-start gap-4">
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-cyan-300/30 bg-cyan-500/15">
                       <Target className="h-5 w-5 text-cyan-200" />
@@ -741,8 +753,9 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                               </span>
                             </div>
                             <div className="mt-2 text-sm leading-7 text-slate-300">
-                              Required: {filter.required} <span className="px-2 text-slate-500">•</span>{' '}
-                              Detected: {filter.detected}
+                              Required: {filter.required}{' '}
+                              <span className="px-2 text-slate-500">•</span> Detected:{' '}
+                              {filter.detected}
                             </div>
                           </div>
                         )
@@ -751,7 +764,9 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                   </div>
                 )}
 
-                <div className={`${surfaceClass} rounded-[28px] p-6 ${getScoreBgColor(results.overall_score)}`}>
+                <div
+                  className={`${surfaceClass} rounded-[28px] p-6 ${getScoreBgColor(results.overall_score)}`}
+                >
                   <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
                     <div>
                       <div className={sectionLabelClass}>Overall Assessment</div>
@@ -764,7 +779,9 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                     </div>
 
                     <div className="text-left md:text-right">
-                      <div className={`text-6xl font-semibold tracking-tight ${getScoreColor(results.overall_score)}`}>
+                      <div
+                        className={`text-6xl font-semibold tracking-tight ${getScoreColor(results.overall_score)}`}
+                      >
                         {results.overall_score}
                       </div>
                       <div
@@ -802,7 +819,9 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                               style={{ width: `${category.score}%` }}
                             />
                           </div>
-                          <p className="mt-4 text-sm leading-7 text-slate-300">{category.details}</p>
+                          <p className="mt-4 text-sm leading-7 text-slate-300">
+                            {category.details}
+                          </p>
                           <p className="mt-2 text-xs uppercase tracking-[0.2em] text-slate-500">
                             Weight: {category.weight}%
                           </p>
@@ -813,7 +832,9 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                 </div>
 
                 {results.knockout_risks.length > 0 && (
-                  <div className={`${surfaceClass} rounded-[24px] border border-rose-300/25 bg-[linear-gradient(135deg,rgba(244,63,94,0.16),rgba(15,23,42,0.95))] p-5`}>
+                  <div
+                    className={`${surfaceClass} rounded-[24px] border border-rose-300/25 bg-[linear-gradient(135deg,rgba(244,63,94,0.16),rgba(15,23,42,0.95))] p-5`}
+                  >
                     <div className="flex items-start gap-4">
                       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-rose-300/30 bg-rose-500/15">
                         <AlertTriangle className="h-5 w-5 text-rose-200" />
@@ -834,7 +855,9 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                 )}
 
                 {results.strengths.length > 0 && (
-                  <div className={`${surfaceClass} rounded-[24px] border border-emerald-300/25 bg-[linear-gradient(135deg,rgba(16,185,129,0.16),rgba(15,23,42,0.95))] p-5`}>
+                  <div
+                    className={`${surfaceClass} rounded-[24px] border border-emerald-300/25 bg-[linear-gradient(135deg,rgba(16,185,129,0.16),rgba(15,23,42,0.95))] p-5`}
+                  >
                     <div className="flex items-start gap-4">
                       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-emerald-300/30 bg-emerald-500/15">
                         <CheckCircle2 className="h-5 w-5 text-emerald-200" />
@@ -855,7 +878,9 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                 )}
 
                 {results.weaknesses.length > 0 && (
-                  <div className={`${surfaceClass} rounded-[24px] border border-amber-300/25 bg-[linear-gradient(135deg,rgba(251,191,36,0.16),rgba(15,23,42,0.95))] p-5`}>
+                  <div
+                    className={`${surfaceClass} rounded-[24px] border border-amber-300/25 bg-[linear-gradient(135deg,rgba(251,191,36,0.16),rgba(15,23,42,0.95))] p-5`}
+                  >
                     <div className="flex items-start gap-4">
                       <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-amber-300/30 bg-amber-500/15">
                         <AlertCircle className="h-5 w-5 text-amber-200" />
@@ -876,9 +901,13 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                 )}
 
                 {results.missing_keywords.length > 0 && (
-                  <div className={`${surfaceClass} rounded-[24px] border border-rose-300/25 bg-[linear-gradient(135deg,rgba(244,63,94,0.16),rgba(15,23,42,0.95))] p-5`}>
+                  <div
+                    className={`${surfaceClass} rounded-[24px] border border-rose-300/25 bg-[linear-gradient(135deg,rgba(244,63,94,0.16),rgba(15,23,42,0.95))] p-5`}
+                  >
                     <div className={sectionLabelClass}>Missing Keywords</div>
-                    <h4 className={`${cardTitleClass} mt-2`}>Missing hard skills & exact phrases</h4>
+                    <h4 className={`${cardTitleClass} mt-2`}>
+                      Missing hard skills & exact phrases
+                    </h4>
                     <p className="mt-2 text-sm leading-7 text-rose-100/85">
                       These technical terms appear missing from your resume. Add them where accurate
                       and defensible, especially inside Skills, title, and impact bullets.
@@ -898,7 +927,9 @@ export default function ATSScanDialog({ resumeId, isOpen, onClose }: ATSScanDial
                 )}
 
                 {results.recommendations.length > 0 && (
-                  <div className={`${surfaceClass} rounded-[24px] border border-cyan-300/25 bg-[linear-gradient(135deg,rgba(34,211,238,0.16),rgba(15,23,42,0.95))] p-5`}>
+                  <div
+                    className={`${surfaceClass} rounded-[24px] border border-cyan-300/25 bg-[linear-gradient(135deg,rgba(34,211,238,0.16),rgba(15,23,42,0.95))] p-5`}
+                  >
                     <div className={sectionLabelClass}>Action Plan</div>
                     <h4 className={`${cardTitleClass} mt-2`}>Prioritized improvements</h4>
                     <p className="mt-2 text-sm leading-7 text-slate-300">

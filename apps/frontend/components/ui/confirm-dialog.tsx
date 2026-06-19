@@ -124,7 +124,9 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
           <div className="relative p-7 md:p-8">
             <div className="flex flex-col items-center text-center gap-6">
               <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.32em] text-slate-300">
-                <span className={`h-2 w-2 rounded-full ${currentVariant.accent} bg-current shadow-[0_0_12px_currentColor]`} />
+                <span
+                  className={`h-2 w-2 rounded-full ${currentVariant.accent} bg-current shadow-[0_0_12px_currentColor]`}
+                />
                 {currentVariant.badge}
               </div>
 

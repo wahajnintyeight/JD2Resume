@@ -300,6 +300,27 @@ def _build_string_index(value: Any, field_name: str) -> dict[str, str]:
     return index
 
 
+def _build_resume_skill_index(resume_data: dict[str, Any]) -> dict[str, str]:
+    """Build a resume-wide skill index across all supported skill containers."""
+    additional = resume_data.get("additional", {})
+    skills = _build_string_index(
+        additional.get("technicalSkills", []),
+        "additional.technicalSkills",
+    )
+
+    skill_sections = additional.get("skillSections", {})
+    if isinstance(skill_sections, dict):
+        for section_key, section_skills in skill_sections.items():
+            section_index = _build_string_index(
+                section_skills,
+                f"additional.skillSections.{section_key}",
+            )
+            for key, value in section_index.items():
+                skills.setdefault(key, value)
+
+    return skills
+
+
 def _extract_description_list(entry: Any) -> list[str]:
     if not isinstance(entry, dict):
         return []
@@ -452,7 +473,11 @@ def calculate_resume_diff(
     )
     orig_skill_keys = set(orig_skills)
     new_skill_keys = set(new_skills)
+    original_resume_skill_keys = set(_build_resume_skill_index(original))
+    improved_resume_skill_keys = set(_build_resume_skill_index(improved))
     for skill_key in new_skill_keys - orig_skill_keys:
+        if skill_key in original_resume_skill_keys:
+            continue
         changes.append(ResumeFieldDiff(
             field_path="additional.technicalSkills",
             field_type="skill",
@@ -462,6 +487,8 @@ def calculate_resume_diff(
         ))
 
     for skill_key in orig_skill_keys - new_skill_keys:
+        if skill_key in improved_resume_skill_keys:
+            continue
         changes.append(ResumeFieldDiff(
             field_path="additional.technicalSkills",
             field_type="skill",
@@ -491,6 +518,8 @@ def calculate_resume_diff(
             new_section_keys = set(new_section_skills)
 
             for skill_key in new_section_keys - orig_section_keys:
+                if skill_key in original_resume_skill_keys:
+                    continue
                 changes.append(ResumeFieldDiff(
                     field_path=field_path,
                     field_type="skill",
@@ -500,6 +529,8 @@ def calculate_resume_diff(
                 ))
 
             for skill_key in orig_section_keys - new_section_keys:
+                if skill_key in improved_resume_skill_keys:
+                    continue
                 changes.append(ResumeFieldDiff(
                     field_path=field_path,
                     field_type="skill",

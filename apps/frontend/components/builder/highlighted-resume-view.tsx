@@ -50,12 +50,16 @@ export function HighlightedResumeView({ resumeData, keywords }: HighlightedResum
         {resumeData.workExperience && resumeData.workExperience.length > 0 && (
           <Section title={t('resume.sections.experience')} icon={<Briefcase className="w-4 h-4" />}>
             {resumeData.workExperience.map((exp) => (
-              <div key={exp.id} className="mb-4 last:mb-0 pb-4 last:pb-0 border-b border-white/5 last:border-0">
+              <div
+                key={exp.id}
+                className="mb-4 last:mb-0 pb-4 last:pb-0 border-b border-white/5 last:border-0"
+              >
                 <div className="font-semibold text-slate-200">
                   <HighlightedText text={exp.title || ''} keywords={keywords} />
                   {exp.company && (
                     <span className="text-slate-400 font-normal">
-                      {' '}{t('builder.jdMatch.atSeparator')}{' '}
+                      {' '}
+                      {t('builder.jdMatch.atSeparator')}{' '}
                       <HighlightedText text={exp.company} keywords={keywords} />
                     </span>
                   )}
@@ -85,7 +89,10 @@ export function HighlightedResumeView({ resumeData, keywords }: HighlightedResum
             icon={<GraduationCap className="w-4 h-4" />}
           >
             {resumeData.education.map((edu) => (
-              <div key={edu.id} className="mb-3 last:mb-0 pb-3 last:pb-0 border-b border-white/5 last:border-0">
+              <div
+                key={edu.id}
+                className="mb-3 last:mb-0 pb-3 last:pb-0 border-b border-white/5 last:border-0"
+              >
                 <div className="font-semibold text-slate-200">
                   <HighlightedText text={edu.degree || ''} keywords={keywords} />
                 </div>
@@ -107,12 +114,16 @@ export function HighlightedResumeView({ resumeData, keywords }: HighlightedResum
             icon={<FolderKanban className="w-4 h-4" />}
           >
             {resumeData.personalProjects.map((proj) => (
-              <div key={proj.id} className="mb-4 last:mb-0 pb-4 last:pb-0 border-b border-white/5 last:border-0">
+              <div
+                key={proj.id}
+                className="mb-4 last:mb-0 pb-4 last:pb-0 border-b border-white/5 last:border-0"
+              >
                 <div className="font-semibold text-slate-200">
                   <HighlightedText text={proj.name || ''} keywords={keywords} />
                   {proj.role && (
                     <span className="text-slate-400 font-normal">
-                      {' '}{t('builder.jdMatch.roleSeparator')}{' '}
+                      {' '}
+                      {t('builder.jdMatch.roleSeparator')}{' '}
                       <HighlightedText text={proj.role} keywords={keywords} />
                     </span>
                   )}
@@ -225,8 +236,8 @@ function HighlightedText({ text, keywords }: { text: string; keywords: Set<strin
     <span>
       {segments.map((segment, i) =>
         segment.isMatch ? (
-          <mark 
-            key={i} 
+          <mark
+            key={i}
             className="relative bg-gradient-to-r from-amber-400/40 to-yellow-400/40 text-black px-1.5 py-0.5 rounded ring-1 ring-amber-400/50 font-semibold shadow-[0_0_8px_rgba(251,191,36,0.2)]"
           >
             {segment.text}
@@ -248,8 +259,8 @@ function SkillTag({ text, keywords }: { text: string; keywords: Set<string> }) {
   return (
     <span
       className={`inline-flex items-center px-3 py-1.5 rounded-md text-xs font-['Geist',_system-ui] font-medium transition-all ${
-        isMatch 
-          ? 'bg-gradient-to-r from-amber-400/30 to-yellow-400/30 text-black ring-1 ring-amber-400/50 shadow-[0_0_16px_rgba(251,191,36,0.25)] font-semibold' 
+        isMatch
+          ? 'bg-gradient-to-r from-amber-400/30 to-yellow-400/30 text-black ring-1 ring-amber-400/50 shadow-[0_0_16px_rgba(251,191,36,0.25)] font-semibold'
           : 'bg-white/[0.02] text-slate-400 ring-1 ring-white/5 hover:bg-white/[0.04]'
       }`}
     >
