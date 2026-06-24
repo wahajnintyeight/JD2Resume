@@ -161,6 +161,80 @@
   }
 }
 
+@layer components {
+  [data-resume-editor] {
+    color: #000000;
+  }
+
+  [data-resume-editor] section,
+  [data-resume-editor] .group {
+    border-radius: 0 !important;
+  }
+
+  [data-resume-editor] section {
+    background: #ffffff !important;
+    border: 2px solid #000000 !important;
+    box-shadow: 4px 4px 0 0 #000000 !important;
+    overflow: visible !important;
+  }
+
+  [data-resume-editor] section section,
+  [data-resume-editor] section > div[class*='border'],
+  [data-resume-editor] .group > div[class*='border'] {
+    background: #ffffff !important;
+    border: 1px solid #000000 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  [data-resume-editor] [class*='bg-gradient'],
+  [data-resume-editor] [class*='radial-gradient'],
+  [data-resume-editor] [class*='pointer-events-none'],
+  [data-resume-editor] [class~='h-1'] {
+    display: none !important;
+  }
+
+  [data-resume-editor] h3,
+  [data-resume-editor] h4,
+  [data-resume-editor] label {
+    color: #000000 !important;
+    letter-spacing: 0 !important;
+  }
+
+  [data-resume-editor] p {
+    color: #4b5563 !important;
+  }
+
+  [data-resume-editor] input,
+  [data-resume-editor] textarea {
+    min-height: 0 !important;
+    height: auto !important;
+    border: 1px solid #000000 !important;
+    border-radius: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+  }
+
+  [data-resume-editor] input {
+    padding: 0.5rem 0.625rem !important;
+  }
+
+  [data-resume-editor] textarea {
+    min-height: 4.75rem !important;
+    padding: 0.5rem 0.625rem !important;
+    resize: vertical !important;
+  }
+
+  [data-resume-editor] button {
+    border-radius: 0 !important;
+  }
+
+  [data-resume-editor] svg {
+    color: currentColor !important;
+  }
+}
+
 @media print {
   html,
   body {

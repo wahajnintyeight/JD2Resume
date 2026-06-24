@@ -52,6 +52,17 @@ export const ResumeForm: React.FC<ResumeFormProps> = ({ resumeData, onUpdate }) 
 
   const allSections = getSectionMeta(resumeData);
   const sortedAllSections = getAllSections(resumeData);
+  const sectionNav = sortedAllSections.map((section) => ({
+    id: section.id,
+    label: section.displayName,
+    isHidden: !section.isVisible,
+  }));
+
+  const scrollToSection = (sectionId: string) => {
+    document
+      .getElementById(`resume-editor-section-${sectionId}`)
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   const handleSectionMetaUpdate = (sections: SectionMeta[]) => {
     onUpdate({
@@ -355,30 +366,47 @@ export const ResumeForm: React.FC<ResumeFormProps> = ({ resumeData, onUpdate }) 
         items={sortedAllSections.map((s) => s.id)}
         strategy={verticalListSortingStrategy}
       >
-        <div className="space-y-10 pb-24">
-          {sortedAllSections.map((section, index) => {
-            const isFirst = index === 0 || section.id === 'personalInfo';
-            const isLast = index === sortedAllSections.length - 1;
-            const isPersonalInfo = section.id === 'personalInfo';
+        <div data-resume-editor className="grid gap-4 pb-20 lg:grid-cols-[8.5rem_minmax(0,1fr)]">
+          <nav className="sticky top-0 z-10 -mx-1 flex gap-2 overflow-x-auto border-2 border-black bg-[#F0F0E8] p-2 lg:top-4 lg:mx-0 lg:block lg:h-fit lg:overflow-visible">
+            {sectionNav.map((section) => (
+              <button
+                key={section.id}
+                type="button"
+                onClick={() => scrollToSection(section.id)}
+                className="shrink-0 border border-black bg-white px-2.5 py-2 text-left font-mono text-[10px] font-bold uppercase text-black hover:bg-[#1D4ED8] hover:text-white lg:mb-2 lg:block lg:w-full"
+              >
+                <span className="block truncate">{section.label}</span>
+                {section.isHidden && (
+                  <span className="mt-1 block text-[9px] font-normal text-[#4B5563]">Hidden</span>
+                )}
+              </button>
+            ))}
+          </nav>
 
-            const sectionContent = section.isDefault
-              ? renderDefaultSection(section, isFirst, isLast)
-              : renderCustomSection(section, isFirst, isLast);
+          <div className="space-y-5">
+            {sortedAllSections.map((section, index) => {
+              const isFirst = index === 0 || section.id === 'personalInfo';
+              const isLast = index === sortedAllSections.length - 1;
+              const isPersonalInfo = section.id === 'personalInfo';
 
-            return (
-              <DraggableSectionWrapper key={section.id} id={section.id} disabled={isPersonalInfo}>
-                <div className="relative">
-                  {!isPersonalInfo && (
-                    <div className="pointer-events-none absolute -left-4 top-10 hidden h-[calc(100%-2.5rem)] w-px bg-gradient-to-b from-cyan-300/30 via-white/10 to-transparent xl:block" />
-                  )}
-                  {sectionContent}
+              const sectionContent = section.isDefault
+                ? renderDefaultSection(section, isFirst, isLast)
+                : renderCustomSection(section, isFirst, isLast);
+
+              return (
+                <div
+                  key={section.id}
+                  id={`resume-editor-section-${section.id}`}
+                  className="scroll-mt-4"
+                >
+                  <DraggableSectionWrapper id={section.id} disabled={isPersonalInfo}>
+                    <div className="relative">{sectionContent}</div>
+                  </DraggableSectionWrapper>
                 </div>
-              </DraggableSectionWrapper>
-            );
-          })}
+              );
+            })}
 
-          <div className="flex justify-center pt-4">
-            <div className="w-full max-w-md rounded-[1.8rem] border border-dashed border-cyan-300/20 bg-[linear-gradient(180deg,rgba(15,23,42,0.42),rgba(15,23,42,0.22))] px-4 py-5 shadow-[0_14px_40px_rgba(2,6,23,0.22)]">
+            <div className="border-2 border-dashed border-black bg-white p-3">
               <AddSectionButton onAdd={handleAddSection} />
             </div>
           </div>
