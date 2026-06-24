@@ -1012,13 +1012,13 @@ const ResumeBuilderContent = () => {
               </div>
 
               {activeTab === 'cover-letter' && coverLetter && (
-                <div className="animate-in fade-in zoom-in-95 duration-300 rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
-                  <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <div className="border-2 border-black bg-white shadow-[4px_4px_0px_0px_#000000]">
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-black bg-[#F0F0E8] px-4 py-3">
                     <div>
-                      <p className="font-sans text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">
+                      <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
                         generated correspondence
                       </p>
-                      <h3 className="mt-1 font-serif text-2xl font-black uppercase tracking-[0.08em] text-white">
+                      <h3 className="mt-1 font-serif text-xl font-black uppercase text-black">
                         Cover Letter
                       </h3>
                     </div>
@@ -1027,12 +1027,12 @@ const ResumeBuilderContent = () => {
                         variant="outline"
                         onClick={handleGenerateCoverLetter}
                         disabled={!resumeId || isGeneratingCoverLetter}
-                        className="h-10 rounded-full border-fuchsia-300/25 bg-fuchsia-300/10 px-4 font-sans text-xs font-bold uppercase tracking-[0.2em] text-fuchsia-100"
+                        className="h-9 rounded-none border-2 border-black bg-white px-4 font-mono text-xs font-bold uppercase text-black shadow-[2px_2px_0px_0px_#000000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none disabled:opacity-40"
                       >
                         {isGeneratingCoverLetter ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
                         ) : (
-                          <Sparkles className="mr-2 h-4 w-4" />
+                          <Sparkles className="mr-1.5 h-4 w-4" />
                         )}
                         Regenerate
                       </Button>
@@ -1040,12 +1040,12 @@ const ResumeBuilderContent = () => {
                         variant="outline"
                         onClick={handleSaveCoverLetter}
                         disabled={!resumeId || isCoverLetterSaving}
-                        className="h-10 rounded-full border-white/10 bg-white/5 px-4 font-sans text-xs font-bold uppercase tracking-[0.2em] text-slate-100"
+                        className="h-9 rounded-none border-2 border-black bg-[#1D4ED8] px-4 font-mono text-xs font-bold uppercase text-white shadow-[2px_2px_0px_0px_#000000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none disabled:opacity-40"
                       >
                         {isCoverLetterSaving ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
                         ) : (
-                          <Save className="mr-2 h-4 w-4" />
+                          <Save className="mr-1.5 h-4 w-4" />
                         )}
                         Save
                       </Button>
@@ -1053,29 +1053,31 @@ const ResumeBuilderContent = () => {
                         variant="outline"
                         onClick={handleDownloadCoverLetter}
                         disabled={!resumeId || isDownloading}
-                        className="h-10 rounded-full border-white/10 bg-white/5 px-4 font-sans text-xs font-bold uppercase tracking-[0.2em] text-slate-100"
+                        className="h-9 rounded-none border-2 border-black bg-[#15803D] px-4 font-mono text-xs font-bold uppercase text-white shadow-[2px_2px_0px_0px_#000000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none disabled:opacity-40"
                       >
-                        <Download className="mr-2 h-4 w-4" />
+                        <Download className="mr-1.5 h-4 w-4" />
                         PDF
                       </Button>
                     </div>
                   </div>
-                  <CoverLetterPreview
-                    content={coverLetter}
-                    personalInfo={resumeData.personalInfo ?? {}}
-                    pageSize={templateSettings.pageSize}
-                  />
+                  <div className="p-4">
+                    <CoverLetterPreview
+                      content={coverLetter}
+                      personalInfo={resumeData.personalInfo ?? {}}
+                      pageSize={templateSettings.pageSize}
+                    />
+                  </div>
                 </div>
               )}
 
               {activeTab === 'outreach' && outreachMessage && (
-                <div className="animate-in fade-in zoom-in-95 duration-300 rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
-                  <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <div className="border-2 border-black bg-white shadow-[4px_4px_0px_0px_#000000]">
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-black bg-[#F0F0E8] px-4 py-3">
                     <div>
-                      <p className="font-sans text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">
+                      <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
                         contact draft
                       </p>
-                      <h3 className="mt-1 font-serif text-2xl font-black uppercase tracking-[0.08em] text-white">
+                      <h3 className="mt-1 font-serif text-xl font-black uppercase text-black">
                         Outreach
                       </h3>
                     </div>
@@ -1084,12 +1086,12 @@ const ResumeBuilderContent = () => {
                         variant="outline"
                         onClick={handleGenerateOutreach}
                         disabled={!resumeId || isGeneratingOutreach}
-                        className="h-10 rounded-full border-fuchsia-300/25 bg-fuchsia-300/10 px-4 font-sans text-xs font-bold uppercase tracking-[0.2em] text-fuchsia-100"
+                        className="h-9 rounded-none border-2 border-black bg-white px-4 font-mono text-xs font-bold uppercase text-black shadow-[2px_2px_0px_0px_#000000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none disabled:opacity-40"
                       >
                         {isGeneratingOutreach ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
                         ) : (
-                          <Sparkles className="mr-2 h-4 w-4" />
+                          <Sparkles className="mr-1.5 h-4 w-4" />
                         )}
                         Regenerate
                       </Button>
@@ -1097,12 +1099,12 @@ const ResumeBuilderContent = () => {
                         variant="outline"
                         onClick={handleSaveOutreach}
                         disabled={!resumeId || isOutreachSaving}
-                        className="h-10 rounded-full border-white/10 bg-white/5 px-4 font-sans text-xs font-bold uppercase tracking-[0.2em] text-slate-100"
+                        className="h-9 rounded-none border-2 border-black bg-[#1D4ED8] px-4 font-mono text-xs font-bold uppercase text-white shadow-[2px_2px_0px_0px_#000000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none disabled:opacity-40"
                       >
                         {isOutreachSaving ? (
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
                         ) : (
-                          <Save className="mr-2 h-4 w-4" />
+                          <Save className="mr-1.5 h-4 w-4" />
                         )}
                         Save
                       </Button>
@@ -1110,44 +1112,48 @@ const ResumeBuilderContent = () => {
                         variant="outline"
                         onClick={handleCopyOutreach}
                         disabled={!outreachMessage}
-                        className="h-10 rounded-full border-white/10 bg-white/5 px-4 font-sans text-xs font-bold uppercase tracking-[0.2em] text-slate-100"
+                        className="h-9 rounded-none border-2 border-black bg-[#15803D] px-4 font-mono text-xs font-bold uppercase text-white shadow-[2px_2px_0px_0px_#000000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none disabled:opacity-40"
                       >
                         {isCopied ? (
-                          <Check className="mr-2 h-4 w-4" />
+                          <Check className="mr-1.5 h-4 w-4" />
                         ) : (
-                          <Copy className="mr-2 h-4 w-4" />
+                          <Copy className="mr-1.5 h-4 w-4" />
                         )}
                         {isCopied ? 'Copied' : 'Copy'}
                       </Button>
                     </div>
                   </div>
-                  <OutreachPreview content={outreachMessage} />
+                  <div className="p-4">
+                    <OutreachPreview content={outreachMessage} />
+                  </div>
                 </div>
               )}
 
               {activeTab === 'jd-match' && jobDescription && (
-                <div className="animate-in fade-in zoom-in-95 duration-300 rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
-                  <div className="mb-4">
-                    <p className="font-sans text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">
+                <div className="border-2 border-black bg-white shadow-[4px_4px_0px_0px_#000000]">
+                  <div className="border-b-2 border-black bg-[#F0F0E8] px-4 py-3">
+                    <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
                       role alignment
                     </p>
-                    <h3 className="mt-1 font-serif text-2xl font-black uppercase tracking-[0.08em] text-white">
+                    <h3 className="mt-1 font-serif text-xl font-black uppercase text-black">
                       JD Match
                     </h3>
                   </div>
-                  <JDComparisonView resumeData={resumeData} jobDescription={jobDescription} />
+                  <div className="p-4">
+                    <JDComparisonView resumeData={resumeData} jobDescription={jobDescription} />
+                  </div>
                 </div>
               )}
             </div>
           </div>
 
           <div className="pointer-events-none absolute bottom-4 right-4 z-30 flex flex-col items-end gap-2 sm:bottom-6 sm:right-6 sm:gap-3">
-            <div className="rounded-full border border-white/10 bg-slate-950/70 px-3 py-2 font-sans text-[9px] font-bold uppercase tracking-[0.26em] text-slate-300 shadow-[0_10px_30px_rgba(2,6,23,0.35)] backdrop-blur-xl sm:px-4 sm:text-[10px] sm:tracking-[0.3em]">
+            <div className="border border-black bg-white px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-wider text-black shadow-[2px_2px_0px_0px_#000000] sm:px-4 sm:text-[10px]">
               AI polish
             </div>
             <Button
               size="lg"
-              className="pointer-events-auto h-14 w-14 rounded-full border border-fuchsia-300/30 bg-[radial-gradient(circle_at_30%_30%,rgba(244,114,182,0.95),rgba(168,85,247,0.95)_55%,rgba(30,41,59,0.95)_100%)] p-0 text-white shadow-[0_24px_60px_rgba(168,85,247,0.42)] transition-all hover:scale-110 active:scale-95 sm:h-16 sm:w-16"
+              className="pointer-events-auto h-14 w-14 rounded-none border-2 border-black bg-[#1D4ED8] p-0 text-white shadow-[4px_4px_0px_0px_#000000] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none active:translate-x-[2px] active:translate-y-[2px] sm:h-16 sm:w-16"
               onClick={() => regenerateWizard.startRegenerate()}
               disabled={!resumeId}
             >
@@ -1155,7 +1161,7 @@ const ResumeBuilderContent = () => {
             </Button>
           </div>
 
-          <div className="sticky bottom-0 z-20 border-t border-white/10 bg-slate-950/80 px-3 py-3 backdrop-blur-xl lg:hidden">
+          <div className="sticky bottom-0 z-20 border-t-2 border-black bg-white px-3 py-3 lg:hidden">
             <div className="grid grid-cols-2 gap-2">
               <Button
                 variant={isMobileEditorOpen ? 'outline' : 'ghost'}
@@ -1163,14 +1169,14 @@ const ResumeBuilderContent = () => {
                   setIsMobileEditorOpen(true);
                   setIsFullscreenPreview(false);
                 }}
-                className="h-12 rounded-2xl border-white/10 bg-white/5 px-4 font-sans text-[10px] font-bold uppercase tracking-[0.22em] text-slate-100"
+                className="h-12 rounded-none border-2 border-black px-4 font-mono text-[10px] font-bold uppercase text-black shadow-[2px_2px_0px_0px_#000000] [&:not(:disabled)]:hover:translate-x-[1px] [&:not(:disabled)]:hover:translate-y-[1px] [&:not(:disabled)]:hover:shadow-none"
               >
                 Edit Resume
               </Button>
               <Button
                 variant={!isMobileEditorOpen ? 'outline' : 'ghost'}
                 onClick={() => setIsMobileEditorOpen(false)}
-                className="h-12 rounded-2xl border-white/10 bg-white/5 px-4 font-sans text-[10px] font-bold uppercase tracking-[0.22em] text-slate-100"
+                className="h-12 rounded-none border-2 border-black px-4 font-mono text-[10px] font-bold uppercase text-black shadow-[2px_2px_0px_0px_#000000] [&:not(:disabled)]:hover:translate-x-[1px] [&:not(:disabled)]:hover:translate-y-[1px] [&:not(:disabled)]:hover:shadow-none"
               >
                 Preview Mode
               </Button>

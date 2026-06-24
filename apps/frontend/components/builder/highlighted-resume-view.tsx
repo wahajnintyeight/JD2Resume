@@ -11,65 +11,56 @@ interface HighlightedResumeViewProps {
   keywords: Set<string>;
 }
 
-/**
- * Display resume content with matching keywords highlighted.
- * Shows all resume sections with visual highlighting of JD matches.
- */
 export function HighlightedResumeView({ resumeData, keywords }: HighlightedResumeViewProps) {
   const { t } = useTranslations();
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Header */}
-      <div className="relative flex items-center gap-3 px-5 py-4 border-b border-white/5 bg-white/[0.02]">
-        <div className="relative">
-          <FileUser className="w-4 h-4 text-emerald-400" />
-          <div className="absolute -inset-1 bg-emerald-400/20 blur-md rounded-full" />
-        </div>
-        <h3 className="font-['Geist',_system-ui] text-sm font-semibold uppercase tracking-[0.12em] text-slate-200">
+    <div className="flex h-full flex-col">
+      <div className="flex items-center gap-2 border-b border-black bg-[#F0F0E8] px-4 py-3">
+        <FileUser className="h-4 w-4 text-[#15803D]" />
+        <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-black">
           {t('builder.jdMatch.yourResume')}
         </h3>
-        <div className="ml-auto flex items-center gap-2 px-3 py-1 rounded-md bg-emerald-500/10 ring-1 ring-emerald-400/20">
-          <Zap className="w-3 h-3 text-emerald-400" />
-          <span className="font-['Geist',_system-ui] text-xs text-emerald-300">
+        <div className="ml-auto flex items-center gap-1.5 border border-black bg-white px-2 py-0.5">
+          <Zap className="h-3 w-3 text-[#F97316]" />
+          <span className="font-mono text-[10px] text-[#4B5563]">
             {t('builder.jdMatch.matchingKeywordsHighlighted')}
           </span>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-5 space-y-5 custom-scrollbar">
-        {/* Summary */}
+      <div className="flex-1 space-y-4 overflow-y-auto p-4 custom-scrollbar">
         {resumeData.summary && (
-          <Section title={t('resume.sections.summary')} icon={<FileUser className="w-4 h-4" />}>
+          <Section title={t('resume.sections.summary')} icon={<FileUser className="h-4 w-4" />}>
             <HighlightedText text={resumeData.summary} keywords={keywords} />
           </Section>
         )}
 
-        {/* Work Experience */}
         {resumeData.workExperience && resumeData.workExperience.length > 0 && (
-          <Section title={t('resume.sections.experience')} icon={<Briefcase className="w-4 h-4" />}>
+          <Section title={t('resume.sections.experience')} icon={<Briefcase className="h-4 w-4" />}>
             {resumeData.workExperience.map((exp) => (
               <div
                 key={exp.id}
-                className="mb-4 last:mb-0 pb-4 last:pb-0 border-b border-white/5 last:border-0"
+                className="mb-3 border-b border-[#4B5563]/20 pb-3 last:mb-0 last:border-0 last:pb-0"
               >
-                <div className="font-semibold text-slate-200">
+                <div className="font-bold text-black">
                   <HighlightedText text={exp.title || ''} keywords={keywords} />
                   {exp.company && (
-                    <span className="text-slate-400 font-normal">
+                    <span className="font-normal text-[#4B5563]">
                       {' '}
                       {t('builder.jdMatch.atSeparator')}{' '}
                       <HighlightedText text={exp.company} keywords={keywords} />
                     </span>
                   )}
                 </div>
-                {exp.years && <div className="text-xs text-slate-500 mt-1 mb-2">{exp.years}</div>}
+                {exp.years && (
+                  <div className="mb-1.5 mt-1 font-mono text-xs text-[#4B5563]">{exp.years}</div>
+                )}
                 {exp.description && (
-                  <ul className="space-y-2 mt-2">
+                  <ul className="mt-2 space-y-1.5">
                     {exp.description.map((bullet, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-slate-300">
-                        <span className="text-emerald-400 mt-1.5 shrink-0">•</span>
+                      <li key={i} className="flex items-start gap-2 text-sm text-[#4B5563]">
+                        <span className="mt-1 shrink-0 text-[#15803D]">{'\u25CF'}</span>
                         <span className="flex-1">
                           <HighlightedText text={bullet} keywords={keywords} />
                         </span>
@@ -82,58 +73,60 @@ export function HighlightedResumeView({ resumeData, keywords }: HighlightedResum
           </Section>
         )}
 
-        {/* Education */}
         {resumeData.education && resumeData.education.length > 0 && (
           <Section
             title={t('resume.sections.education')}
-            icon={<GraduationCap className="w-4 h-4" />}
+            icon={<GraduationCap className="h-4 w-4" />}
           >
             {resumeData.education.map((edu) => (
               <div
                 key={edu.id}
-                className="mb-3 last:mb-0 pb-3 last:pb-0 border-b border-white/5 last:border-0"
+                className="mb-2 border-b border-[#4B5563]/20 pb-2 last:mb-0 last:border-0 last:pb-0"
               >
-                <div className="font-semibold text-slate-200">
+                <div className="font-bold text-black">
                   <HighlightedText text={edu.degree || ''} keywords={keywords} />
                 </div>
                 {edu.institution && (
-                  <div className="text-sm text-slate-400 mt-1">
+                  <div className="mt-1 text-sm text-[#4B5563]">
                     <HighlightedText text={edu.institution} keywords={keywords} />
                   </div>
                 )}
-                {edu.years && <div className="text-xs text-slate-500 mt-1">{edu.years}</div>}
+                {edu.years && (
+                  <div className="mt-1 font-mono text-xs text-[#4B5563]">{edu.years}</div>
+                )}
               </div>
             ))}
           </Section>
         )}
 
-        {/* Projects */}
         {resumeData.personalProjects && resumeData.personalProjects.length > 0 && (
           <Section
             title={t('resume.sections.projects')}
-            icon={<FolderKanban className="w-4 h-4" />}
+            icon={<FolderKanban className="h-4 w-4" />}
           >
             {resumeData.personalProjects.map((proj) => (
               <div
                 key={proj.id}
-                className="mb-4 last:mb-0 pb-4 last:pb-0 border-b border-white/5 last:border-0"
+                className="mb-3 border-b border-[#4B5563]/20 pb-3 last:mb-0 last:border-0 last:pb-0"
               >
-                <div className="font-semibold text-slate-200">
+                <div className="font-bold text-black">
                   <HighlightedText text={proj.name || ''} keywords={keywords} />
                   {proj.role && (
-                    <span className="text-slate-400 font-normal">
+                    <span className="font-normal text-[#4B5563]">
                       {' '}
                       {t('builder.jdMatch.roleSeparator')}{' '}
                       <HighlightedText text={proj.role} keywords={keywords} />
                     </span>
                   )}
                 </div>
-                {proj.years && <div className="text-xs text-slate-500 mt-1 mb-2">{proj.years}</div>}
+                {proj.years && (
+                  <div className="mb-1.5 mt-1 font-mono text-xs text-[#4B5563]">{proj.years}</div>
+                )}
                 {proj.description && (
-                  <ul className="space-y-2 mt-2">
+                  <ul className="mt-2 space-y-1.5">
                     {proj.description.map((bullet, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-slate-300">
-                        <span className="text-emerald-400 mt-1.5 shrink-0">•</span>
+                      <li key={i} className="flex items-start gap-2 text-sm text-[#4B5563]">
+                        <span className="mt-1 shrink-0 text-[#15803D]">{'\u25CF'}</span>
                         <span className="flex-1">
                           <HighlightedText text={bullet} keywords={keywords} />
                         </span>
@@ -146,16 +139,15 @@ export function HighlightedResumeView({ resumeData, keywords }: HighlightedResum
           </Section>
         )}
 
-        {/* Skills */}
         {resumeData.additional && (
-          <Section title={t('resume.sections.skills')} icon={<Wrench className="w-4 h-4" />}>
+          <Section title={t('resume.sections.skills')} icon={<Wrench className="h-4 w-4" />}>
             {resumeData.additional.technicalSkills &&
               resumeData.additional.technicalSkills.length > 0 && (
-                <div className="mb-4">
-                  <div className="font-['Geist',_system-ui] text-xs font-medium uppercase tracking-wider text-slate-500 mb-2">
+                <div className="mb-3">
+                  <div className="mb-2 font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
                     {t('resume.additional.technicalSkills')}
                   </div>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5">
                     {resumeData.additional.technicalSkills.map((skill, i) => (
                       <SkillTag key={i} text={skill} keywords={keywords} />
                     ))}
@@ -164,11 +156,11 @@ export function HighlightedResumeView({ resumeData, keywords }: HighlightedResum
               )}
 
             {resumeData.additional.languages && resumeData.additional.languages.length > 0 && (
-              <div className="mb-4">
-                <div className="font-['Geist',_system-ui] text-xs font-medium uppercase tracking-wider text-slate-500 mb-2">
+              <div className="mb-3">
+                <div className="mb-2 font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
                   {t('resume.sections.languages')}
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5">
                   {resumeData.additional.languages.map((lang, i) => (
                     <SkillTag key={i} text={lang} keywords={keywords} />
                   ))}
@@ -178,14 +170,14 @@ export function HighlightedResumeView({ resumeData, keywords }: HighlightedResum
 
             {resumeData.additional.certificationsTraining &&
               resumeData.additional.certificationsTraining.length > 0 && (
-                <div className="mb-4">
-                  <div className="font-['Geist',_system-ui] text-xs font-medium uppercase tracking-wider text-slate-500 mb-2">
+                <div>
+                  <div className="mb-2 font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
                     {t('resume.sections.certifications')}
                   </div>
-                  <ul className="space-y-2">
+                  <ul className="space-y-1.5">
                     {resumeData.additional.certificationsTraining.map((cert, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm text-slate-300">
-                        <span className="text-emerald-400 mt-1.5 shrink-0">•</span>
+                      <li key={i} className="flex items-start gap-2 text-sm text-[#4B5563]">
+                        <span className="mt-1 shrink-0 text-[#15803D]">{'\u25CF'}</span>
                         <span className="flex-1">
                           <HighlightedText text={cert} keywords={keywords} />
                         </span>
@@ -201,9 +193,6 @@ export function HighlightedResumeView({ resumeData, keywords }: HighlightedResum
   );
 }
 
-/**
- * Section wrapper component
- */
 function Section({
   title,
   icon,
@@ -214,21 +203,18 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg overflow-hidden bg-white/[0.02] ring-1 ring-white/5 backdrop-blur-sm">
-      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-white/5 bg-white/[0.02]">
-        <div className="text-emerald-400">{icon}</div>
-        <span className="font-['Geist',_system-ui] text-xs font-semibold uppercase tracking-wider text-slate-400">
+    <div className="border border-black bg-[#F0F0E8]">
+      <div className="flex items-center gap-2 border-b border-black bg-white px-3 py-2">
+        <div className="text-[#15803D]">{icon}</div>
+        <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-black">
           {title}
         </span>
       </div>
-      <div className="p-4">{children}</div>
+      <div className="p-3">{children}</div>
     </div>
   );
 }
 
-/**
- * Component to render text with highlighted keywords.
- */
 function HighlightedText({ text, keywords }: { text: string; keywords: Set<string> }) {
   const segments = useMemo(() => segmentTextByKeywords(text, keywords), [text, keywords]);
 
@@ -238,7 +224,7 @@ function HighlightedText({ text, keywords }: { text: string; keywords: Set<strin
         segment.isMatch ? (
           <mark
             key={i}
-            className="relative bg-gradient-to-r from-amber-400/40 to-yellow-400/40 text-black px-1.5 py-0.5 rounded ring-1 ring-amber-400/50 font-semibold shadow-[0_0_8px_rgba(251,191,36,0.2)]"
+            className="border border-[#F97316] bg-[#F97316]/20 px-1 py-0.5 font-bold text-black"
           >
             {segment.text}
           </mark>
@@ -250,18 +236,15 @@ function HighlightedText({ text, keywords }: { text: string; keywords: Set<strin
   );
 }
 
-/**
- * Skill tag with optional highlighting
- */
 function SkillTag({ text, keywords }: { text: string; keywords: Set<string> }) {
   const isMatch = keywords.has(text.toLowerCase());
 
   return (
     <span
-      className={`inline-flex items-center px-3 py-1.5 rounded-md text-xs font-['Geist',_system-ui] font-medium transition-all ${
+      className={`inline-flex items-center border px-2.5 py-1 font-mono text-xs transition-colors ${
         isMatch
-          ? 'bg-gradient-to-r from-amber-400/30 to-yellow-400/30 text-black ring-1 ring-amber-400/50 shadow-[0_0_16px_rgba(251,191,36,0.25)] font-semibold'
-          : 'bg-white/[0.02] text-slate-400 ring-1 ring-white/5 hover:bg-white/[0.04]'
+          ? 'border-[#F97316] bg-[#F97316]/20 font-bold text-black'
+          : 'border-black bg-white text-[#4B5563] hover:bg-[#F0F0E8]'
       }`}
     >
       {text}

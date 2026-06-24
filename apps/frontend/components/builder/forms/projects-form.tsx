@@ -24,10 +24,15 @@ interface ProjectsFormProps {
 }
 
 const inputClassName =
-  'h-12 rounded-[1.15rem] border border-white/10 bg-white/5 px-4 text-sm text-white placeholder:text-slate-500 transition-all focus-visible:border-amber-300/40 focus-visible:bg-slate-900/80 focus-visible:ring-2 focus-visible:ring-amber-300/10';
+  'h-11 rounded-none border-2 border-black bg-white px-3 text-sm font-sans text-black placeholder:text-[#4B5563] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1D4ED8]';
 
 const textareaClassName =
-  'min-h-[88px] resize-none rounded-[1.15rem] border border-white/10 bg-white/5 p-4 text-sm text-white placeholder:text-slate-500 transition-all focus-visible:border-amber-300/40 focus-visible:bg-slate-900/80 focus-visible:ring-2 focus-visible:ring-amber-300/10';
+  'min-h-[88px] resize-none rounded-none border-2 border-black bg-white p-3 text-sm font-sans text-black placeholder:text-[#4B5563] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1D4ED8]';
+
+const labelClassName =
+  'mb-2 flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563]';
+
+const fieldWrapperClassName = 'border border-black bg-[#F0F0E8] p-3';
 
 export const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) => {
   const { t } = useTranslations();
@@ -101,56 +106,53 @@ export const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) =>
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-end">
+    <section className="border-2 border-black bg-white shadow-[4px_4px_0px_0px_#000000]">
+      <div className="flex items-center justify-between border-b-2 border-black bg-[#F0F0E8] px-4 py-3">
+        <div>
+          <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
+            build log
+          </p>
+          <h3 className="mt-1 font-serif text-xl font-black uppercase text-black">
+            {t('builder.projects')}
+          </h3>
+        </div>
         <Button
           variant="ghost"
           size="sm"
           onClick={handleAdd}
-          className="h-11 rounded-full border border-amber-300/20 bg-[linear-gradient(135deg,rgba(251,191,36,0.16),rgba(249,115,22,0.14))] px-5 font-sans text-xs font-bold uppercase tracking-[0.24em] text-amber-100 transition-all hover:border-amber-300/35 hover:bg-[linear-gradient(135deg,rgba(251,191,36,0.22),rgba(249,115,22,0.18))]"
+          className="h-9 rounded-none border-2 border-black bg-[#15803D] px-4 font-mono text-xs font-bold uppercase text-white shadow-[2px_2px_0px_0px_#000000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
         >
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="mr-1.5 h-4 w-4" />
           {t('builder.forms.projects.addProject')}
         </Button>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4 p-4">
         {data.map((item, itemIndex) => (
-          <section
-            key={item.id}
-            className="group relative overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.78),rgba(15,23,42,0.56))] p-5 shadow-[0_22px_60px_rgba(2,6,23,0.3)] transition-all duration-300 hover:border-white/15 sm:p-6"
-          >
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(251,191,36,0.12),transparent_24%),radial-gradient(circle_at_80%_18%,rgba(244,114,182,0.12),transparent_18%),linear-gradient(135deg,transparent,rgba(59,130,246,0.06))]" />
-
-            <div className="relative mb-5 flex flex-wrap items-start justify-between gap-4 border-b border-white/10 pb-5">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-[1.2rem] border border-white/10 bg-[linear-gradient(135deg,rgba(251,191,36,0.18),rgba(244,114,182,0.14))] text-amber-100 shadow-[0_10px_30px_rgba(15,23,42,0.25)]">
-                  <Rocket className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="font-sans text-[10px] font-bold uppercase tracking-[0.34em] text-amber-200/80">
-                    launch dossier {String(itemIndex + 1).padStart(2, '0')}
-                  </p>
-                  <h4 className="mt-2 font-serif text-2xl font-black uppercase tracking-[0.08em] text-white">
-                    {item.name || t('builder.forms.projects.fields.projectName')}
-                  </h4>
-                </div>
+          <div key={item.id} className="border border-black bg-[#F0F0E8]">
+            <div className="flex items-center justify-between border-b border-black bg-white px-3 py-2">
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center border border-black bg-[#1D4ED8] font-mono text-[10px] font-bold text-white">
+                  {String(itemIndex + 1).padStart(2, '0')}
+                </span>
+                <span className="truncate font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
+                  {item.name || t('builder.forms.projects.fields.projectName')}
+                </span>
               </div>
-
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-10 w-10 rounded-full border border-rose-300/15 bg-rose-300/10 text-rose-200 opacity-70 transition-all hover:bg-rose-300/20 hover:opacity-100"
+                className="h-7 w-7 shrink-0 rounded-none border border-black bg-white text-[#DC2626] hover:bg-[#DC2626] hover:text-white"
                 onClick={() => handleRemove(item.id)}
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-3.5 w-3.5" />
               </Button>
             </div>
 
-            <div className="relative grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="rounded-[1.4rem] border border-white/10 bg-white/[0.04] p-3">
-                <Label className="mb-3 flex items-center gap-2 px-1 font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-slate-400">
-                  <Rocket className="h-3.5 w-3.5 text-amber-200/80" />
+            <div className="grid grid-cols-1 gap-3 p-3 sm:grid-cols-2">
+              <div className={fieldWrapperClassName}>
+                <Label className={labelClassName}>
+                  <Rocket className="h-3.5 w-3.5" />
                   {t('builder.forms.projects.fields.projectName')}
                 </Label>
                 <Input
@@ -161,9 +163,9 @@ export const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) =>
                 />
               </div>
 
-              <div className="rounded-[1.4rem] border border-white/10 bg-white/[0.04] p-3">
-                <Label className="mb-3 flex items-center gap-2 px-1 font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-slate-400">
-                  <Sparkles className="h-3.5 w-3.5 text-fuchsia-200/80" />
+              <div className={fieldWrapperClassName}>
+                <Label className={labelClassName}>
+                  <Sparkles className="h-3.5 w-3.5" />
                   {t('builder.forms.projects.fields.role')}
                 </Label>
                 <Input
@@ -174,11 +176,11 @@ export const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) =>
                 />
               </div>
 
-              <div className="rounded-[1.4rem] border border-white/10 bg-white/[0.04] p-3">
-                <Label className="mb-3 flex items-center gap-2 px-1 font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-slate-400">
-                  <CalendarRange className="h-3.5 w-3.5 text-cyan-200/80" />
+              <div className={fieldWrapperClassName}>
+                <Label className={labelClassName}>
+                  <CalendarRange className="h-3.5 w-3.5" />
                   {t('builder.genericItemForm.fields.years')}
-                  <span className="text-slate-500">({t('common.optional')})</span>
+                  <span className="text-[#4B5563]">({t('common.optional')})</span>
                 </Label>
                 <Input
                   value={item.years || ''}
@@ -188,11 +190,11 @@ export const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) =>
                 />
               </div>
 
-              <div className="rounded-[1.4rem] border border-white/10 bg-white/[0.04] p-3">
-                <Label className="mb-3 flex items-center gap-2 px-1 font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-slate-400">
-                  <Github className="h-3.5 w-3.5 text-slate-300/80" />
+              <div className={fieldWrapperClassName}>
+                <Label className={labelClassName}>
+                  <Github className="h-3.5 w-3.5" />
                   GitHub
-                  <span className="text-slate-500">({t('common.optional')})</span>
+                  <span className="text-[#4B5563]">({t('common.optional')})</span>
                 </Label>
                 <Input
                   value={item.github || ''}
@@ -202,11 +204,11 @@ export const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) =>
                 />
               </div>
 
-              <div className="rounded-[1.4rem] border border-white/10 bg-white/[0.04] p-3 md:col-span-2">
-                <Label className="mb-3 flex items-center gap-2 px-1 font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-slate-400">
-                  <Globe className="h-3.5 w-3.5 text-emerald-200/80" />
+              <div className={`${fieldWrapperClassName} sm:col-span-2`}>
+                <Label className={labelClassName}>
+                  <Globe className="h-3.5 w-3.5" />
                   {t('builder.forms.projects.fields.website')}
-                  <span className="text-slate-500">({t('common.optional')})</span>
+                  <span className="text-[#4B5563]">({t('common.optional')})</span>
                 </Label>
                 <Input
                   value={item.website || ''}
@@ -217,37 +219,28 @@ export const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) =>
               </div>
             </div>
 
-            <div className="relative mt-5 rounded-[1.6rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-4">
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <Label className="flex items-center gap-2 font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-slate-400">
-                    <PenSquare className="h-3.5 w-3.5 text-amber-200/80" />
-                    {t('builder.genericItemForm.fields.descriptionPoints')}
-                  </Label>
-                  <p className="mt-2 max-w-xl text-sm leading-6 text-slate-400">
-                    Write sharp, outcome-first proof points. Treat each bullet like a launch note.
-                  </p>
-                </div>
-
+            <div className="border-t border-black p-3">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <Label className={labelClassName}>
+                  <PenSquare className="h-3.5 w-3.5" />
+                  {t('builder.genericItemForm.fields.descriptionPoints')}
+                </Label>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => handleAddDescription(item.id)}
-                  className="h-10 rounded-full border border-amber-300/20 bg-amber-300/10 px-4 font-sans text-[11px] font-bold uppercase tracking-[0.22em] text-amber-100 transition-all hover:border-amber-300/35 hover:bg-amber-300/15"
+                  className="h-8 rounded-none border border-black bg-white px-3 font-mono text-[10px] font-bold uppercase text-black hover:bg-[#1D4ED8] hover:text-white"
                 >
-                  <Plus className="mr-2 h-3.5 w-3.5" />
+                  <Plus className="mr-1 h-3.5 w-3.5" />
                   {t('builder.genericItemForm.actions.addPoint')}
                 </Button>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {item.description?.map((desc, idx) => (
-                  <div
-                    key={idx}
-                    className="group/item flex gap-3 rounded-[1.25rem] border border-white/10 bg-slate-950/35 p-3 transition-all duration-300 hover:border-white/15"
-                  >
-                    <div className="flex w-9 shrink-0 items-start justify-center pt-2">
-                      <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full border border-amber-300/20 bg-amber-300/10 px-1 text-[10px] font-bold uppercase tracking-[0.2em] text-amber-100">
+                  <div key={idx} className="flex gap-2 border border-black bg-white p-2">
+                    <div className="flex w-6 shrink-0 items-start justify-center pt-2">
+                      <span className="flex h-5 min-w-5 items-center justify-center border border-black bg-[#F0F0E8] px-1 font-mono text-[9px] font-bold text-black">
                         {idx + 1}
                       </span>
                     </div>
@@ -261,7 +254,7 @@ export const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) =>
                       variant="ghost"
                       size="icon"
                       onClick={() => handleRemoveDescription(item.id, idx)}
-                      className="h-[88px] w-10 self-start rounded-[1rem] border border-transparent text-slate-500 transition-all hover:border-rose-300/15 hover:bg-rose-300/10 hover:text-rose-200"
+                      className="h-[88px] w-8 shrink-0 self-start rounded-none border border-black bg-white text-[#DC2626] hover:bg-[#DC2626] hover:text-white"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
@@ -269,35 +262,32 @@ export const ProjectsForm: React.FC<ProjectsFormProps> = ({ data, onChange }) =>
                 ))}
               </div>
             </div>
-          </section>
+          </div>
         ))}
 
         {data.length === 0 && (
-          <div className="relative overflow-hidden rounded-[2rem] border border-dashed border-amber-300/20 bg-[linear-gradient(180deg,rgba(15,23,42,0.72),rgba(15,23,42,0.46))] px-6 py-16 text-center shadow-[0_18px_50px_rgba(2,6,23,0.26)]">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(251,191,36,0.14),transparent_28%),radial-gradient(circle_at_bottom,rgba(244,114,182,0.12),transparent_30%)]" />
-            <div className="relative mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-[1.6rem] border border-white/10 bg-white/5 text-amber-100">
-              <Rocket className="h-7 w-7" />
+          <div className="border-2 border-dashed border-black bg-[#F0F0E8] px-6 py-12 text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center border-2 border-black bg-white text-black">
+              <Rocket className="h-5 w-5" />
             </div>
-            <p className="relative font-sans text-[10px] font-bold uppercase tracking-[0.34em] text-slate-400">
-              build log
+            <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
+              empty
             </p>
-            <p className="relative mt-3 text-base font-semibold text-white">
+            <p className="mt-2 text-sm font-semibold text-black">
               {t('builder.forms.projects.addFirstProject')}
             </p>
-            <div className="relative mt-6">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleAdd}
-                className="h-11 rounded-full border border-amber-300/20 bg-amber-300/10 px-5 font-sans text-xs font-bold uppercase tracking-[0.24em] text-amber-100 transition-all hover:border-amber-300/35 hover:bg-amber-300/15"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                {t('builder.forms.projects.addProject')}
-              </Button>
-            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleAdd}
+              className="mt-4 h-9 rounded-none border-2 border-black bg-[#15803D] px-4 font-mono text-xs font-bold uppercase text-white shadow-[2px_2px_0px_0px_#000000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
+            >
+              <Plus className="mr-1.5 h-4 w-4" />
+              {t('builder.forms.projects.addProject')}
+            </Button>
           </div>
         )}
       </div>
-    </div>
+    </section>
   );
 };

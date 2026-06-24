@@ -34,17 +34,16 @@ interface GenericItemFormProps {
 }
 
 const inputClassName =
-  'h-13 rounded-[1.25rem] border border-white/10 bg-white/5 px-4 text-sm text-white placeholder:text-slate-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-all focus-visible:border-cyan-300/45 focus-visible:bg-slate-900/80 focus-visible:ring-2 focus-visible:ring-cyan-300/10';
+  'h-11 rounded-none border-2 border-black bg-white px-3 text-sm font-sans text-black placeholder:text-[#4B5563] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1D4ED8]';
 
 const textareaClassName =
-  'min-h-[88px] resize-none rounded-[1.25rem] border border-white/10 bg-white/5 p-4 text-sm text-white placeholder:text-slate-500 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition-all focus-visible:border-cyan-300/45 focus-visible:bg-slate-900/80 focus-visible:ring-2 focus-visible:ring-cyan-300/10';
+  'min-h-[88px] resize-none rounded-none border-2 border-black bg-white p-3 text-sm font-sans text-black placeholder:text-[#4B5563] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#1D4ED8]';
 
-/**
- * Generic Item Form Component
- *
- * Used for ITEM_LIST type sections (like Experience, Education, Projects).
- * Renders a list of items with configurable fields.
- */
+const labelClassName =
+  'mb-2 flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563]';
+
+const fieldWrapperClassName = 'border border-black bg-[#F0F0E8] p-3';
+
 export const GenericItemForm: React.FC<GenericItemFormProps> = ({
   items,
   onChange,
@@ -142,84 +141,53 @@ export const GenericItemForm: React.FC<GenericItemFormProps> = ({
   };
 
   return (
-    <section className="relative overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.92),rgba(15,23,42,0.68))] p-6 shadow-[0_24px_60px_rgba(2,6,23,0.38)] sm:p-8">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(34,211,238,0.14),transparent_26%),radial-gradient(circle_at_82%_18%,rgba(251,191,36,0.12),transparent_22%)]" />
-
-      <div className="relative mb-6 flex flex-col gap-5 border-b border-white/10 pb-6 lg:flex-row lg:items-start lg:justify-between">
-        <div className="flex items-center gap-4">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[1.4rem] border border-white/10 bg-[linear-gradient(135deg,rgba(251,191,36,0.22),rgba(34,211,238,0.14))] text-amber-100 shadow-[0_10px_30px_rgba(15,23,42,0.3)]">
-            <FileStack className="h-6 w-6" />
-          </div>
-          <div>
-            <p className="font-sans text-[10px] font-bold uppercase tracking-[0.35em] text-cyan-200/80">
-              modular record
-            </p>
-            <h3 className="mt-2 font-serif text-2xl font-black uppercase tracking-[0.08em] text-white sm:text-3xl">
-              {finalItemLabel}
-            </h3>
-          </div>
-        </div>
-
-        <div className="w-full shrink-0 lg:max-w-sm rounded-[1.5rem] border border-white/10 bg-white/5 px-4 py-3">
-          <p className="font-sans text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">
-            structured signals
+    <section className="border-2 border-black bg-white shadow-[4px_4px_0px_0px_#000000]">
+      <div className="flex items-center justify-between border-b-2 border-black bg-[#F0F0E8] px-4 py-3">
+        <div>
+          <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
+            modular record
           </p>
-          <p className="mt-2 text-sm leading-relaxed text-slate-300">
-            Keep each entry concise, evidence-rich, and easy to scan for role fit.
-          </p>
+          <h3 className="mt-1 font-serif text-xl font-black uppercase text-black">
+            {finalItemLabel}
+          </h3>
         </div>
-      </div>
-
-      <div className="relative mb-5 flex justify-end">
         <Button
           variant="ghost"
           size="sm"
           onClick={handleAdd}
-          className="h-11 rounded-full border border-cyan-300/20 bg-[linear-gradient(135deg,rgba(34,211,238,0.14),rgba(14,165,233,0.12))] px-5 font-sans text-xs font-bold uppercase tracking-[0.24em] text-cyan-100 transition-all hover:border-cyan-300/35 hover:bg-[linear-gradient(135deg,rgba(34,211,238,0.2),rgba(14,165,233,0.16))]"
+          className="h-9 rounded-none border-2 border-black bg-[#15803D] px-4 font-mono text-xs font-bold uppercase text-white shadow-[2px_2px_0px_0px_#000000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
         >
-          <Plus className="mr-2 h-4 w-4" />
+          <Plus className="mr-1.5 h-4 w-4" />
           {finalAddLabel}
         </Button>
       </div>
 
-      <div className="relative space-y-5">
+      <div className="space-y-4 p-4">
         {items.map((item, itemIndex) => (
-          <div
-            key={item.id}
-            className="group rounded-[1.8rem] border border-white/10 bg-white/[0.035] p-4 transition-all duration-300 hover:border-white/15 hover:bg-white/[0.055] sm:p-5"
-          >
-            <div className="mb-4 h-1 rounded-full bg-gradient-to-r from-cyan-300/35 via-sky-300/20 to-amber-300/10" />
-
-            <div className="mb-4 flex flex-wrap items-start justify-between gap-4 border-b border-white/10 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-[1.15rem] border border-white/10 bg-[linear-gradient(135deg,rgba(34,211,238,0.12),rgba(251,191,36,0.12))] text-cyan-100">
-                  <Type className="h-4.5 w-4.5" />
-                </div>
-                <div>
-                  <p className="font-sans text-[10px] font-bold uppercase tracking-[0.3em] text-slate-400">
-                    entry {String(itemIndex + 1).padStart(2, '0')}
-                  </p>
-                  <p className="mt-1 text-sm font-medium text-slate-200">
-                    {item.title || finalItemLabel}
-                  </p>
-                </div>
+          <div key={item.id} className="border border-black bg-[#F0F0E8]">
+            <div className="flex items-center justify-between border-b border-black bg-white px-3 py-2">
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center border border-black bg-[#1D4ED8] font-mono text-[10px] font-bold text-white">
+                  {String(itemIndex + 1).padStart(2, '0')}
+                </span>
+                <span className="truncate font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
+                  {item.title || finalItemLabel}
+                </span>
               </div>
-
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-10 w-10 rounded-full border border-rose-300/15 bg-rose-300/10 text-rose-200 opacity-80 transition-all hover:bg-rose-300/20 hover:opacity-100"
+                className="h-7 w-7 shrink-0 rounded-none border border-black bg-white text-[#DC2626] hover:bg-[#DC2626] hover:text-white"
                 onClick={() => handleRemove(item.id)}
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-3.5 w-3.5" />
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="rounded-[1.6rem] border border-white/10 bg-white/[0.035] p-3">
-                <div className="mb-3 h-1 rounded-full bg-gradient-to-r from-amber-300/35 to-orange-400/10" />
-                <Label className="mb-3 flex items-center gap-2 px-1 font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-slate-400">
-                  <Type className="h-3.5 w-3.5 text-amber-200/80" />
+            <div className="grid grid-cols-1 gap-3 p-3 sm:grid-cols-2">
+              <div className={fieldWrapperClassName}>
+                <Label className={labelClassName}>
+                  <Type className="h-3.5 w-3.5" />
                   {t('builder.genericItemForm.fields.title')}
                 </Label>
                 <Input
@@ -231,10 +199,9 @@ export const GenericItemForm: React.FC<GenericItemFormProps> = ({
               </div>
 
               {showSubtitle && (
-                <div className="rounded-[1.6rem] border border-white/10 bg-white/[0.035] p-3">
-                  <div className="mb-3 h-1 rounded-full bg-gradient-to-r from-fuchsia-300/35 to-violet-400/10" />
-                  <Label className="mb-3 flex items-center gap-2 px-1 font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-slate-400">
-                    <Building2 className="h-3.5 w-3.5 text-fuchsia-200/80" />
+                <div className={fieldWrapperClassName}>
+                  <Label className={labelClassName}>
+                    <Building2 className="h-3.5 w-3.5" />
                     {t('builder.genericItemForm.fields.organization')}
                   </Label>
                   <Input
@@ -247,10 +214,9 @@ export const GenericItemForm: React.FC<GenericItemFormProps> = ({
               )}
 
               {showLocation && (
-                <div className="rounded-[1.6rem] border border-white/10 bg-white/[0.035] p-3">
-                  <div className="mb-3 h-1 rounded-full bg-gradient-to-r from-rose-300/35 to-pink-400/10" />
-                  <Label className="mb-3 flex items-center gap-2 px-1 font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-slate-400">
-                    <MapPin className="h-3.5 w-3.5 text-rose-200/80" />
+                <div className={fieldWrapperClassName}>
+                  <Label className={labelClassName}>
+                    <MapPin className="h-3.5 w-3.5" />
                     {t('builder.genericItemForm.fields.location')}
                   </Label>
                   <Input
@@ -263,10 +229,9 @@ export const GenericItemForm: React.FC<GenericItemFormProps> = ({
               )}
 
               {showYears && (
-                <div className="rounded-[1.6rem] border border-white/10 bg-white/[0.035] p-3">
-                  <div className="mb-3 h-1 rounded-full bg-gradient-to-r from-cyan-300/35 to-sky-400/10" />
-                  <Label className="mb-3 flex items-center gap-2 px-1 font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-slate-400">
-                    <CalendarRange className="h-3.5 w-3.5 text-cyan-200/80" />
+                <div className={fieldWrapperClassName}>
+                  <Label className={labelClassName}>
+                    <CalendarRange className="h-3.5 w-3.5" />
                     {t('builder.genericItemForm.fields.years')}
                   </Label>
                   <Input
@@ -279,34 +244,28 @@ export const GenericItemForm: React.FC<GenericItemFormProps> = ({
               )}
             </div>
 
-            <div className="mt-4 rounded-[1.6rem] border border-white/10 bg-white/[0.03] p-3">
-              <div className="mb-3 h-1 rounded-full bg-gradient-to-r from-emerald-300/35 to-teal-400/10" />
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <Label className="flex items-center gap-2 px-1 font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-slate-400">
-                    <PenSquare className="h-3.5 w-3.5 text-emerald-200/80" />
-                    {t('builder.genericItemForm.fields.descriptionPoints')}
-                  </Label>
-                </div>
+            <div className="border-t border-black p-3">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <Label className={labelClassName}>
+                  <PenSquare className="h-3.5 w-3.5" />
+                  {t('builder.genericItemForm.fields.descriptionPoints')}
+                </Label>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => handleAddDescription(item.id)}
-                  className="h-10 rounded-full border border-emerald-300/20 bg-emerald-300/10 px-4 font-sans text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-100 transition-all hover:border-emerald-300/35 hover:bg-emerald-300/15"
+                  className="h-8 rounded-none border border-black bg-white px-3 font-mono text-[10px] font-bold uppercase text-black hover:bg-[#1D4ED8] hover:text-white"
                 >
-                  <Plus className="mr-2 h-3.5 w-3.5" />
+                  <Plus className="mr-1 h-3.5 w-3.5" />
                   {t('builder.genericItemForm.actions.addPoint')}
                 </Button>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {item.description?.map((desc, idx) => (
-                  <div
-                    key={idx}
-                    className="flex gap-3 rounded-[1.25rem] border border-white/10 bg-slate-950/35 p-3 transition-all duration-300 hover:border-white/15"
-                  >
-                    <div className="flex w-9 shrink-0 items-start justify-center pt-2">
-                      <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full border border-emerald-300/20 bg-emerald-300/10 px-1 text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-100">
+                  <div key={idx} className="flex gap-2 border border-black bg-white p-2">
+                    <div className="flex w-6 shrink-0 items-start justify-center pt-2">
+                      <span className="flex h-5 min-w-5 items-center justify-center border border-black bg-[#F0F0E8] px-1 font-mono text-[9px] font-bold text-black">
                         {idx + 1}
                       </span>
                     </div>
@@ -320,7 +279,7 @@ export const GenericItemForm: React.FC<GenericItemFormProps> = ({
                       variant="ghost"
                       size="icon"
                       onClick={() => handleRemoveDescription(item.id, idx)}
-                      className="h-[88px] w-10 self-start rounded-[1rem] border border-transparent text-slate-500 transition-all hover:border-rose-300/15 hover:bg-rose-300/10 hover:text-rose-200"
+                      className="h-[88px] w-8 shrink-0 self-start rounded-none border border-black bg-white text-[#DC2626] hover:bg-[#DC2626] hover:text-white"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
@@ -332,28 +291,25 @@ export const GenericItemForm: React.FC<GenericItemFormProps> = ({
         ))}
 
         {items.length === 0 && (
-          <div className="relative overflow-hidden rounded-[1.8rem] border border-dashed border-cyan-300/20 bg-[linear-gradient(180deg,rgba(15,23,42,0.72),rgba(15,23,42,0.46))] px-6 py-14 text-center shadow-[0_18px_50px_rgba(2,6,23,0.26)]">
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(34,211,238,0.14),transparent_28%),radial-gradient(circle_at_bottom,rgba(251,191,36,0.12),transparent_30%)]" />
-            <div className="relative mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-[1.6rem] border border-white/10 bg-white/5 text-cyan-100">
-              <FileStack className="h-7 w-7" />
+          <div className="border-2 border-dashed border-black bg-[#F0F0E8] px-6 py-12 text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center border-2 border-black bg-white text-black">
+              <FileStack className="h-5 w-5" />
             </div>
-            <p className="relative font-sans text-[10px] font-bold uppercase tracking-[0.34em] text-slate-400">
-              catalog awaits
+            <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
+              empty
             </p>
-            <p className="relative mt-3 text-base font-semibold text-white">
+            <p className="mt-2 text-sm font-semibold text-black">
               {t('builder.genericItemForm.noEntries', { label: finalItemLabel })}
             </p>
-            <div className="relative mt-6">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleAdd}
-                className="h-11 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-5 font-sans text-xs font-bold uppercase tracking-[0.24em] text-cyan-100 transition-all hover:border-cyan-300/35 hover:bg-cyan-300/15"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                {t('builder.genericItemForm.addFirstItem', { label: finalItemLabel })}
-              </Button>
-            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleAdd}
+              className="mt-4 h-9 rounded-none border-2 border-black bg-[#15803D] px-4 font-mono text-xs font-bold uppercase text-white shadow-[2px_2px_0px_0px_#000000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
+            >
+              <Plus className="mr-1.5 h-4 w-4" />
+              {t('builder.genericItemForm.addFirstItem', { label: finalItemLabel })}
+            </Button>
           </div>
         )}
       </div>

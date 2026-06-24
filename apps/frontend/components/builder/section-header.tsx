@@ -22,15 +22,6 @@ interface SectionHeaderProps {
   children?: React.ReactNode;
 }
 
-/**
- * SectionHeader Component
- *
- * Provides controls for section management:
- * - Editable display name
- * - Move up/down buttons for reordering
- * - Delete button with confirmation
- * - Visibility toggle
- */
 export const SectionHeader: React.FC<SectionHeaderProps> = ({
   section,
   onRename,
@@ -75,10 +66,8 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
 
   const handleDeleteClick = () => {
     if (section.isDefault) {
-      // For default sections, just toggle visibility
       onToggleVisibility();
     } else {
-      // For custom sections, show confirmation
       setShowDeleteConfirm(true);
     }
   };
@@ -89,29 +78,37 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
   return (
     <div
       className={cn(
-        'relative transition-all duration-300 mb-8 group/section',
+        'relative mb-6 transition-all group/section',
         isHidden && 'opacity-40 grayscale'
       )}
     >
-      <div className="flex justify-end mb-3 px-2 opacity-20 group-hover/section:opacity-100 focus-within:opacity-100 transition-opacity">
-        <div className="flex items-center gap-1 bg-white/[0.03] p-1.5 flex-wrap rounded-[1.2rem] border border-white/10 backdrop-blur-sm">
+      <div className="mb-2 flex justify-end px-1 opacity-0 transition-opacity group-hover/section:opacity-100 focus-within:opacity-100">
+        <div className="flex items-center border border-black bg-white">
           {isEditing ? (
-            <div className="flex items-center gap-2 mr-2 ml-1">
+            <div className="flex items-center gap-1 p-1">
               <Input
                 value={editedName}
                 onChange={(e) => setEditedName(e.target.value)}
                 onBlur={handleSaveEdit}
                 onKeyDown={handleKeyDown}
                 autoFocus
-                className="h-9 px-3 rounded-xl border border-cyan-300/30 font-sans text-sm tracking-wide bg-slate-900/50 text-white w-[180px] focus-visible:ring-1 focus-visible:ring-cyan-300/50"
+                className="h-8 w-40 rounded-none border border-black bg-white px-2 font-sans text-sm text-black focus-visible:ring-1 focus-visible:ring-[#1D4ED8]"
               />
               <Button
                 size="icon"
                 variant="ghost"
                 onClick={handleSaveEdit}
-                className="h-9 w-9 rounded-xl text-emerald-400 hover:bg-emerald-400/10 hover:text-emerald-300"
+                className="h-8 w-8 rounded-none border border-black bg-white text-[#15803D] hover:bg-[#15803D] hover:text-white"
               >
                 <Check className="h-4 w-4" />
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={handleCancelEdit}
+                className="h-8 w-8 rounded-none border border-black bg-white text-[#DC2626] hover:bg-[#DC2626] hover:text-white"
+              >
+                <X className="h-4 w-4" />
               </Button>
             </div>
           ) : (
@@ -119,63 +116,56 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
               size="sm"
               variant="ghost"
               onClick={handleStartEdit}
-              className="h-9 px-3 rounded-xl text-slate-400 hover:text-cyan-300 hover:bg-white/5 font-sans text-[11px] tracking-[0.2em] uppercase font-bold"
+              className="h-8 rounded-none border-r border-black bg-white px-3 font-mono text-[10px] font-bold uppercase tracking-wider text-black hover:bg-[#1D4ED8] hover:text-white"
             >
-              <Pencil className="h-3.5 w-3.5 mr-2" />
+              <Pencil className="mr-1 h-3 w-3" />
               {t('common.edit')}
             </Button>
           )}
-
-          <div className="w-px h-5 bg-white/10 mx-1 hidden sm:block" />
 
           <Button
             size="icon"
             variant="ghost"
             onClick={onMoveUp}
             disabled={isFirst || isPersonalInfo}
-            className="h-9 w-9 rounded-xl text-slate-400 hover:text-cyan-300 hover:bg-white/5 disabled:opacity-30 disabled:hover:bg-transparent"
+            className="h-8 w-8 rounded-none border-r border-black bg-white text-black hover:bg-[#1D4ED8] hover:text-white disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-black"
           >
-            <ChevronUp className="h-5 w-5" />
+            <ChevronUp className="h-4 w-4" />
           </Button>
           <Button
             size="icon"
             variant="ghost"
             onClick={onMoveDown}
             disabled={isLast || isPersonalInfo}
-            className="h-9 w-9 rounded-xl text-slate-400 hover:text-cyan-300 hover:bg-white/5 disabled:opacity-30 disabled:hover:bg-transparent"
+            className="h-8 w-8 rounded-none border-r border-black bg-white text-black hover:bg-[#1D4ED8] hover:text-white disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-black"
           >
-            <ChevronDown className="h-5 w-5" />
+            <ChevronDown className="h-4 w-4" />
           </Button>
-          <div className="w-px h-5 bg-white/10 mx-1 hidden sm:block" />
           <Button
             size="icon"
             variant="ghost"
             onClick={onToggleVisibility}
             className={cn(
-              'h-9 w-9 rounded-xl transition-all',
-              isHidden
-                ? 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
-                : 'text-cyan-300 hover:bg-white/5'
+              'h-8 w-8 rounded-none border-r border-black bg-white transition-colors hover:text-white',
+              isHidden ? 'text-[#4B5563] hover:bg-[#F97316]' : 'text-black hover:bg-[#F97316]'
             )}
           >
-            {isHidden ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            {isHidden ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </Button>
           <Button
             size="icon"
             variant="ghost"
             onClick={handleDeleteClick}
             disabled={!canDelete}
-            className="h-9 w-9 rounded-xl text-slate-500 hover:text-rose-400 hover:bg-rose-400/10 disabled:opacity-30 disabled:hover:bg-transparent"
+            className="h-8 w-8 rounded-none border-0 bg-white text-[#DC2626] hover:bg-[#DC2626] hover:text-white disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-[#DC2626]"
           >
-            <Trash2 className="h-5 w-5" />
+            <Trash2 className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      {/* Section Content */}
       {children}
 
-      {/* Delete Confirmation Dialog */}
       <ConfirmDialog
         open={showDeleteConfirm}
         onOpenChange={setShowDeleteConfirm}
