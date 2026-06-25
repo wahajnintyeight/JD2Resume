@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { useTranslations } from '@/lib/i18n';
@@ -81,6 +81,7 @@ export default function DashboardPage() {
   const [showMasterManager, setShowMasterManager] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<ResumeFilter>('all');
+  const [isTailorNavigating, startTailorNavigation] = useTransition();
   const router = useRouter();
 
   const {
@@ -97,6 +98,12 @@ export default function DashboardPage() {
   const isLlmConfigured = !statusLoading && systemStatus?.llm_configured;
   const isTailorEnabled =
     Boolean(masterResumeId) && processingStatus === 'ready' && isLlmConfigured;
+
+  useEffect(() => {
+    if (isTailorEnabled) {
+      router.prefetch('/tailor');
+    }
+  }, [isTailorEnabled, router]);
 
   const formatDate = (value: string) => {
     if (!value) return '--';
@@ -146,47 +153,69 @@ export default function DashboardPage() {
       if (resolvedId) {
         localStorage.setItem('master_resume_id', resolvedId);
         setMasterResumeId(resolvedId);
-        checkResumeStatus(resolvedId);
+        if (master?.resume_id === resolvedId) {
+          setProcessingStatus(master.processing_status as ProcessingStatus);
+        } else {
+          checkResumeStatus(resolvedId);
+        }
       }
 
       const filtered = data.filter((r) => r.resume_id !== resolvedId);
       setTailoredResumes(filtered);
-
-      const tailoredWithParent = filtered.filter((r) => r.parent_id);
-      const requestId = ++loadRequestIdRef.current;
-      const jobSnippets: Record<string, string> = {};
-
-      await Promise.all(
-        tailoredWithParent.map(async (r) => {
-          if (jobSnippetCacheRef.current[r.resume_id]) {
-            jobSnippets[r.resume_id] = jobSnippetCacheRef.current[r.resume_id];
-            return;
-          }
-          try {
-            const jd = await fetchJobDescription(r.resume_id);
-            const snippet = (jd?.content || '').slice(0, 110);
-            jobSnippetCacheRef.current[r.resume_id] = snippet;
-            jobSnippets[r.resume_id] = snippet;
-          } catch {
-            jobSnippetCacheRef.current[r.resume_id] = '';
-            jobSnippets[r.resume_id] = '';
-          }
-        })
-      );
-
-      if (requestId === loadRequestIdRef.current) {
-        setTailoredResumes((prev) =>
-          prev.map((r) => ({ ...r, jobSnippet: jobSnippets[r.resume_id] || '' }))
-        );
-      }
     } catch (err) {
       console.error(err);
     }
   }, [checkResumeStatus]);
 
+  const hydrateJobSnippets = useCallback(async (resumes: ResumeListItem[]) => {
+    const tailoredWithParent = resumes.filter(
+      (r) => r.parent_id && jobSnippetCacheRef.current[r.resume_id] === undefined
+    );
+    if (tailoredWithParent.length === 0) return;
+
+    const requestId = ++loadRequestIdRef.current;
+    const jobSnippets: Record<string, string> = {};
+
+    await Promise.all(
+      tailoredWithParent.map(async (r) => {
+        try {
+          const jd = await fetchJobDescription(r.resume_id);
+          const snippet = (jd?.content || '').slice(0, 110);
+          jobSnippetCacheRef.current[r.resume_id] = snippet;
+          jobSnippets[r.resume_id] = snippet;
+        } catch {
+          jobSnippetCacheRef.current[r.resume_id] = '';
+          jobSnippets[r.resume_id] = '';
+        }
+      })
+    );
+
+    if (requestId === loadRequestIdRef.current) {
+      setTailoredResumes((prev) =>
+        prev.map((r) => ({ ...r, jobSnippet: jobSnippets[r.resume_id] ?? r.jobSnippet ?? '' }))
+      );
+    }
+  }, []);
+
   useEffect(() => {
     loadTailoredResumes();
   }, [loadTailoredResumes]);
+
+  useEffect(() => {
+    if (tailoredResumes.length === 0) return;
+
+    const timeoutId = window.setTimeout(() => {
+      void hydrateJobSnippets(tailoredResumes);
+    }, 250);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [hydrateJobSnippets, tailoredResumes]);
+
+  const handleNewTailoringRequest = () => {
+    startTailorNavigation(() => {
+      router.push('/tailor');
+    });
+  };
 
   const filteredResumes = useMemo(() => {
     return tailoredResumes.filter((r) => {
@@ -618,11 +647,16 @@ export default function DashboardPage() {
 
                 {isTailorEnabled && (
                   <Button
-                    onClick={() => router.push('/tailor')}
+                    onClick={handleNewTailoringRequest}
+                    disabled={isTailorNavigating}
                     className="h-11 rounded-2xl border border-cyan-300/15 bg-white/[0.04] px-5 text-cyan-100 hover:border-cyan-300/30 hover:bg-cyan-300/10 hover:text-white"
                   >
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    New Tailoring Request
+                    {isTailorNavigating ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Sparkles className="mr-2 h-4 w-4" />
+                    )}
+                    {isTailorNavigating ? 'Opening...' : 'New Tailoring Request'}
                   </Button>
                 )}
               </div>

@@ -336,7 +336,7 @@ export const ResumeForm: React.FC<ResumeFormProps> = ({ resumeData, onUpdate }) 
 
         default:
           return (
-            <div className="border-2 border-black bg-[#F0F0E8] px-4 py-3 text-sm text-[#DC2626]">
+            <div className="rounded-2xl border border-rose-300/20 bg-rose-400/10 px-4 py-3 text-sm text-rose-100">
               {t('builder.customSections.unknownSectionType', { type: section.sectionType })}
             </div>
           );
@@ -366,18 +366,18 @@ export const ResumeForm: React.FC<ResumeFormProps> = ({ resumeData, onUpdate }) 
         items={sortedAllSections.map((s) => s.id)}
         strategy={verticalListSortingStrategy}
       >
-        <div data-resume-editor className="grid gap-4 pb-20 lg:grid-cols-[8.5rem_minmax(0,1fr)]">
-          <nav className="sticky top-0 z-10 -mx-1 flex gap-2 overflow-x-auto border-2 border-black bg-[#F0F0E8] p-2 lg:top-4 lg:mx-0 lg:block lg:h-fit lg:overflow-visible">
+        <div data-modern-editor className="grid gap-4 pb-20 lg:grid-cols-[9rem_minmax(0,1fr)]">
+          <nav className="sticky top-0 z-10 -mx-1 flex gap-2 overflow-x-auto rounded-[1.4rem] border border-white/10 bg-slate-950/55 p-2 shadow-[0_18px_44px_rgba(2,6,23,0.28)] backdrop-blur-xl lg:top-4 lg:mx-0 lg:block lg:h-fit lg:overflow-visible">
             {sectionNav.map((section) => (
               <button
                 key={section.id}
                 type="button"
                 onClick={() => scrollToSection(section.id)}
-                className="shrink-0 border border-black bg-white px-2.5 py-2 text-left font-mono text-[10px] font-bold uppercase text-black hover:bg-[#1D4ED8] hover:text-white lg:mb-2 lg:block lg:w-full"
+                className="shrink-0 rounded-2xl border border-white/10 bg-white/7 px-3 py-2 text-left font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-slate-300 transition-all hover:border-cyan-300/25 hover:bg-cyan-300/10 hover:text-cyan-50 lg:mb-2 lg:block lg:w-full"
               >
                 <span className="block truncate">{section.label}</span>
                 {section.isHidden && (
-                  <span className="mt-1 block text-[9px] font-normal text-[#4B5563]">Hidden</span>
+                  <span className="mt-1 block text-[9px] font-normal text-slate-500">Hidden</span>
                 )}
               </button>
             ))}
@@ -406,7 +406,7 @@ export const ResumeForm: React.FC<ResumeFormProps> = ({ resumeData, onUpdate }) 
               );
             })}
 
-            <div className="border-2 border-dashed border-black bg-white p-3">
+            <div className="rounded-[1.5rem] border border-dashed border-cyan-300/20 bg-white/6 p-3">
               <AddSectionButton onAdd={handleAddSection} />
             </div>
           </div>

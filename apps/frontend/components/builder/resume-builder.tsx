@@ -679,8 +679,13 @@ const ResumeBuilderContent = () => {
   };
 
   return (
-    <div className="relative flex h-screen w-full flex-col overflow-hidden bg-[#F0F0E8] text-black">
-      <header className="relative z-30 border-b-2 border-black bg-white px-3 py-3 sm:px-5 lg:px-6">
+    <div className="relative flex h-screen w-full flex-col overflow-hidden bg-[#08111f] text-slate-100">
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(34,211,238,0.14),_transparent_28%),radial-gradient(circle_at_82%_8%,_rgba(59,130,246,0.16),_transparent_24%),linear-gradient(135deg,_#08111f_0%,_#0f172a_46%,_#111827_100%)]" />
+        <div className="absolute inset-0 opacity-[0.12] [background-image:linear-gradient(rgba(148,163,184,0.14)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.14)_1px,transparent_1px)] [background-size:32px_32px]" />
+      </div>
+
+      <header className="relative z-30 border-b border-white/10 bg-slate-950/70 px-3 py-3 shadow-[0_18px_60px_rgba(2,6,23,0.38)] backdrop-blur-xl sm:px-5 lg:px-6">
         <div className="mx-auto flex max-w-7xl flex-col gap-4">
           <div className="flex items-start justify-between gap-3">
             <div className="flex min-w-0 items-start gap-3 sm:gap-4">
@@ -688,7 +693,7 @@ const ResumeBuilderContent = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => router.push('/dashboard')}
-                className="h-9 min-w-9 rounded-none border-2 border-black bg-white px-3 font-mono text-[10px] font-bold uppercase text-black shadow-[2px_2px_0px_0px_#000000] hover:translate-x-[1px] hover:translate-y-[1px] hover:bg-[#F0F0E8] hover:shadow-none sm:px-4 sm:text-xs"
+                className="h-10 min-w-10 rounded-2xl border border-white/10 bg-white/8 px-3 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-slate-100 shadow-none hover:border-cyan-300/30 hover:bg-cyan-300/10 hover:text-cyan-50 sm:px-4 sm:text-xs"
               >
                 <ArrowLeft className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">{t('nav.backToDashboard')}</span>
@@ -697,12 +702,12 @@ const ResumeBuilderContent = () => {
 
             <div className="hidden items-center gap-2 lg:flex">
               {hasUnsavedChanges ? (
-                <span className="flex items-center gap-2 border border-black bg-[#F97316] px-3 py-2 font-mono text-[10px] font-bold uppercase text-black">
-                  <span className="h-2 w-2 bg-black" />
+                <span className="flex items-center gap-2 rounded-full border border-amber-300/25 bg-amber-300/10 px-3 py-2 font-sans text-[10px] font-bold uppercase tracking-[0.22em] text-amber-100">
+                  <span className="h-2 w-2 rounded-full bg-amber-300" />
                   {t('builder.unsavedDraft')}
                 </span>
               ) : (
-                <span className="border border-black bg-white px-3 py-2 font-mono text-[10px] font-bold uppercase text-[#15803D]">
+                <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-2 font-sans text-[10px] font-bold uppercase tracking-[0.22em] text-emerald-100">
                   archive synced
                 </span>
               )}
@@ -712,16 +717,16 @@ const ResumeBuilderContent = () => {
           <div className="grid gap-3 lg:hidden">
             <div className="flex items-center gap-2 overflow-x-auto pb-1">
               {hasUnsavedChanges ? (
-                <span className="flex shrink-0 items-center gap-2 border border-black bg-[#F97316] px-3 py-2 font-mono text-[10px] font-bold uppercase text-black">
-                  <span className="h-2 w-2 bg-black" />
+                <span className="flex shrink-0 items-center gap-2 rounded-full border border-amber-300/25 bg-amber-300/10 px-3 py-2 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-amber-100">
+                  <span className="h-2 w-2 rounded-full bg-amber-300" />
                   {t('builder.unsavedDraft')}
                 </span>
               ) : (
-                <span className="shrink-0 border border-black bg-white px-3 py-2 font-mono text-[10px] font-bold uppercase text-[#15803D]">
+                <span className="shrink-0 rounded-full border border-emerald-300/20 bg-emerald-300/10 px-3 py-2 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-100">
                   archive synced
                 </span>
               )}
-              <span className="shrink-0 border border-black bg-white px-3 py-2 font-mono text-[10px] font-bold uppercase text-black">
+              <span className="shrink-0 rounded-full border border-white/10 bg-white/8 px-3 py-2 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-slate-300">
                 {activeTab === 'resume' ? 'resume board' : activeTab.replace('-', ' ')}
               </span>
             </div>
@@ -733,14 +738,14 @@ const ResumeBuilderContent = () => {
                   setIsMobileEditorOpen(true);
                   setIsFullscreenPreview(false);
                 }}
-                className="h-10 rounded-none border-2 border-black bg-white px-3 font-mono text-[10px] font-bold uppercase text-black"
+                className="h-10 rounded-2xl border border-white/10 bg-white/8 px-3 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-slate-100"
               >
                 Editor
               </Button>
               <Button
                 variant={!isMobileEditorOpen ? 'outline' : 'ghost'}
                 onClick={() => setIsMobileEditorOpen(false)}
-                className="h-10 rounded-none border-2 border-black bg-white px-3 font-mono text-[10px] font-bold uppercase text-black"
+                className="h-10 rounded-2xl border border-white/10 bg-white/8 px-3 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-slate-100"
               >
                 Preview
               </Button>
@@ -748,7 +753,7 @@ const ResumeBuilderContent = () => {
                 variant="outline"
                 onClick={handleSave}
                 disabled={isSaving || !hasUnsavedChanges}
-                className="h-10 rounded-none border-2 border-black bg-[#1D4ED8] px-3 font-mono text-[10px] font-bold uppercase text-white disabled:opacity-40"
+                className="h-10 rounded-2xl border border-cyan-300/30 bg-cyan-300/12 px-3 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-cyan-50 disabled:opacity-40"
               >
                 {isSaving ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -761,7 +766,7 @@ const ResumeBuilderContent = () => {
                 variant="default"
                 onClick={handleDownload}
                 disabled={isDownloading}
-                className="h-10 rounded-none border-2 border-black bg-[#15803D] px-3 font-mono text-[10px] font-black uppercase text-white"
+                className="h-10 rounded-2xl border border-blue-300/30 bg-blue-500/85 px-3 font-sans text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-[0_16px_34px_rgba(37,99,235,0.24)]"
               >
                 {isDownloading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -777,7 +782,7 @@ const ResumeBuilderContent = () => {
                 variant="outline"
                 onClick={handleReset}
                 disabled={!hasUnsavedChanges}
-                className="h-10 rounded-none border-2 border-black bg-white px-3 font-mono text-[10px] font-bold uppercase text-black disabled:opacity-40"
+                className="h-10 rounded-2xl border border-white/10 bg-white/8 px-3 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-slate-200 disabled:opacity-40"
               >
                 <RotateCcw className="mr-2 h-4 w-4" />
                 Reset
@@ -785,7 +790,7 @@ const ResumeBuilderContent = () => {
               <Button
                 variant="ghost"
                 onClick={() => setIsFullscreenPreview(!isFullscreenPreview)}
-                className="h-10 rounded-none border-2 border-black bg-white px-3 font-mono text-[10px] font-bold uppercase text-black"
+                className="h-10 rounded-2xl border border-white/10 bg-white/8 px-3 font-sans text-[10px] font-bold uppercase tracking-[0.18em] text-slate-200"
               >
                 {isFullscreenPreview ? (
                   <Minimize2 className="mr-2 h-4 w-4" />
@@ -803,7 +808,7 @@ const ResumeBuilderContent = () => {
                 variant="outline"
                 onClick={handleReset}
                 disabled={!hasUnsavedChanges}
-                className="h-9 rounded-none border-2 border-black bg-white px-4 font-mono text-xs font-bold uppercase text-black shadow-[2px_2px_0px_0px_#000000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none disabled:opacity-40"
+                className="h-10 rounded-2xl border border-white/10 bg-white/8 px-4 font-sans text-xs font-bold uppercase tracking-[0.2em] text-slate-200 shadow-none hover:border-white/20 hover:bg-white/12 disabled:opacity-40"
               >
                 <RotateCcw className="mr-2 h-4 w-4" />
                 Reset
@@ -812,7 +817,7 @@ const ResumeBuilderContent = () => {
                 variant="outline"
                 onClick={handleSave}
                 disabled={isSaving || !hasUnsavedChanges}
-                className="h-9 rounded-none border-2 border-black bg-[#1D4ED8] px-5 font-mono text-xs font-bold uppercase text-white shadow-[2px_2px_0px_0px_#000000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none disabled:opacity-40"
+                className="h-10 rounded-2xl border border-cyan-300/30 bg-cyan-300/12 px-5 font-sans text-xs font-bold uppercase tracking-[0.2em] text-cyan-50 shadow-none hover:border-cyan-300/45 hover:bg-cyan-300/18 disabled:opacity-40"
               >
                 {isSaving ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -826,7 +831,7 @@ const ResumeBuilderContent = () => {
                 variant="default"
                 onClick={handleDownload}
                 disabled={isDownloading}
-                className="h-9 rounded-none border-2 border-black bg-[#15803D] px-5 font-mono text-xs font-black uppercase text-white shadow-[2px_2px_0px_0px_#000000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
+                className="h-10 rounded-2xl border border-blue-300/30 bg-blue-500/85 px-5 font-sans text-xs font-black uppercase tracking-[0.2em] text-white shadow-[0_16px_34px_rgba(37,99,235,0.24)] hover:bg-blue-400"
               >
                 {isDownloading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -843,7 +848,7 @@ const ResumeBuilderContent = () => {
       <main className="relative z-10 flex flex-1 overflow-hidden">
         <div
           className={cn(
-            'h-full flex-col border-r-2 border-black bg-[#F0F0E8] transition-all duration-300',
+            'h-full flex-col border-r border-white/10 bg-slate-950/38 backdrop-blur-xl transition-all duration-300',
             isFullscreenPreview
               ? 'hidden'
               : isMobileEditorOpen
@@ -851,14 +856,16 @@ const ResumeBuilderContent = () => {
                 : 'hidden lg:flex lg:w-[48%] xl:w-[50%] 2xl:w-[52%]'
           )}
         >
-          <div className="border-b-2 border-black bg-white px-3 py-3 sm:px-5">
+          <div className="border-b border-white/10 bg-slate-950/45 px-3 py-3 sm:px-5">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="font-mono text-[10px] font-bold uppercase text-[#4B5563]">editor</p>
-                <h2 className="mt-1 font-serif text-xl font-black uppercase text-black">
+                <p className="font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-cyan-200/80">
+                  editor
+                </p>
+                <h2 className="mt-1 font-sans text-xl font-black uppercase tracking-[0.02em] text-white">
                   {resumeId ? t('builder.editMode') : t('builder.createAndPreview')}
                 </h2>
-                <p className="mt-1 max-w-xl text-sm text-[#4B5563] lg:hidden">
+                <p className="mt-1 max-w-xl text-sm text-slate-400 lg:hidden">
                   Jump between sections above and switch to preview when needed.
                 </p>
               </div>
@@ -872,15 +879,15 @@ const ResumeBuilderContent = () => {
 
         <div
           className={cn(
-            'relative flex-1 flex-col overflow-hidden bg-white',
+            'relative flex-1 flex-col overflow-hidden bg-slate-950/20',
             isMobileEditorOpen && !isFullscreenPreview ? 'hidden lg:flex' : 'flex'
           )}
         >
-          <div className="border-b-2 border-black bg-white px-3 py-3 sm:px-5 lg:px-6">
+          <div className="border-b border-white/10 bg-slate-950/45 px-3 py-3 backdrop-blur-xl sm:px-5 lg:px-6">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <span className="font-mono text-[10px] font-bold uppercase text-[#4B5563]">
+                  <span className="font-sans text-[10px] font-bold uppercase tracking-[0.28em] text-cyan-200/80">
                     preview
                   </span>
                 </div>
@@ -905,7 +912,7 @@ const ResumeBuilderContent = () => {
                   ]}
                   activeTab={activeTab}
                   onTabChange={(id) => setActiveTab(id as TabId)}
-                  className="rounded-none border-2 border-black bg-[#F0F0E8] p-1"
+                  className="rounded-[1.4rem] border border-white/10 bg-white/8 p-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
                 />
               </div>
 
@@ -914,7 +921,7 @@ const ResumeBuilderContent = () => {
                   variant="outline"
                   onClick={handleDownloadDocx}
                   disabled={!resumeId || isDownloadingDocx}
-                  className="h-9 rounded-none border-2 border-black bg-white px-4 font-mono text-xs font-bold uppercase text-black shadow-[2px_2px_0px_0px_#000000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none disabled:opacity-40"
+                  className="h-10 rounded-2xl border border-white/10 bg-white/8 px-4 font-sans text-xs font-bold uppercase tracking-[0.18em] text-slate-200 shadow-none hover:border-white/20 hover:bg-white/12 disabled:opacity-40"
                 >
                   {isDownloadingDocx ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -927,7 +934,7 @@ const ResumeBuilderContent = () => {
                   variant="outline"
                   onClick={handleSavePdf}
                   disabled={!resumeId || isSavingPdf}
-                  className="h-9 rounded-none border-2 border-black bg-white px-4 font-mono text-xs font-bold uppercase text-black shadow-[2px_2px_0px_0px_#000000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none disabled:opacity-40"
+                  className="h-10 rounded-2xl border border-white/10 bg-white/8 px-4 font-sans text-xs font-bold uppercase tracking-[0.18em] text-slate-200 shadow-none hover:border-white/20 hover:bg-white/12 disabled:opacity-40"
                 >
                   {isSavingPdf ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -940,7 +947,7 @@ const ResumeBuilderContent = () => {
                   variant="ghost"
                   size="icon"
                   onClick={() => setIsFullscreenPreview(!isFullscreenPreview)}
-                  className="h-9 w-9 rounded-none border-2 border-black bg-white text-black shadow-[2px_2px_0px_0px_#000000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none"
+                  className="h-10 w-10 rounded-2xl border border-white/10 bg-white/8 text-slate-200 shadow-none hover:border-white/20 hover:bg-white/12"
                 >
                   {isFullscreenPreview ? (
                     <Minimize2 className="h-5 w-5" />
@@ -955,7 +962,7 @@ const ResumeBuilderContent = () => {
                   variant="outline"
                   onClick={handleDownloadDocx}
                   disabled={!resumeId || isDownloadingDocx}
-                  className="h-10 rounded-none border-2 border-black bg-white px-3 font-mono text-[10px] font-bold uppercase text-black disabled:opacity-40"
+                  className="h-10 rounded-2xl border border-white/10 bg-white/8 px-3 font-sans text-[10px] font-bold uppercase tracking-[0.16em] text-slate-200 disabled:opacity-40"
                 >
                   {isDownloadingDocx ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -968,7 +975,7 @@ const ResumeBuilderContent = () => {
                   variant="outline"
                   onClick={handleSavePdf}
                   disabled={!resumeId || isSavingPdf}
-                  className="h-10 rounded-none border-2 border-black bg-white px-3 font-mono text-[10px] font-bold uppercase text-black disabled:opacity-40"
+                  className="h-10 rounded-2xl border border-white/10 bg-white/8 px-3 font-sans text-[10px] font-bold uppercase tracking-[0.16em] text-slate-200 disabled:opacity-40"
                 >
                   {isSavingPdf ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
@@ -980,7 +987,7 @@ const ResumeBuilderContent = () => {
                 <Button
                   variant="ghost"
                   onClick={() => setIsFullscreenPreview(!isFullscreenPreview)}
-                  className="h-10 rounded-none border-2 border-black bg-white px-3 font-mono text-[10px] font-bold uppercase text-black"
+                  className="h-10 rounded-2xl border border-white/10 bg-white/8 px-3 font-sans text-[10px] font-bold uppercase tracking-[0.16em] text-slate-200"
                 >
                   {isFullscreenPreview ? (
                     <Minimize2 className="h-4 w-4" />
@@ -994,15 +1001,17 @@ const ResumeBuilderContent = () => {
           </div>
 
           <div className="flex-1 overflow-y-auto custom-scrollbar px-2 py-3 sm:px-4 sm:py-4 lg:px-5 lg:py-5">
-            <div className="mx-auto flex h-full max-w-6xl flex-col gap-4 border-2 border-black bg-[#F0F0E8] p-2 shadow-[4px_4px_0px_0px_#000000] sm:p-3">
+            <div className="mx-auto flex h-full max-w-6xl flex-col gap-4 rounded-[2rem] border border-white/10 bg-slate-950/30 p-2 shadow-[0_28px_80px_rgba(2,6,23,0.38)] backdrop-blur-xl sm:p-4">
               <div
                 className={cn(
                   'flex-1 transition-all duration-500 transform',
                   activeTab === 'resume' ? 'scale-100 opacity-100' : 'scale-95 opacity-0 hidden'
                 )}
               >
-                <FormattingControls settings={templateSettings} onChange={handleSettingsChange} />
-                <div className="mx-auto mt-4 overflow-hidden border-2 border-black bg-white p-2">
+                <div data-modern-editor>
+                  <FormattingControls settings={templateSettings} onChange={handleSettingsChange} />
+                </div>
+                <div className="mx-auto mt-4 overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/8 p-2">
                   <PaginatedPreview
                     resumeData={localizedResumeDataForPreview}
                     settings={templateSettings}
@@ -1012,13 +1021,13 @@ const ResumeBuilderContent = () => {
               </div>
 
               {activeTab === 'cover-letter' && coverLetter && (
-                <div className="border-2 border-black bg-white shadow-[4px_4px_0px_0px_#000000]">
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-black bg-[#F0F0E8] px-4 py-3">
+                <div className="overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/8 shadow-[0_24px_70px_rgba(2,6,23,0.32)]">
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-slate-950/30 px-4 py-3">
                     <div>
-                      <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
+                      <p className="font-sans text-[10px] font-bold uppercase tracking-[0.26em] text-slate-400">
                         generated correspondence
                       </p>
-                      <h3 className="mt-1 font-serif text-xl font-black uppercase text-black">
+                      <h3 className="mt-1 font-sans text-xl font-black uppercase tracking-[0.02em] text-white">
                         Cover Letter
                       </h3>
                     </div>
@@ -1027,7 +1036,7 @@ const ResumeBuilderContent = () => {
                         variant="outline"
                         onClick={handleGenerateCoverLetter}
                         disabled={!resumeId || isGeneratingCoverLetter}
-                        className="h-9 rounded-none border-2 border-black bg-white px-4 font-mono text-xs font-bold uppercase text-black shadow-[2px_2px_0px_0px_#000000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none disabled:opacity-40"
+                        className="h-10 rounded-2xl border border-white/10 bg-white/8 px-4 font-sans text-xs font-bold uppercase tracking-[0.18em] text-slate-100 shadow-none hover:bg-white/12 disabled:opacity-40"
                       >
                         {isGeneratingCoverLetter ? (
                           <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
@@ -1040,7 +1049,7 @@ const ResumeBuilderContent = () => {
                         variant="outline"
                         onClick={handleSaveCoverLetter}
                         disabled={!resumeId || isCoverLetterSaving}
-                        className="h-9 rounded-none border-2 border-black bg-[#1D4ED8] px-4 font-mono text-xs font-bold uppercase text-white shadow-[2px_2px_0px_0px_#000000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none disabled:opacity-40"
+                        className="h-10 rounded-2xl border border-cyan-300/30 bg-cyan-300/12 px-4 font-sans text-xs font-bold uppercase tracking-[0.18em] text-cyan-50 shadow-none hover:bg-cyan-300/18 disabled:opacity-40"
                       >
                         {isCoverLetterSaving ? (
                           <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
@@ -1053,7 +1062,7 @@ const ResumeBuilderContent = () => {
                         variant="outline"
                         onClick={handleDownloadCoverLetter}
                         disabled={!resumeId || isDownloading}
-                        className="h-9 rounded-none border-2 border-black bg-[#15803D] px-4 font-mono text-xs font-bold uppercase text-white shadow-[2px_2px_0px_0px_#000000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none disabled:opacity-40"
+                        className="h-10 rounded-2xl border border-blue-300/30 bg-blue-500/85 px-4 font-sans text-xs font-bold uppercase tracking-[0.18em] text-white shadow-[0_16px_34px_rgba(37,99,235,0.22)] hover:bg-blue-400 disabled:opacity-40"
                       >
                         <Download className="mr-1.5 h-4 w-4" />
                         PDF
@@ -1071,13 +1080,13 @@ const ResumeBuilderContent = () => {
               )}
 
               {activeTab === 'outreach' && outreachMessage && (
-                <div className="border-2 border-black bg-white shadow-[4px_4px_0px_0px_#000000]">
-                  <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-black bg-[#F0F0E8] px-4 py-3">
+                <div className="overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/8 shadow-[0_24px_70px_rgba(2,6,23,0.32)]">
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-slate-950/30 px-4 py-3">
                     <div>
-                      <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
+                      <p className="font-sans text-[10px] font-bold uppercase tracking-[0.26em] text-slate-400">
                         contact draft
                       </p>
-                      <h3 className="mt-1 font-serif text-xl font-black uppercase text-black">
+                      <h3 className="mt-1 font-sans text-xl font-black uppercase tracking-[0.02em] text-white">
                         Outreach
                       </h3>
                     </div>
@@ -1086,7 +1095,7 @@ const ResumeBuilderContent = () => {
                         variant="outline"
                         onClick={handleGenerateOutreach}
                         disabled={!resumeId || isGeneratingOutreach}
-                        className="h-9 rounded-none border-2 border-black bg-white px-4 font-mono text-xs font-bold uppercase text-black shadow-[2px_2px_0px_0px_#000000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none disabled:opacity-40"
+                        className="h-10 rounded-2xl border border-white/10 bg-white/8 px-4 font-sans text-xs font-bold uppercase tracking-[0.18em] text-slate-100 shadow-none hover:bg-white/12 disabled:opacity-40"
                       >
                         {isGeneratingOutreach ? (
                           <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
@@ -1099,7 +1108,7 @@ const ResumeBuilderContent = () => {
                         variant="outline"
                         onClick={handleSaveOutreach}
                         disabled={!resumeId || isOutreachSaving}
-                        className="h-9 rounded-none border-2 border-black bg-[#1D4ED8] px-4 font-mono text-xs font-bold uppercase text-white shadow-[2px_2px_0px_0px_#000000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none disabled:opacity-40"
+                        className="h-10 rounded-2xl border border-cyan-300/30 bg-cyan-300/12 px-4 font-sans text-xs font-bold uppercase tracking-[0.18em] text-cyan-50 shadow-none hover:bg-cyan-300/18 disabled:opacity-40"
                       >
                         {isOutreachSaving ? (
                           <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
@@ -1112,7 +1121,7 @@ const ResumeBuilderContent = () => {
                         variant="outline"
                         onClick={handleCopyOutreach}
                         disabled={!outreachMessage}
-                        className="h-9 rounded-none border-2 border-black bg-[#15803D] px-4 font-mono text-xs font-bold uppercase text-white shadow-[2px_2px_0px_0px_#000000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none disabled:opacity-40"
+                        className="h-10 rounded-2xl border border-blue-300/30 bg-blue-500/85 px-4 font-sans text-xs font-bold uppercase tracking-[0.18em] text-white shadow-[0_16px_34px_rgba(37,99,235,0.22)] hover:bg-blue-400 disabled:opacity-40"
                       >
                         {isCopied ? (
                           <Check className="mr-1.5 h-4 w-4" />
@@ -1130,12 +1139,12 @@ const ResumeBuilderContent = () => {
               )}
 
               {activeTab === 'jd-match' && jobDescription && (
-                <div className="border-2 border-black bg-white shadow-[4px_4px_0px_0px_#000000]">
-                  <div className="border-b-2 border-black bg-[#F0F0E8] px-4 py-3">
-                    <p className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#4B5563]">
+                <div className="overflow-hidden rounded-[1.75rem] border border-white/10 bg-white/8 shadow-[0_24px_70px_rgba(2,6,23,0.32)]">
+                  <div className="border-b border-white/10 bg-slate-950/30 px-4 py-3">
+                    <p className="font-sans text-[10px] font-bold uppercase tracking-[0.26em] text-slate-400">
                       role alignment
                     </p>
-                    <h3 className="mt-1 font-serif text-xl font-black uppercase text-black">
+                    <h3 className="mt-1 font-sans text-xl font-black uppercase tracking-[0.02em] text-white">
                       JD Match
                     </h3>
                   </div>
@@ -1148,12 +1157,12 @@ const ResumeBuilderContent = () => {
           </div>
 
           <div className="pointer-events-none absolute bottom-4 right-4 z-30 flex flex-col items-end gap-2 sm:bottom-6 sm:right-6 sm:gap-3">
-            <div className="border border-black bg-white px-3 py-1.5 font-mono text-[9px] font-bold uppercase tracking-wider text-black shadow-[2px_2px_0px_0px_#000000] sm:px-4 sm:text-[10px]">
+            <div className="rounded-full border border-white/10 bg-slate-950/75 px-3 py-1.5 font-sans text-[9px] font-bold uppercase tracking-[0.28em] text-slate-200 shadow-[0_14px_34px_rgba(2,6,23,0.35)] backdrop-blur-xl sm:px-4 sm:text-[10px]">
               AI polish
             </div>
             <Button
               size="lg"
-              className="pointer-events-auto h-14 w-14 rounded-none border-2 border-black bg-[#1D4ED8] p-0 text-white shadow-[4px_4px_0px_0px_#000000] transition-all hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none active:translate-x-[2px] active:translate-y-[2px] sm:h-16 sm:w-16"
+              className="pointer-events-auto h-14 w-14 rounded-full border border-cyan-200/25 bg-[radial-gradient(circle_at_30%_30%,rgba(103,232,249,0.95),rgba(37,99,235,0.95)_62%,rgba(15,23,42,0.98)_100%)] p-0 text-white shadow-[0_24px_60px_rgba(37,99,235,0.42)] transition-all hover:scale-105 active:scale-95 sm:h-16 sm:w-16"
               onClick={() => regenerateWizard.startRegenerate()}
               disabled={!resumeId}
             >
@@ -1161,7 +1170,7 @@ const ResumeBuilderContent = () => {
             </Button>
           </div>
 
-          <div className="sticky bottom-0 z-20 border-t-2 border-black bg-white px-3 py-3 lg:hidden">
+          <div className="sticky bottom-0 z-20 border-t border-white/10 bg-slate-950/80 px-3 py-3 backdrop-blur-xl lg:hidden">
             <div className="grid grid-cols-2 gap-2">
               <Button
                 variant={isMobileEditorOpen ? 'outline' : 'ghost'}
@@ -1169,14 +1178,14 @@ const ResumeBuilderContent = () => {
                   setIsMobileEditorOpen(true);
                   setIsFullscreenPreview(false);
                 }}
-                className="h-12 rounded-none border-2 border-black px-4 font-mono text-[10px] font-bold uppercase text-black shadow-[2px_2px_0px_0px_#000000] [&:not(:disabled)]:hover:translate-x-[1px] [&:not(:disabled)]:hover:translate-y-[1px] [&:not(:disabled)]:hover:shadow-none"
+                className="h-12 rounded-2xl border border-white/10 bg-white/8 px-4 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-slate-100 shadow-none hover:bg-white/12"
               >
                 Edit Resume
               </Button>
               <Button
                 variant={!isMobileEditorOpen ? 'outline' : 'ghost'}
                 onClick={() => setIsMobileEditorOpen(false)}
-                className="h-12 rounded-none border-2 border-black px-4 font-mono text-[10px] font-bold uppercase text-black shadow-[2px_2px_0px_0px_#000000] [&:not(:disabled)]:hover:translate-x-[1px] [&:not(:disabled)]:hover:translate-y-[1px] [&:not(:disabled)]:hover:shadow-none"
+                className="h-12 rounded-2xl border border-white/10 bg-white/8 px-4 font-sans text-[10px] font-bold uppercase tracking-[0.2em] text-slate-100 shadow-none hover:bg-white/12"
               >
                 Preview Mode
               </Button>
