@@ -1,326 +1,240 @@
-<div align="center">
+# JD2Resume
 
-[![Resume Matcher](assets/header.png)](https://www.resumematcher.fyi)
+Tailor a saved resume to a job description, review the changes, and export an application-ready document. Use the web app or connect an MCP-compatible assistant through OAuth.
 
-# Resume Matcher
+[Getting started](#getting-started) · [MCP](#mcp-connection) · [Configuration](#configuration) · [Development](#development) · [Help](#help-and-contributing)
 
-[𝙹𝚘𝚒𝚗 𝙳𝚒𝚜𝚌𝚘𝚛𝚍](https://dsc.gg/resume-matcher) ✦ [𝚆𝚎𝚋𝚜𝚒𝚝𝚎](https://resumematcher.fyi) ✦ [𝙷𝚘𝚠 𝚝𝚘 𝙸𝚗𝚜𝚝𝚊𝚕𝚕](https://resumematcher.fyi/docs/installation) ✦ [𝙲𝚘𝚗𝚝𝚛𝚒𝚋𝚞𝚝𝚘𝚛𝚜](#contributors) ✦ [𝚂𝚙𝚘𝚗𝚜𝚘𝚛](#sponsor-resume-matcher) ✦ [𝚃𝚠𝚒𝚝𝚝𝚎𝚛/𝚇](https://twitter.com/srbhrai) ✦ [𝙻𝚒𝚗𝚔𝚎𝚍𝙸𝚗](https://www.linkedin.com/company/resume-matcher/) ✦ [𝙲𝚛𝚎𝚊𝚝𝚘𝚛](https://srbhr.com)
+JD2Resume builds on [Resume Matcher](https://github.com/srbhr/Resume-Matcher), with Google sign-in, account-based resume storage, S3 file storage, and an authenticated MCP workflow.
 
-**English** | [Español](README.es.md) | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)
+## What you can do
 
-Create tailored resumes for each job application with AI-powered suggestions. Works locally with Ollama or connect to your favorite LLM provider via API.
+- **Manage resumes:** Upload PDF or DOCX files, keep multiple master resumes, and save tailored copies for different applications.
+- **Review edits:** Preview suggested changes, accept or reject individual edits, and refine the draft before saving.
+- **Build your layout:** Edit sections, reorder content, and choose from five templates with controls for fonts, spacing, margins, and A4 or US Letter pages.
+- **Prepare application materials:** Generate cover letters and outreach messages alongside your resume.
+- **Check your resume:** Run an AI-powered ATS scan with scores, suggestions, and a report.
+- **Export:** Download resumes as PDF or editable DOCX, and cover letters as PDF. MCP PDF exports go to S3 and return temporary download links.
+- **Work in your language:** Use the interface in English, Spanish, Chinese, or Japanese and configure the content generation language.
 
-![Resume Matcher Demo](assets/Resume_Matcher_Demo_2.gif)
+### A typical application
 
-</div>
+1. Sign in with Google and upload your resume.
+2. Wait for processing, then choose the resume you want to tailor.
+3. Paste the job description and review the proposed changes.
+4. Add your feedback, check the final wording, and save a tailored copy.
+5. Choose a template and export your documents.
 
-<br>
+## Getting started
 
-<div align="center">
+### Requirements
 
-![Stars](https://img.shields.io/github/stars/srbhr/Resume-Matcher?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
-![Apache 2.0](https://img.shields.io/github/license/srbhr/Resume-Matcher?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8) ![Forks](https://img.shields.io/github/forks/srbhr/Resume-Matcher?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8) ![version](https://img.shields.io/badge/Version-1.1%20Voyager%20-FFF?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)
+| Requirement                                                                        | Used for                                                   |
+| ---------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Python **3.13+** and [uv](https://docs.astral.sh/uv/getting-started/installation/) | Backend dependencies and commands                          |
+| Node.js **22.13+ on the 22.x line, or 24+**, and npm                               | Frontend and development tools                             |
+| MongoDB, local or Atlas                                                            | Accounts, resumes, job descriptions, and MCP OAuth records |
+| A Google OAuth web client                                                          | Browser sign-in                                            |
+| An AI provider or a running Ollama model                                           | Resume upload parsing and web-app AI features              |
+| An S3 bucket or compatible object store                                            | Original files and MCP PDF exports                         |
+| Playwright Chromium                                                                | PDF rendering; installed below                             |
 
-[![Discord](https://img.shields.io/discord/1122069176962531400?labelColor=F0F0E8&logo=discord&logoColor=1d4ed8&style=for-the-badge&color=1d4ed8)](https://dsc.gg/resume-matcher) [![Website](https://img.shields.io/badge/website-Resume%20Matcher-FFF?labelColor=F0F0E8&style=for-the-badge&color=1d4ed8)](https://resumematcher.fyi) [![LinkedIn](https://img.shields.io/badge/LinkedIn-Resume%20Matcher-FFF?labelColor=F0F0E8&logo=LinkedIn&style=for-the-badge&color=1d4ed8)](https://www.linkedin.com/company/resume-matcher/)
+The web app supports OpenAI, Anthropic, Google Gemini, OpenRouter, DeepSeek, and Ollama through LiteLLM. Choose a model supported by your provider. MCP tailoring uses the connected assistant as its language model; it does not make a separate provider call. Initial resume processing in the web app still needs an AI provider.
 
-<a href="https://trendshift.io/repositories/565" target="_blank"><img src="https://trendshift.io/api/badge/repositories/565" alt="srbhr%2FResume-Matcher | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
-
-![Vercel OSS Program](https://vercel.com/oss/program-badge.svg)
-
-</div>
-
-> \[!IMPORTANT]
->
-> This project is in active development. New features are being added continuously, and we welcome contributions from the community. If you have any suggestions or feature requests, please feel free to open an issue on GitHub or discuss it on our [Discord](https://dsc.gg/resume-matcher) server.
-
-## Getting Started
-
-Resume Matcher works by creating a master resume that you can use to tailor for each job application. Installation instructions here: [How to Install](#how-to-install)
-
-### How It Works
-
-1. **Upload** your master resume (PDF or DOCX)
-2. **Paste** a job description you're targeting
-3. **Review** AI-generated improvements and tailored content
-4. **Cover Letter & Email** generator for the job application
-5. **Customize** the layout and sections to fit your style
-6. **Export** as a professional PDF with your preferred template
-
-### MCP Integration
-
-Resume Matcher includes a stateless Streamable HTTP Model Context Protocol (MCP)
-server so an MCP-compatible assistant can guide the user through resume tailoring.
-The assistant acts as the tailoring language model: it reads the selected resume and
-job description, prepares a complete draft, explains its edits, and responds to the
-user's suggestions. The MCP workflow does not call a separate LLM provider.
-
-The MCP client prompts the user to connect their account through browser OAuth with
-PKCE. The user approves the requesting client's permissions and signs in with Google.
-MCP then lists resumes for the authenticated account without asking for an email.
-Users without an account are directed to sign in and upload a resume on the website
-first. The user chooses a ready resume, provides a job description, reviews the draft
-and approves it before it is saved. Generated PDFs are uploaded to the configured
-object storage and returned as temporary download links.
-
-The backend endpoint is mounted at `/mcp`. The optional Sites adapter in
-`apps/mcp-sites` forwards the hosting platform's verified identity as a short-lived,
-signed assertion. The backend checks that identity against an existing application
-account; the adapter and MCP tools never create accounts or accept an email header as
-proof of identity.
-
-#### Local MCP setup
-
-1. Configure the backend MongoDB connection and application settings in
-   `apps/backend/.env`, including `PORT=1110` and `FRONTEND_BASE_URL` for the frontend
-   used during local PDF rendering.
-2. Configure `MCP_PUBLIC_BASE_URL` with the backend's canonical public origin in
-   production. Add that origin's `/mcp/oauth/google/callback` path as an additional
-   authorized redirect URI on the existing Google OAuth client. The website's existing
-   callback and login routes retain their behavior. MCP reuses its Google credentials.
-3. Start the frontend and backend using the development commands above. Forward the
-   OAuth discovery, consent, authorization and token routes to the backend alongside
-   `/mcp`. The feature guide below includes the Nginx configuration.
-4. In `apps/backend`, call the local tools with the developer-only script:
-
-   ```powershell
-   '{"email":"your-account@example.com","tool":"list_my_resumes","arguments":{}}' | uv run python scripts/mcp_test_drive.py
-   ```
-
-   The script reads one tool request from standard input and connects to the running
-   local MCP server using a temporary MCP credential. Its email lookup is a developer
-   utility backed by database credentials, not a public authentication endpoint. Use
-   it only for an account you are authorized to test.
-5. To build the optional Sites adapter, run `npm install` and `npm run build` in
-   `apps/mcp-sites`. Configure the adapter as a private MCP Site and supply its bridge
-   secret through the hosting environment before enabling it. Configure the same
-   dedicated `MCP_BRIDGE_SECRET` on the backend for this optional Sites connection.
-
-See [the MCP feature guide](docs/agent/features/mcp.md) for tool details, identity
-handling, configuration, and local protocol checks.
-
-### Stay Connected
-
-[![Discord](assets/resume_matcher_discord.png)](https://dsc.gg/resume-matcher)
-
-Join our [Discord](https://dsc.gg/resume-matcher) for discussions, feature requests, and community support.
-
-[![LinkedIn](assets/resume_matcher_linkedin.png)](https://www.linkedin.com/company/resume-matcher/)
-
-Follow us on [LinkedIn](https://www.linkedin.com/company/resume-matcher/) for updates.
-
-![Star Resume Matcher](assets/star_resume_matcher.png)
-
-Star the repo to support development and get notified of new releases.
-
-## Sponsors
-
-![sponsors](assets/sponsors.png)
-
-We are grateful to our sponsors who help keep this project going. If you find Resume Matcher helpful, please consider [**sponsoring us**](https://github.com/sponsors/srbhr) to ensure continued development and improvements.
-
-| Sponsor | Description |
-|---------|-------------|
-| [APIDECK](https://apideck.com?utm_source=resumematcher&utm_medium=github&utm_campaign=sponsors) | One API to connect your app to 200+ SaaS platforms (accounting, HRIS, CRM, file storage). Build integrations once, not 50 times. 🌐 [apideck.com](https://apideck.com?utm_source=resumematcher&utm_medium=github&utm_campaign=sponsors) |
-| [Vercel](https://vercel.com?utm_source=resumematcher&utm_medium=github&utm_campaign=sponsors) | Resume Matcher is a part of Vercel OSS // Summer 2025 Program 🌐 [vercel.com](https://vercel.com?utm_source=resumematcher&utm_medium=github&utm_campaign=sponsors) |
-| [Cubic.dev](https://cubic.dev?utm_source=resumematcher&utm_medium=github&utm_campaign=sponsors) | Cubic provides PR reviews for Resume Matcher 🌐 [cubic.dev](https://cubic.dev?utm_source=resumematcher&utm_medium=github&utm_campaign=sponsors) |
-| [Kilo Code](https://kilo.ai?utm_source=resumematcher&utm_medium=github&utm_campaign=sponsors) | Kilo Code provides AI code reviews and coding credits to Resume Matcher 🌐 [kilo.ai](https://kilo.ai?utm_source=resumematcher&utm_medium=github&utm_campaign=sponsors) |
-
-<a id="support-the-development-by-donating"></a>
-
-## Sponsor Resume Matcher
-
-![donate](assets/supporting_resume_matcher.png)
-
-Please read our [Sponsorship Guide]([docs/agent/80-sponsorship/sponsorship-guide.md](https://resumematcher.fyi/docs/sponsoring)) for details on how your sponsorship helps the project. You will receive a special thank you in the ReadME and on our website.
-
-| Platform  | Link                                   |
-|-----------|----------------------------------------|
-| GitHub    | [![GitHub Sponsors](https://img.shields.io/github/sponsors/srbhr?style=for-the-badge&color=1d4ed8&labelColor=F0F0E8&logo=github&logoColor=black)](https://github.com/sponsors/srbhr) |
-| Buy Me a Coffee | [![BuyMeACoffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&color=1d4ed8&labelColor=F0F0E8&logoColor=black)](https://www.buymeacoffee.com/srbhr) |
-
-## Creators' Note
-
-[![srbhr](assets/creators_note.png)](https://srbhr.com)
-
-Thank you for checking out Resume Matcher. If you want to connect, collaborate, or just say hi, feel free to reach out!
-~ **Saurabh Rai** ✨
-
-You can follow me on:
-
-- Website: [https://srbhr.com](https://srbhr.com)
-- Linkedin: [https://www.linkedin.com/in/srbhr/](https://www.linkedin.com/in/srbhr/)
-- Twitter: [https://twitter.com/srbhrai](https://twitter.com/srbhrai)
-- GitHub: [https://github.com/srbhr](https://github.com/srbhr)
-
-## Key Features
-
-![resume_matcher_features](assets/features.png)
-
-### Core Features
-
-**Multi-Resume Management**: Upload and manage multiple master resumes, selecting the most relevant one for different job applications.
-
-**AI-Powered Suggestions**: After processing, review granular, field-level AI suggestions. Use the interactive "Diff Preview" to accept or reject specific improvements for your summary, experience, and skills.
-
-**Advanced Tailoring**: Create multiple tailored versions of your resumes for different target roles, keeping all versions organized.
-
-![Job Description Input](assets/step_2.png)
-
-### Resume Builder
-
-![Resume Builder](assets/step_5.png)
-
-Paste in a job description and get AI-powered resume tailored for that specific role.
-
-You can:
-
-- Modify suggested content
-- Add/remove sections
-- Rearrange sections via drag-and-drop
-- Choose from multiple resume templates
-
-### Cover Letter & Email Generator
-
-Generate tailored cover letters and email templates based on the job description and your resume.
-
-![Cover Letter](assets/cover_letter.png)
-
-### Resume Scoring (In development feature)
-
-We are working on a resume scoring feature that will analyze your resume against the job description and provide a match score along with suggestions for improvement.
-
-![Resume Scoring and Keyword Highlight](assets/keyword_highlighter.png)
-
-### PDF Export
-
-Export your tailored resume and cover letter in PDF.
-
-### Templates
-
-| Template Name | Preview | Description |
-|---------------|---------|-------------|
-| **Classic Single Column** | ![Classic Template](assets/pdf-templates/single-column.jpg) | A traditional and clean layout suitable for most industries. [𝐕𝐢𝐞𝐰 𝐏𝐃𝐅](assets/pdf-templates/single-column.pdf) |
-| **Modern Single Column** | ![Modern Template](assets/pdf-templates/modern-single-column.jpg) | A contemporary design with a focus on readability and aesthetics. [𝐕𝐢𝐞𝐰 𝐏𝐃𝐅](assets/pdf-templates/modern-single-column.pdf)|
-| **Classic Two Column** | ![Classic Two Column Template](assets/pdf-templates/two-column.jpg) | A structured layout that separates sections for clarity. [𝐕𝐢𝐞𝐰 𝐏𝐃𝐅](assets/pdf-templates/two-column.pdf)|
-| **Modern Two Column** | ![Modern Two Column Template](assets/pdf-templates/modern-two-column.jpg) | A sleek design that utilizes two columns for better organization. [𝐕𝐢𝐞𝐰 𝐏𝐃𝐅](assets/pdf-templates/modern-two-column.pdf)|
-
-### Internationalization
-
-- **Multi-Language UI**: Interface available in English, Spanish, Chinese, and Japanese
-- **Multi-Language Content**: Generate resumes and cover letters in your preferred language
-
-### Roadmap
-
-If you have any suggestions or feature requests, please feel free to open an issue on GitHub or discuss it on our [Discord](https://dsc.gg/resume-matcher) server.
-
-- Visual keyword highlighting
-- AI Canvas for crafting impactful, metric-driven resume content
-- Multi-job description optimization
-
-<a id="how-to-install"></a>
-
-## How to Install
-
-![Installation](assets/how_to_install_resumematcher.png)
-
-For detailed setup instructions, see **[SETUP.md](SETUP.md)** (English) or: [Español](SETUP.es.md), [简体中文](SETUP.zh-CN.md), [日本語](SETUP.ja.md).
-
-### Prerequisites
-
-| Tool | Version | Installation |
-|------|---------|--------------|
-| Python | 3.13+ | [python.org](https://python.org) |
-| Node.js | 22+ | [nodejs.org](https://nodejs.org) |
-| uv | Latest | [astral.sh/uv](https://docs.astral.sh/uv/getting-started/installation/) |
-
-### Quick Start
-
-Fastest for MacOS, WSL and Ubuntu users:
+### 1. Clone and install
 
 ```bash
-# Clone the repository
-git clone https://github.com/srbhr/Resume-Matcher.git
-cd Resume-Matcher
+git clone https://github.com/wahajnintyeight/JD2Resume.git
+cd JD2Resume
 
-# Backend (Terminal 1)
 cd apps/backend
-cp .env.example .env        # Configure your AI provider
-uv sync                      # Install dependencies
-# Using uv (Recommended)
-uv run python -m uvicorn app.main:app --reload --port 8888
+uv sync
+uv run playwright install chromium
+cp .env.example .env
 
-# Using standard Python
-python -m uvicorn app.main:app --reload --port 8888
-
-# Frontend (Terminal 2)
-cd apps/frontend
+cd ../frontend
 npm install
+cp .env.sample .env.local
+```
+
+On Linux, use `uv run playwright install --with-deps chromium` from `apps/backend` if Chromium's system dependencies are missing. The `cp` commands also work as aliases in PowerShell.
+
+### 2. Configure your services
+
+Edit `apps/backend/.env`. Replace the service placeholders with your own values; the following local URLs match the commands in this README:
+
+```dotenv
+HOST=127.0.0.1
+PORT=1110
+FRONTEND_BASE_URL=http://localhost:3333
+CORS_ORIGINS=["http://localhost:3333"]
+
+MONGODB_URI=mongodb://localhost:27017
+MONGODB_DB=jd2resume
+MONGODB_USERS_COLLECTION=users
+
+GOOGLE_CLIENT_ID=<google-client-id>
+GOOGLE_CLIENT_SECRET=<google-client-secret>
+GOOGLE_REDIRECT_URI=http://localhost:1110/api/v1/auth/google/callback
+AUTH_JWT_SECRET=<random-session-signing-secret>
+AUTH_COOKIE_SECURE=false
+
+LLM_PROVIDER=openai
+LLM_MODEL=<model-id>
+LLM_API_KEY=<provider-api-key>
+
+S3_ACCESS_KEY_ID=<storage-access-key>
+S3_SECRET_ACCESS_KEY=<storage-secret-key>
+S3_BUCKET_NAME=<bucket-name>
+S3_REGION=<bucket-region>
+S3_FOLDER_NAME=jd2resume/
+
+MCP_PUBLIC_BASE_URL=http://localhost:1110
+```
+
+Register these authorized redirect URIs on the Google OAuth client:
+
+- Website: `http://localhost:1110/api/v1/auth/google/callback`
+- MCP, if used: `http://localhost:1110/mcp/oauth/google/callback`
+
+Edit `apps/frontend/.env.local` so it points to the backend origin, without `/api/v1`:
+
+```dotenv
+NEXT_PUBLIC_API_URL=http://localhost:1110
+```
+
+Keep `localhost` consistent across browser URLs and configuration for cookie-based sign-in. The checked-in environment examples have older frontend defaults; use the values above for this setup. Keep credentials in your local environment files or deployment secret store.
+
+### 3. Start both servers
+
+Backend, in one terminal from the repository root:
+
+```bash
+cd apps/backend
+uv run uvicorn app.main:app --host 127.0.0.1 --port 1110
+```
+
+Frontend, in a second terminal from the repository root:
+
+```bash
+cd apps/frontend
 npm run dev
 ```
 
-Open **<http://localhost:3000>** and configure your AI provider in Settings.
+Open [the local app](http://localhost:3333). Sign in with Google, confirm your AI configuration in Settings, and upload a resume. The frontend development script uses port **3333**. API documentation is available at [the backend's Swagger UI](http://localhost:1110/docs).
 
-### Supported AI Providers
+## MCP connection
 
-| Provider | Local/Cloud | Notes |
-|----------|-------------|-------|
-| **Ollama** | Local | Free, runs on your machine |
-| **OpenAI** | Cloud | GPT-4o, GPT-4o-mini |
-| **Anthropic** | Cloud | Claude 3.5 Sonnet |
-| **Google Gemini** | Cloud | Gemini 1.5 Flash/Pro |
-| **OpenRouter** | Cloud | Access to multiple models |
-| **DeepSeek** | Cloud | DeepSeek Chat |
+The backend exposes **Streamable HTTP at `/mcp`**. Connect by URL and select **OAuth** in your assistant's MCP settings.
 
-### Docker Deployment
+Before connecting, sign in on the website and upload a resume that has finished processing. During connection, approve the requesting client's permissions and sign in with Google. The tools resolve your account from the authenticated identity; the assistant does not ask for your email to select an account. An account that has not been created on the website receives signup and upload guidance.
+
+For a deployed server, use `https://<backend-host>/mcp`. For local development, use `http://localhost:1110/mcp` with a client running on the same computer. A hosted assistant needs a publicly reachable HTTPS endpoint.
+
+### Connect from Codex
+
+Replace `<backend-host>` with your deployment's hostname:
 
 ```bash
-docker pull srbhr/resume-matcher:latest
-
-docker run srbhr/resume-matcher:latest
+codex mcp add jd2resume --url "https://<backend-host>/mcp"
+codex mcp login jd2resume
 ```
 
-<!-- Note: Docker documentation is pending. For now, use docker-compose.yml as reference -->
+Some Codex versions need an explicit OAuth client metadata URL instead of automatic registration. See the [Codex connection instructions](docs/agent/features/mcp.md#codex-url-connection) for the callback-specific setup. The server supports trusted client metadata and pre-registered public clients; dynamic client registration is not implemented.
 
-> **Using Ollama with Docker?** Use `http://host.docker.internal:11434` as the Ollama URL instead of `localhost`.
+### Tailor through your assistant
 
-### Tech Stack
+Try: “List my resumes, let me choose one, then help me tailor it to this job description. Show me the draft before saving and export the approved version as a PDF.”
 
-| Component | Technology |
-|-----------|------------|
-| Backend | FastAPI, Python 3.13+, LiteLLM |
-| Frontend | Next.js 15, React 19, TypeScript |
-| Database | MongoDB (User-scoped document storage) |
-| Styling | Tailwind CSS 4, Swiss International Style |
-| PDF | Headless Chromium via Playwright |
+| Tool                    | Purpose                                                   |
+| ----------------------- | --------------------------------------------------------- |
+| `list_my_resumes`       | List the authenticated account's ready resumes            |
+| `get_tailoring_context` | Read the selected resume and job description              |
+| `preview_tailor_resume` | Preview a complete draft written by the assistant         |
+| `revise_tailor_preview` | Incorporate your suggestions into the draft               |
+| `confirm_tailor_resume` | Save an approved draft as a new tailored resume           |
+| `export_resume_pdfs`    | Render PDFs, upload them to S3, and return download links |
 
-## Join Us and Contribute
+The assistant decides how to tailor the content using the source resume and your feedback. It shows the draft and asks for approval before calling the save tool. Your source resume remains available. Links expire according to `S3_PRESIGN_TTL_SECONDS` (one hour by default).
 
-![how to contribute](assets/how_to_contribute.png)
+Read the [MCP guide](docs/agent/features/mcp.md) for OAuth permissions, Google callbacks, Nginx routes, client configuration, local checks, and the optional Sites adapter.
 
-We welcome contributions from everyone! Whether you're a developer, designer, or just someone who wants to help out. All the contributors are listed in the [about page](https://resumematcher.fyi/about) on our website and on the GitHub Readme here.
+## Configuration
 
-Check out the roadmap if you would like to work on the features that are planned for the future. If you have any suggestions or feature requests, please feel free to open an issue on GitHub and discuss it on our [Discord](https://dsc.gg/resume-matcher) server.
+| Setting                                                                   | Purpose                                                                                |
+| ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `FRONTEND_BASE_URL`                                                       | Frontend origin for browser redirects and backend PDF rendering                        |
+| `NEXT_PUBLIC_API_URL`                                                     | Backend origin used by the frontend; set before a production build                     |
+| `CORS_ORIGINS`                                                            | JSON array of allowed frontend origins                                                 |
+| `MONGODB_URI`, `MONGODB_DB`                                               | MongoDB connection and database; required at startup                                   |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`         | Website Google sign-in                                                                 |
+| `AUTH_JWT_SECRET`, `AUTH_COOKIE_SECURE`                                   | Session signing and secure-cookie settings                                             |
+| `LLM_PROVIDER`, `LLM_MODEL`, `LLM_API_KEY`, `LLM_API_BASE`                | Web-app AI provider configuration; `LLM_API_BASE` supports Ollama and custom endpoints |
+| `S3_BUCKET_NAME`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | Object storage configuration                                                           |
+| `S3_ENDPOINT_URL`                                                         | Optional endpoint for S3-compatible storage                                            |
+| `MCP_PUBLIC_BASE_URL`                                                     | Canonical backend origin for OAuth discovery, without `/api/v1` or `/mcp`              |
+| `MCP_OAUTH_METADATA_HOSTS`, `MCP_OAUTH_CLIENTS`                           | Trusted metadata hosts and pre-registered OAuth clients                                |
+| `MCP_ALLOWED_HOSTS`                                                       | Hostnames accepted by the MCP transport                                                |
 
-<a id="contributors"></a>
+For a public deployment, use HTTPS origins, a strong session signing secret, and `AUTH_COOKIE_SECURE=true`. Register the production Google callbacks and ensure the backend can reach the frontend's print pages. Proxy MCP discovery and OAuth routes along with `/mcp`; the [MCP guide](docs/agent/features/mcp.md#reverse-proxy) lists them. Use `npm run build` and `npm run start -- -p 3333` in `apps/frontend` for a production frontend.
 
-## Contributors
+Resumes, job descriptions, account records, and OAuth state are stored in MongoDB. Original files and MCP-generated PDFs are stored in the configured object store. Web-app AI features send resume and job content to the selected provider; MCP tailoring shares that context with the connected assistant. AI settings may also be persisted in `apps/backend/data/config.json` and can override environment defaults.
 
-![Contributors](assets/contributors.png)
+## Development
 
-<a href="https://github.com/srbhr/Resume-Matcher/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=srbhr/Resume-Matcher" />
-</a>
+| Area        | Stack                                                     |
+| ----------- | --------------------------------------------------------- |
+| Frontend    | Next.js 16, React 19, TypeScript, Tailwind CSS 4          |
+| Backend     | FastAPI, Python 3.13+, Pydantic, LiteLLM                  |
+| Persistence | MongoDB via PyMongo and Motor                             |
+| Documents   | Playwright Chromium for PDF; python-docx for Word export  |
+| MCP         | Official Python MCP SDK, Streamable HTTP, OAuth with PKCE |
 
-<br/>
+```text
+apps/
+  backend/app/       API routes, authentication, services, storage, and MCP tools
+  backend/tests/     Backend regression and workflow checks
+  frontend/          Web app, resume editor, templates, and print pages
+  mcp-sites/         Optional Sites identity bridge
+docs/agent/          Feature, API, architecture, and design documentation
+```
 
-<details>
-  <summary><kbd>Star History</kbd></summary>
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=srbhr/resume-matcher&theme=dark&type=Date">
-    <img width="100%" src="https://api.star-history.com/svg?repos=srbhr/resume-matcher&theme=dark&type=Date">
-  </picture>
-</details>
+Run frontend checks from `apps/frontend`:
 
-## Resume Matcher is a part of [Vercel Open Source Program](https://vercel.com/oss)
+```bash
+npm run lint
+npm run format
+npm test
+```
 
-![Vercel OSS Program](https://vercel.com/oss/program-badge.svg)
+Run the MCP regression checks from `apps/backend`:
+
+```bash
+uv run --with pytest python -m pytest tests/test_mcp_workflow.py tests/test_mcp_oauth.py -q
+```
+
+These MCP checks mock external services. A full integration run needs Google OAuth, MongoDB, object storage, and both servers. For development conventions, read [AGENTS.md](AGENTS.md); additional documentation is indexed in [docs/agent](docs/agent/README.md).
+
+## Troubleshooting
+
+| Symptom                                      | Check                                                                                                                         |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Backend cannot start                         | MongoDB is reachable and the URI/database are set                                                                             |
+| Google rejects a redirect                    | The callback exactly matches an authorized Google redirect URI                                                                |
+| Frontend cannot reach the API                | `NEXT_PUBLIC_API_URL` points to port 1110, and `CORS_ORIGINS` includes the frontend origin; restart after environment changes |
+| Resume processing fails                      | Provider credentials, model availability, and backend logs; uploads are limited to 4 MB                                       |
+| PDF export fails                             | Chromium is installed and `FRONTEND_BASE_URL` reaches the running frontend                                                    |
+| MCP returns 401                              | Complete OAuth in the client; a browser request to `/mcp` without a credential is expected to return 401                      |
+| OAuth discovery or client registration fails | Public origin, reverse-proxy routes, and trusted metadata/pre-registered client configuration in the MCP guide                |
+| Download link expires                        | Export again to obtain a fresh link                                                                                           |
+
+## Help and contributing
+
+Report bugs and request features in [this repository's issues](https://github.com/wahajnintyeight/JD2Resume/issues). Include reproduction steps, your platform, and relevant logs with credentials and personal resume data removed.
+
+For contributions, fork this repository, create a branch, and open a pull request against `main`. Include what changed and how you verified it. Documentation fixes, reproducible bug reports, and code contributions are welcome. Follow [the project conventions](AGENTS.md) and run the checks relevant to your change.
+
+Maintained in [wahajnintyeight/JD2Resume](https://github.com/wahajnintyeight/JD2Resume). See [the contributor history](https://github.com/wahajnintyeight/JD2Resume/graphs/contributors) for everyone who has contributed.
+
+## License and attribution
+
+Licensed under [Apache License 2.0](LICENSE). JD2Resume is derived from [Resume Matcher](https://github.com/srbhr/Resume-Matcher), created by Saurabh Rai and its contributors. Existing license and copyright notices are retained.
