@@ -17,7 +17,7 @@ from mcp.server.auth.handlers.token import TokenHandler
 from mcp.server.auth.middleware.client_auth import ClientAuthenticator
 from mcp.server.auth.provider import construct_redirect_uri
 from starlette.datastructures import FormData
-from starlette.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
+from starlette.responses import JSONResponse, RedirectResponse, Response
 
 from app.auth.jwt import decode_session_token
 from app.auth.mcp_oauth import (
@@ -30,6 +30,7 @@ from app.auth.mcp_oauth import (
     put,
     resource,
 )
+from app.auth.mcp_pages import consent_content, expired_connection, page
 from app.auth.mongo import get_users_collection
 from app.config import settings
 from app.routers.auth import (
@@ -45,24 +46,6 @@ client_auth = ClientAuthenticator(provider)
 
 def cookie_name() -> str:
     return "__Host-mcp-browser" if issuer().startswith("https:") else "mcp-browser"
-
-
-def page(title: str, content: str, status: int = 200) -> HTMLResponse:
-    return HTMLResponse(
-        '<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width">'
-        "<title>JD2Resume connection</title><style>body{background:#F0F0E8;color:#000;font:16px system-ui;"
-        "margin:4rem auto;padding:1rem;max-width:42rem}main{border:1px solid #000;padding:2rem;"
-        "background:white;box-shadow:6px 6px #000}h1{font-family:serif}button{border:1px solid #000;"
-        "background:#1D4ED8;color:white;padding:1rem;cursor:pointer}code{overflow-wrap:anywhere}</style>"
-        f"<main><h1>{escape(title)}</h1>{content}</main>",
-        status_code=status,
-        headers={
-            "Cache-Control": "no-store",
-            "Referrer-Policy": "no-referrer",
-            "X-Frame-Options": "DENY",
-            "Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
-        },
-    )
 
 
 @router.get("/.well-known/oauth-protected-resource/mcp")
@@ -219,9 +202,7 @@ async def finish(request_id: str, account: dict[str, Any]) -> RedirectResponse:
 async def consent_page(request: Request, request_id: str) -> Response:
     pending = await get("pending", request_id)
     if not pending:
-        raise HTTPException(
-            400, "Connection request expired. Start the MCP connection again."
-        )
+        return expired_connection()
     binding = None
     if not pending.get("browser_binding"):
         binding = secrets.token_urlsafe(32)
@@ -230,34 +211,18 @@ async def consent_page(request: Request, request_id: str) -> Response:
             {"$set": {"browser_binding": digest(binding)}},
         )
         if updated.modified_count != 1:
-            raise HTTPException(
-                400, "This connection request is already open in another browser."
-            )
+            return expired_connection()
     else:
-        await bound_request(request, request_id)
+        try:
+            await bound_request(request, request_id)
+        except HTTPException:
+            return expired_connection()
     account = await browser_account(request)
-    label = "Allow access" if account else "Allow access and sign in with Google"
-    identity = (
-        f"<p>Signed in as <strong>{escape(account.get('email', ''))}</strong>.</p>"
-        if account
-        else ""
-    )
     scopes = pending["params"]["scopes"] or SCOPES
-    permissions = "<li>Read your saved resumes</li>" if "resumes:read" in scopes else ""
-    if "resumes:write" in scopes:
-        permissions += "<li>Create tailored copies and export PDFs to storage</li>"
     response = page(
-        "Connect JD2Resume",
-        f"<p><strong>{escape(pending['client_name'] or pending['client_id'])}</strong>"
-        f" requests permission to:</p><ul>{permissions}</ul>{identity}"
-        f"<p>Client: <code>{escape(pending['client_id'])}</code></p>"
-        f"<p>Return to: <code>{escape(pending['params']['redirect_uri'])}</code></p>"
-        "<p>You will review and approve resume edits before saving them.</p>"
-        '<form method="post" action="/mcp/oauth/consent">'
-        f'<input type="hidden" name="request_id" value="{escape(request_id, quote=True)}">'
-        f'<input type="hidden" name="csrf" value="{escape(pending["csrf"], quote=True)}">'
-        f'<button name="decision" value="allow">{label}</button> '
-        '<button name="decision" value="deny">Cancel</button></form>',
+        f"Connect to {pending['client_name'] or pending['client_id']}",
+        consent_content(request_id, pending, account, scopes),
+        form_redirect_uri=pending["params"]["redirect_uri"],
     )
     if binding:
         response.set_cookie(
@@ -276,7 +241,10 @@ async def consent_page(request: Request, request_id: str) -> Response:
 async def consent(request: Request) -> Response:
     form = await token_form(request)
     request_id = str(form.get("request_id", ""))
-    pending = await bound_request(request, request_id)
+    try:
+        pending = await bound_request(request, request_id)
+    except HTTPException:
+        return expired_connection()
     if not hmac.compare_digest(str(form.get("csrf", "")), pending["csrf"]):
         raise HTTPException(400, "Invalid connection request.")
     if form.get("decision") != "allow":

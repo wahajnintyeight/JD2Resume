@@ -145,6 +145,13 @@ class MCPOAuthTests(unittest.TestCase):
         ][0]
         response = self.client.get(response.headers["location"])
         self.assertEqual(response.status_code, 200, response.text)
+        # Browser redirects after form submission are subject to form-action too.
+        policy = response.headers["content-security-policy"]
+        self.assertIn(
+            "form-action 'self' https://accounts.google.com http://localhost:1234;",
+            policy,
+        )
+        self.assertIn("frame-ancestors 'none'", policy)
         pending = self.store.docs[mcp_oauth.digest(request_id)]
         return request_id, pending
 
@@ -185,6 +192,10 @@ class MCPOAuthTests(unittest.TestCase):
         callback = parse_qs(urlsplit(response.headers["location"]).query)
         self.assertEqual(callback["state"], ["client-state"])
         self.assertEqual(callback["iss"], [mcp_oauth.issuer()])
+        repeated = self.client.post("/mcp/oauth/consent", data=form)
+        self.assertEqual(repeated.status_code, 400)
+        self.assertIn("Start a new connection", repeated.text)
+        self.assertIn("Return to your assistant", repeated.text)
         data = {
             "client_id": "test-client",
             "grant_type": "authorization_code",

@@ -20,7 +20,7 @@ input schemas, and tool calls. Existing REST routes retain precedence.
    The MCP workflow makes no LLM provider calls and needs no provider API key.
 3. Submit the assistant-authored complete `ResumeData` using
    `preview_tailor_resume(preview_id, preview_revision, improved_data, title,
-   improvements, cover_letter?, outreach_message?)`. Contact fields are validated;
+improvements, cover_letter?, outreach_message?)`. Contact fields are validated;
    existing deterministic diff logic produces zero-based change indices. Show the
    complete draft and changes, including optional letters, and ask for suggestions
    or approval. Apply user feedback in the assistant and submit a complete new draft
@@ -70,7 +70,13 @@ codes are hashed in the `mcp_oauth` Mongo collection; records expire through a T
 index. Access lasts 10 minutes; grants/rotating refresh tokens last up to 30 days.
 Refresh replay revokes the grant. Revocation and account removal stop access.
 Google state is one-use and browser-bound; consent is protected against CSRF and
-clickjacking. A separate five-minute internal print credential supports existing PDF
+clickjacking. The consent page separates the requesting client, Google account and
+requested permissions; full client/callback URLs are available in expandable details.
+Its Content Security Policy allows form redirects to the registered client's callback
+origin and Google sign-in, because Chromium enforces `form-action` after a POST's
+redirect too. Other origins remain blocked. Expired or repeated approvals show a
+400 page directing the user to start a new connection in their assistant.
+A separate five-minute internal print credential supports existing PDF
 pages without exposing an MCP credential in a print URL.
 
 Raw Sites identity headers are never trusted by the backend. MCP Host and Origin
