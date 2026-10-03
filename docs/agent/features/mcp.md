@@ -99,6 +99,29 @@ configuration screen. Remote metadata fetches are size-limited, HTTPS-only and d
 not follow redirects. Public client token exchange uses authentication method `none`
 with PKCE. Dynamic registration and private-key client assertions are not implemented.
 
+Native clients such as Codex may select a listener port for a registered HTTP
+IP-loopback callback. The server allows a variable port only when the verified
+client metadata declares `application_type: native` and registers a loopback URL
+without a port. The scheme, IP address, path, query and fragment must still match.
+Fixed-port callbacks and browser clients retain exact URL matching.
+
+### Codex URL connection
+
+Register the deployed Streamable HTTP endpoint with `codex mcp add jd2resume --url
+<public-origin>/mcp`. Codex versions with automatic CIMD support can discover the
+client metadata. For versions that attempt dynamic registration instead, pass an
+explicit `--oauth-client-id` using the OpenAI-hosted metadata document that matches
+the callback printed during login: `/callback/<id>` uses
+`https://chatgpt.com/oauth/codex/<id>/client.json`; the shared `/callback` uses
+`https://chatgpt.com/oauth/codex/client.json`.
+
+Complete browser sign-in with `codex mcp login jd2resume`. These are native callbacks
+on the user's computer; the Google redirect registered for the backend remains
+`/mcp/oauth/google/callback`. Changing the server URL can change the Codex callback
+ID, so update the client metadata URL if needed.
+
+### Reverse proxy
+
 Forward these routes through Nginx in addition to the existing `/mcp` proxy:
 
 ```nginx

@@ -19,6 +19,7 @@ from mcp.server.auth.provider import (
     TokenError,
 )
 from mcp.shared.auth import OAuthClientInformationFull, OAuthToken
+from pydantic import AnyUrl
 
 from app.auth.mongo import get_users_collection
 from app.config import settings
@@ -84,6 +85,37 @@ async def get(kind: str, token: str) -> dict[str, Any] | None:
     )
 
 
+class NativeOAuthClient(OAuthClientInformationFull):
+    """RFC 8252: native IP-loopback callbacks may choose a listener port."""
+
+    def validate_redirect_uri(self, redirect_uri: AnyUrl | None) -> AnyUrl:
+        if redirect_uri is not None:
+            candidate = urlsplit(str(redirect_uri))
+            if (
+                candidate.scheme == "http"
+                and candidate.hostname in {"127.0.0.1", "::1"}
+                and not candidate.username
+                and not candidate.password
+            ):
+                for registered in self.redirect_uris or []:
+                    expected = urlsplit(str(registered))
+                    if expected.port is None and (
+                        candidate.scheme,
+                        candidate.hostname,
+                        candidate.path,
+                        candidate.query,
+                        candidate.fragment,
+                    ) == (
+                        expected.scheme,
+                        expected.hostname,
+                        expected.path,
+                        expected.query,
+                        expected.fragment,
+                    ):
+                        return redirect_uri
+        return super().validate_redirect_uri(redirect_uri)
+
+
 class MCPOAuthProvider:
     """The SDK handles OAuth parsing, redirect validation and PKCE; this stores grants."""
 
@@ -147,7 +179,12 @@ class MCPOAuthProvider:
                     )
                 ):
                     return None
-            return OAuthClientInformationFull(
+            client_type = (
+                NativeOAuthClient
+                if metadata.get("application_type") == "native"
+                else OAuthClientInformationFull
+            )
+            return client_type(
                 client_id=client_id,
                 client_name=metadata.get("client_name", client_id),
                 redirect_uris=redirects,

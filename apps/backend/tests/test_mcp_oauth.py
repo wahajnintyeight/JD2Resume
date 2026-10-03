@@ -11,6 +11,8 @@ from urllib.parse import parse_qs, urlsplit
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from mcp.shared.auth import InvalidRedirectUriError
+from pydantic import AnyUrl
 
 with patch("pymongo.MongoClient"):
     from app import mcp_server
@@ -279,6 +281,40 @@ class MCPOAuthTests(unittest.TestCase):
         ):
             with self.subTest(client_id=client_id):
                 self.assertIsNone(asyncio.run(mcp_oauth.provider.get_client(client_id)))
+
+    def test_native_loopback_port_keeps_host_path_and_query_exact(self) -> None:
+        metadata = {
+            "application_type": "native",
+            "redirect_uris": ["http://127.0.0.1/callback"],
+        }
+        with patch.object(
+            mcp_oauth.settings, "mcp_oauth_clients", {"native": metadata}
+        ):
+            client = asyncio.run(mcp_oauth.provider.get_client("native"))
+        callback = AnyUrl("http://127.0.0.1:54321/callback")
+        self.assertEqual(client.validate_redirect_uri(callback), callback)
+        for value in (
+            "http://localhost:54321/callback",
+            "http://127.0.0.1:54321/other",
+            "http://127.0.0.1:54321/callback?other=1",
+            "https://127.0.0.1:54321/callback",
+            "http://attacker.example:54321/callback",
+        ):
+            with (
+                self.subTest(callback=value),
+                self.assertRaises(InvalidRedirectUriError),
+            ):
+                client.validate_redirect_uri(AnyUrl(value))
+        for settings_metadata in (
+            {"redirect_uris": ["http://127.0.0.1/callback"]},
+            {**metadata, "redirect_uris": ["http://127.0.0.1:1234/callback"]},
+        ):
+            with patch.object(
+                mcp_oauth.settings, "mcp_oauth_clients", {"fixed": settings_metadata}
+            ):
+                fixed = asyncio.run(mcp_oauth.provider.get_client("fixed"))
+            with self.assertRaises(InvalidRedirectUriError):
+                fixed.validate_redirect_uri(callback)
 
     def test_google_state_is_browser_bound_and_uses_subject_not_email(self) -> None:
         request_id, pending = self.start()
