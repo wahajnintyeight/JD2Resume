@@ -4,6 +4,7 @@ import asyncio
 import logging
 import sys
 from contextlib import asynccontextmanager
+from collections.abc import AsyncIterator
 
 from fastapi import FastAPI
 
@@ -17,6 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app import __version__
 from app.config import settings
 from app.database import db
+from app.mcp_server import mcp, mcp_app
 from app.pdf import close_pdf_renderer, init_pdf_renderer
 from app.routers import (
     auth_router,
@@ -31,13 +33,14 @@ from app.routers import (
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Application lifespan manager."""
     # Startup
     settings.data_dir.mkdir(parents=True, exist_ok=True)
     # PDF renderer uses lazy initialization - will initialize on first use
     # await init_pdf_renderer()
-    yield
+    async with mcp.session_manager.run():
+        yield
     # Shutdown - wrap each cleanup in try-except to ensure all resources are released
     try:
         await close_pdf_renderer()
@@ -79,13 +82,17 @@ app.include_router(ats_scan_router)
 
 
 @app.get("/")
-async def root():
+async def root() -> dict[str, str]:
     """Root endpoint."""
     return {
         "name": "Resume Matcher API",
         "version": __version__,
         "docs": "/docs",
     }
+
+
+# Keep this fallback mount last so existing FastAPI routes retain precedence.
+app.mount("/", mcp_app)
 
 
 if __name__ == "__main__":

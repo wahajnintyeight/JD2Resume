@@ -322,6 +322,15 @@ class MongoDatabase:
         doc = self._jobs.find_one({"user_id": user_id, "job_id": job_id})
         return doc
 
+    def claim_mcp_preview(self, job_id: str, revision: str, user_id: str) -> bool:
+        """Atomically claim an exact draft revision to prevent concurrent saves/revisions."""
+        result = self._jobs.update_one(
+            {"job_id": job_id, "user_id": user_id, "mcp_preview_revision": revision,
+             "mcp_busy": {"$ne": True}, "mcp_saved_resume_id": {"$exists": False}},
+            {"$set": {"mcp_busy": True}},
+        )
+        return result.modified_count == 1
+
     def update_job(self, job_id: str, updates: dict[str, Any], user_id: str | None = None) -> dict[str, Any] | None:
         user_id = self._get_user_id(user_id)
         updates = dict(updates)

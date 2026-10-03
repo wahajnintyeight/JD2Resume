@@ -38,6 +38,7 @@ Start at [/AGENTS.md](/AGENTS.md), then dive into topics below.
 |-----|---------|
 | [custom-sections](features/custom-sections.md) | Dynamic sections |
 | [i18n](features/i18n.md) | Internationalization |
+| [mcp](features/mcp.md) | Authenticated MCP tailoring, review, and S3 PDF export |
 
 ### LLM Integration
 | Doc | Purpose |

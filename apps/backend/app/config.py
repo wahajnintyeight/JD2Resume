@@ -197,6 +197,12 @@ class Settings(BaseSettings):
     auth_oauth_state_cookie_name: str = "rm_oauth_state"
     auth_oauth_state_ttl_seconds: int = 60 * 10  # 10 minutes
 
+    # Optional Sites adapter: signed, short-lived identity assertions, never raw email headers.
+    mcp_bridge_secret: str = ""
+    mcp_allowed_hosts: list[str] = Field(default_factory=lambda: [
+        "localhost:*", "127.0.0.1:*", "[::1]:*", "api-jd2resume.theprojectphoenix.top",
+    ])
+
     # ---------------------------------------------------------------------
     # MongoDB (used for user persistence)
     # ---------------------------------------------------------------------

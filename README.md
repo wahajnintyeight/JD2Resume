@@ -46,6 +46,55 @@ Resume Matcher works by creating a master resume that you can use to tailor for 
 5. **Customize** the layout and sections to fit your style
 6. **Export** as a professional PDF with your preferred template
 
+### MCP Integration
+
+Resume Matcher includes a stateless Streamable HTTP Model Context Protocol (MCP)
+server so an MCP-compatible assistant can guide the user through resume tailoring.
+The assistant acts as the tailoring language model: it reads the selected resume and
+job description, prepares a complete draft, explains its edits, and responds to the
+user's suggestions. The MCP workflow does not call a separate LLM provider.
+
+The conversation starts by asking for the user's account email. The server lists
+resumes only for the authenticated account. If there is no account, the assistant
+directs the user to create one and upload a resume through the website. If the account
+has no resume or its resume is still processing, the assistant explains what to do
+before continuing. The user chooses a ready resume, provides a job description,
+reviews the proposed changes, and approves the draft before it is saved. Afterward,
+the assistant can request a PDF export; generated files are uploaded to the configured
+object storage and returned as temporary download links.
+
+The backend endpoint is mounted at `/mcp`. The optional Sites adapter in
+`apps/mcp-sites` forwards the hosting platform's verified identity as a short-lived,
+signed assertion. The backend checks that identity against an existing application
+account; the adapter and MCP tools never create accounts or accept an email header as
+proof of identity.
+
+#### Local MCP setup
+
+1. Configure the backend MongoDB connection and application settings in
+   `apps/backend/.env`, including `FRONTEND_BASE_URL` for the frontend used during
+   local PDF rendering.
+2. Add a dedicated `MCP_BRIDGE_SECRET` to the backend environment if testing the Sites
+   adapter. Set the same secret in the adapter's hosting environment; keep it separate
+   from the application session secret. The standard local MCP test-drive script uses
+   a short-lived application session and does not require this bridge secret.
+3. Start the frontend and backend using the development commands above. The backend
+   serves MCP at `/mcp` alongside the existing API.
+4. In `apps/backend`, call the local tools with the developer-only script:
+
+   ```powershell
+   '{"email":"your-account@example.com","tool":"list_resumes_by_email","arguments":{"email":"your-account@example.com"}}' | uv run python scripts/mcp_test_drive.py
+   ```
+
+   The script reads one tool request from standard input and connects to the running
+   local MCP server. Use the account email for an account you are authorized to test.
+5. To build the optional Sites adapter, run `npm install` and `npm run build` in
+   `apps/mcp-sites`. Configure the adapter as a private MCP Site and supply its bridge
+   secret through the hosting environment before enabling it.
+
+See [the MCP feature guide](docs/agent/features/mcp.md) for tool details, identity
+handling, configuration, and local protocol checks.
+
 ### Stay Connected
 
 [![Discord](assets/resume_matcher_discord.png)](https://dsc.gg/resume-matcher)
