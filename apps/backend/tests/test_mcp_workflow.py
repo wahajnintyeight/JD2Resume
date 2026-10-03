@@ -7,8 +7,9 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 # MongoDatabase creates indexes at import time. Keep these checks fully local.
 with patch("pymongo.MongoClient"):
+    from mcp.server.auth.provider import AccessToken
+
     from app import mcp_server
-    from app.auth.jwt import create_session_token
     from app.main import app
     from app.schemas import ResumeData
 from fastapi.testclient import TestClient
@@ -36,11 +37,16 @@ RESUME = {
 class MCPWorkflowTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
+        indexes = MagicMock()
+        indexes.create_index = AsyncMock()
+        cls.index_patch = patch("app.main.mcp_oauth_collection", return_value=indexes)
+        cls.index_patch.start()
         cls.client = TestClient(app).__enter__()
 
     @classmethod
     def tearDownClass(cls) -> None:
         cls.client.__exit__(None, None, None)
+        cls.index_patch.stop()
 
     def setUp(self) -> None:
         users = MagicMock()
@@ -50,13 +56,22 @@ class MCPWorkflowTests(unittest.TestCase):
         )
         account_lookup.start()
         self.addCleanup(account_lookup.stop)
-        self.token = create_session_token(
-            subject=USER["user_id"],
-            provider="google",
-            email=USER["email"],
-            name="Owner",
-            picture=None,
+        self.token = "local-mcp-test-token"
+        verifier = patch.object(
+            mcp_server.provider,
+            "load_access_token",
+            AsyncMock(
+                return_value=AccessToken(
+                    token=self.token,
+                    client_id="local-test",
+                    scopes=["resumes:read", "resumes:write"],
+                    subject=USER["user_id"],
+                    resource="http://127.0.0.1:8000/mcp",
+                )
+            ),
         )
+        verifier.start()
+        self.addCleanup(verifier.stop)
         self.headers = {
             "Authorization": f"Bearer {self.token}",
             "Host": "localhost:8000",
@@ -92,7 +107,7 @@ class MCPWorkflowTests(unittest.TestCase):
         self.assertEqual(
             {tool["name"] for tool in tools},
             {
-                "list_resumes_by_email",
+                "list_my_resumes",
                 "get_tailoring_context",
                 "preview_tailor_resume",
                 "revise_tailor_preview",
@@ -113,19 +128,18 @@ class MCPWorkflowTests(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 421)
 
-    def test_email_cannot_select_another_account(self) -> None:
+    def test_listing_uses_authenticated_account_without_email_input(self) -> None:
         with patch.object(
-            mcp_server, "list_resumes", new_callable=AsyncMock
+            mcp_server, "list_resumes", AsyncMock(return_value=MagicMock(data=[]))
         ) as listing:
             result = self.rpc(
-                "tools/call",
-                {
-                    "name": "list_resumes_by_email",
-                    "arguments": {"email": "other@example.com"},
-                },
-            )
-        self.assertTrue(result["result"]["isError"])
-        listing.assert_not_awaited()
+                "tools/call", {"name": "list_my_resumes", "arguments": {}}
+            )["result"]
+        self.assertFalse(result.get("isError", False), result)
+        self.assertEqual(listing.call_args.kwargs["user"]["user_id"], USER["user_id"])
+        tools = self.rpc("tools/list")["result"]["tools"]
+        tool = next(tool for tool in tools if tool["name"] == "list_my_resumes")
+        self.assertFalse(tool["inputSchema"].get("properties"))
 
     def test_listing_requires_upload_or_ready_resume_before_tailoring(self) -> None:
         for states, expected in [
@@ -150,8 +164,8 @@ class MCPWorkflowTests(unittest.TestCase):
                     result = self.rpc(
                         "tools/call",
                         {
-                            "name": "list_resumes_by_email",
-                            "arguments": {"email": USER["email"]},
+                            "name": "list_my_resumes",
+                            "arguments": {},
                         },
                     )["result"]
                 self.assertFalse(result.get("isError", False), result)
@@ -296,6 +310,38 @@ class MCPWorkflowTests(unittest.TestCase):
             self.assertEqual(upload.call_args.kwargs["data"], b"%PDF-local")
             presign.assert_called_once()
 
+    def test_write_scope_requires_reauthorization_without_calling_service(self) -> None:
+        access = AccessToken(
+            token=self.token,
+            client_id="local-test",
+            subject=USER["user_id"],
+            scopes=["resumes:read"],
+        )
+        with (
+            patch.object(
+                mcp_server.provider, "load_access_token", AsyncMock(return_value=access)
+            ),
+            patch.object(
+                mcp_tailoring, "preview_tailoring", new_callable=AsyncMock
+            ) as service,
+        ):
+            result = self.rpc(
+                "tools/call",
+                {
+                    "name": "preview_tailor_resume",
+                    "arguments": {
+                        "preview_id": "preview",
+                        "preview_revision": "revision",
+                        "improved_data": RESUME["processed_data"],
+                        "title": "Engineer",
+                        "improvements": [],
+                    },
+                },
+            )["result"]
+        self.assertTrue(result["isError"])
+        self.assertIn("resumes:write", result["_meta"]["mcp/www_authenticate"][0])
+        service.assert_not_awaited()
+
     def test_errors_do_not_leak_provider_details(self) -> None:
         with patch.object(
             mcp_tailoring,
@@ -362,8 +408,8 @@ class MCPWorkflowTests(unittest.TestCase):
                         "id": 2,
                         "method": "tools/call",
                         "params": {
-                            "name": "list_resumes_by_email",
-                            "arguments": {"email": USER["email"]},
+                            "name": "list_my_resumes",
+                            "arguments": {},
                         },
                     },
                 )

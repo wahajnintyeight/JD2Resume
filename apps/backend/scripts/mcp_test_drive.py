@@ -9,14 +9,13 @@ import json
 import logging
 import re
 import sys
-import time
 from datetime import timedelta
 from typing import Any
 
-from jose import jwt
 from mcp import ClientSession
 from mcp.client.streamable_http import streamablehttp_client
 
+from app.auth.mcp_oauth import SCOPES, provider
 from app.auth.mongo import get_users_collection
 from app.config import settings
 
@@ -34,23 +33,11 @@ async def run(request: dict[str, Any]) -> dict[str, Any]:
     )
     if not user:
         raise ValueError("No existing JD2Resume account found for that email.")
-    now = int(time.time())
-    token = jwt.encode(
-        {
-            "sub": user["user_id"],
-            "provider": "google",
-            "email": user["email"],
-            "name": user.get("name"),
-            "picture": user.get("picture"),
-            "iat": now,
-            "exp": now + 15 * 60,
-        },
-        settings.auth_jwt_secret,
-        algorithm=settings.auth_jwt_algorithm,
-    )
+    tokens = await provider.issue_tokens(user["user_id"], "local-test-drive", SCOPES)
+    token = tokens.access_token
     async with (
         streamablehttp_client(
-            "http://127.0.0.1:8000/mcp",
+            f"http://127.0.0.1:{settings.port}/mcp",
             headers={"Authorization": f"Bearer {token}"},
             timeout=timedelta(minutes=20),
             sse_read_timeout=timedelta(minutes=20),

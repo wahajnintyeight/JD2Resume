@@ -19,6 +19,8 @@ from app import __version__
 from app.config import settings
 from app.database import db
 from app.mcp_server import mcp, mcp_app
+from app.auth.mcp_oauth import collection as mcp_oauth_collection, issuer as mcp_oauth_issuer
+from app.routers.mcp_auth import router as mcp_auth_router
 from app.pdf import close_pdf_renderer, init_pdf_renderer
 from app.routers import (
     auth_router,
@@ -37,6 +39,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Application lifespan manager."""
     # Startup
     settings.data_dir.mkdir(parents=True, exist_ok=True)
+    mcp_oauth_issuer()
+    await mcp_oauth_collection().create_index("expiresAt", expireAfterSeconds=0)
     # PDF renderer uses lazy initialization - will initialize on first use
     # await init_pdf_renderer()
     async with mcp.session_manager.run():
@@ -79,6 +83,7 @@ app.include_router(jobs_router, prefix="/api/v1")
 app.include_router(enrichment_router, prefix="/api/v1")
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(ats_scan_router)
+app.include_router(mcp_auth_router)
 
 
 @app.get("/")

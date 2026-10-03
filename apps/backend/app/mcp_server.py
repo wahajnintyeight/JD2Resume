@@ -12,13 +12,13 @@ from jose import jwt
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 from mcp.server.transport_security import TransportSecuritySettings
-from mcp.types import ToolAnnotations
+from mcp.types import CallToolResult, TextContent, Tool, ToolAnnotations
 from starlette.responses import JSONResponse
 from starlette.types import ASGIApp, Receive, Scope, Send
 
 from app.auth.context import current_user_id_var, set_current_user_id
-from app.auth.dependencies import require_authenticated_user
 from app.auth.jwt import create_session_token
+from app.auth.mcp_oauth import SCOPES, issuer, provider
 from app.auth.mongo import get_users_collection
 from app.config import settings
 from app.routers.resumes import list_resumes
@@ -28,23 +28,23 @@ from app.services import mcp_tailoring
 logger = logging.getLogger(__name__)
 current_mcp_user: ContextVar[dict[str, Any]] = ContextVar("mcp_user")
 current_mcp_token: ContextVar[str] = ContextVar("mcp_token")
+current_mcp_scopes: ContextVar[set[str]] = ContextVar("mcp_scopes")
 
 mcp = FastMCP(
     "JD2Resume",
     instructions=(
-        "Your first question must ask for the user's JD2Resume account email, unless already provided. "
-        "Call list_resumes_by_email before asking for a resume or JD. If status is account_required, "
-        "ask the user to create an account and upload a resume at the returned website_url, then stop. "
-        "If upload_required, ask them to upload a resume there first. If resume_not_ready, ask them "
-        "to wait for processing or upload a new resume. Only when ready ask which resume to tailor. "
+        "The user must connect and sign in before tailoring. Never ask for an email, password or token. "
+        "Call list_my_resumes first. If upload_required, ask the user to upload a resume at website_url. "
+        "If resume_not_ready, ask them to wait for processing or upload a new resume. "
+        "Only when ready ask which resume to tailor. "
         "Ask for the job description and call get_tailoring_context. YOU are the LLM: "
         "decide what to change, remove or add using source facts; never invent credentials. "
         "Submit your complete structured draft to preview_tailor_resume, show the complete "
         "draft and numbered changes, and ask for suggestions or approval. Apply feedback "
         "yourself and submit a new draft with revise_tailor_preview. Tools never call an LLM. "
         "Never confirm until the user approves the latest preview. After confirmation, "
-        "call export_resume_pdfs and return the expiring download links. Email is a selector, "
-        "not authorization; tools only access the connected account."
+        "call export_resume_pdfs and return the expiring download links. "
+        "Tools only access the authenticated account."
     ),
     stateless_http=True,
     json_response=True,
@@ -55,6 +55,14 @@ mcp = FastMCP(
 )
 
 
+def required_scope(name: str) -> str:
+    return (
+        "resumes:read"
+        if name in {"list_my_resumes", "get_tailoring_context"}
+        else "resumes:write"
+    )
+
+
 def tool_errors(function: Callable[..., Any]) -> Callable[..., Any]:
     """Keep existing endpoint/provider details out of MCP error responses."""
 
@@ -62,11 +70,25 @@ def tool_errors(function: Callable[..., Any]) -> Callable[..., Any]:
     async def wrapped(*args: Any, **kwargs: Any) -> Any:
         try:
             if (
-                function.__name__ != "list_resumes_by_email"
+                function.__name__ != "list_my_resumes"
                 and not current_mcp_user.get().get("user_id")
             ):
                 raise ValueError(
                     f"Create a JD2Resume account and upload a resume at {settings.frontend_base_url} first."
+                )
+            required = required_scope(function.__name__)
+            if required not in current_mcp_scopes.get():
+                challenge = f'Bearer resource_metadata="{issuer()}/.well-known/oauth-protected-resource/mcp", error="insufficient_scope", error_description="Approve resume access to continue", scope="{required}"'
+                return CallToolResult(
+                    content=[
+                        TextContent(
+                            type="text",
+                            text="Reconnect JD2Resume and approve the requested permission.",
+                        )
+                    ],
+                    structuredContent={},
+                    isError=True,
+                    _meta={"mcp/www_authenticate": [challenge]},
                 )
             return await function(*args, **kwargs)
         except ValueError as error:
@@ -82,14 +104,9 @@ def tool_errors(function: Callable[..., Any]) -> Callable[..., Any]:
 
 @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False))
 @tool_errors
-async def list_resumes_by_email(email: str) -> dict[str, Any]:
-    """FIRST ask for email, then call this. Missing accounts must sign up and upload on website_url."""
+async def list_my_resumes() -> dict[str, Any]:
+    """List the signed-in account's resumes. No account identifier is supplied by the caller."""
     user = current_mcp_user.get()
-    if (
-        not user.get("email")
-        or email.strip().casefold() != user["email"].strip().casefold()
-    ):
-        raise ValueError("Use the email of your authenticated JD2Resume account.")
     website_url = settings.frontend_base_url.rstrip("/")
     if not user.get("user_id"):
         return {
@@ -222,8 +239,21 @@ async def export_resume_pdfs(
     )
 
 
+@mcp._mcp_server.list_tools()
+async def authenticated_tool_descriptors() -> list[Tool]:
+    """Advertise tool scopes both in the standard extension and OpenAI metadata."""
+    result = []
+    for tool in await mcp.list_tools():
+        data = tool.model_dump(by_alias=True, exclude_none=True)
+        schemes = [{"type": "oauth2", "scopes": [required_scope(tool.name)]}]
+        data["securitySchemes"] = schemes
+        data.setdefault("_meta", {})["securitySchemes"] = schemes
+        result.append(Tool.model_validate(data))
+    return result
+
+
 async def authenticate_mcp(request: Request) -> tuple[dict[str, Any], str]:
-    """Accept the app session or a Sites adapter's independently signed identity assertion."""
+    """Accept an MCP OAuth credential or the Sites adapter's signed identity assertion."""
     assertion = request.headers.get("X-MCP-Bridge-Token")
     if assertion:
         if not settings.mcp_bridge_secret:
@@ -276,19 +306,44 @@ async def authenticate_mcp(request: Request) -> tuple[dict[str, Any], str]:
         except Exception:
             logger.warning("MCP bridge authentication failed", exc_info=True)
             raise HTTPException(401, "Unauthorized")
-    user = await require_authenticated_user(request)
-    account = await get_users_collection().find_one(
-        {"user_id": user["user_id"], "provider": user["provider"]}
-    )
-    if not account:
-        return {**user, "user_id": None}, ""
     header = request.headers.get("Authorization", "")
     token = (
-        header.split(" ", 1)[1].strip()
-        if header.lower().startswith("bearer ")
-        else request.cookies[settings.auth_cookie_name]
+        header.split(" ", 1)[1].strip() if header.lower().startswith("bearer ") else ""
     )
-    return user, token
+    access = await provider.load_access_token(token) if token else None
+    if not access:
+        raise HTTPException(401, "Sign in to connect JD2Resume.")
+    account = await get_users_collection().find_one(
+        {"user_id": access.subject, "provider": "google"}
+    )
+    if not account:
+        raise HTTPException(401, "Account no longer available. Sign in again.")
+    user = {
+        "user_id": account["user_id"],
+        "provider": "google",
+        "email": account.get("email"),
+        "name": account.get("name"),
+        "picture": account.get("picture"),
+    }
+    current_mcp_scopes.set(set(access.scopes))
+    set_current_user_id(user["user_id"])
+    # Mint a separate five-minute internal print credential; the MCP token
+    # is never sent to the website or placed in a print URL.
+    now = int(time.time())
+    print_token = jwt.encode(
+        {
+            "sub": user["user_id"],
+            "provider": "google",
+            "email": user["email"],
+            "name": user["name"],
+            "picture": user["picture"],
+            "iat": now,
+            "exp": now + 300,
+        },
+        settings.auth_jwt_secret,
+        algorithm=settings.auth_jwt_algorithm,
+    )
+    return user, print_token
 
 
 class MCPAuthentication:
@@ -303,13 +358,26 @@ class MCPAuthentication:
             return
         request = Request(scope)
         account_context = current_user_id_var.set(None)
+        scopes_context = current_mcp_scopes.set(set(SCOPES))
         try:
             user, token = await authenticate_mcp(request)
         except HTTPException as error:
             current_user_id_var.reset(account_context)
-            await JSONResponse({"detail": error.detail}, status_code=error.status_code)(
-                scope, receive, send
-            )
+            current_mcp_scopes.reset(scopes_context)
+            challenge = f'Bearer resource_metadata="{issuer()}/.well-known/oauth-protected-resource/mcp", scope="resumes:read resumes:write"'
+            await JSONResponse(
+                {"detail": error.detail},
+                status_code=error.status_code,
+                headers={"WWW-Authenticate": challenge, "Cache-Control": "no-store"},
+            )(scope, receive, send)
+            return
+        except Exception:
+            current_user_id_var.reset(account_context)
+            current_mcp_scopes.reset(scopes_context)
+            logger.exception("MCP authentication failed")
+            await JSONResponse(
+                {"detail": "Operation failed. Please try again."}, status_code=500
+            )(scope, receive, send)
             return
         user_context = current_mcp_user.set(user)
         token_context = current_mcp_token.set(token)
@@ -318,6 +386,7 @@ class MCPAuthentication:
         finally:
             current_mcp_user.reset(user_context)
             current_mcp_token.reset(token_context)
+            current_mcp_scopes.reset(scopes_context)
             current_user_id_var.reset(account_context)
 
 

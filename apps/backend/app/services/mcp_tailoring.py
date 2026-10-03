@@ -56,7 +56,7 @@ async def get_context(
 ) -> dict[str, Any]:
     resume = db.get_resume(resume_id, user["user_id"])
     if not resume or resume.get("processing_status") != "ready":
-        raise ValueError("Select a ready resume from list_resumes_by_email first.")
+        raise ValueError("Select a ready resume from list_my_resumes first.")
     if not 50 <= len(job_description.strip()) <= settings.max_jd_length:
         raise ValueError(
             f"Job description must contain 50-{settings.max_jd_length} characters."

@@ -54,13 +54,12 @@ The assistant acts as the tailoring language model: it reads the selected resume
 job description, prepares a complete draft, explains its edits, and responds to the
 user's suggestions. The MCP workflow does not call a separate LLM provider.
 
-The conversation starts by asking for the user's account email. The server lists
-resumes only for the authenticated account. If there is no account, the assistant
-directs the user to create one and upload a resume through the website. If the account
-has no resume or its resume is still processing, the assistant explains what to do
-before continuing. The user chooses a ready resume, provides a job description,
-reviews the proposed changes, and approves the draft before it is saved. Afterward,
-the assistant can request a PDF export; generated files are uploaded to the configured
+The MCP client prompts the user to connect their account through browser OAuth with
+PKCE. The user approves the requesting client's permissions and signs in with Google.
+MCP then lists resumes for the authenticated account without asking for an email.
+Users without an account are directed to sign in and upload a resume on the website
+first. The user chooses a ready resume, provides a job description, reviews the draft
+and approves it before it is saved. Generated PDFs are uploaded to the configured
 object storage and returned as temporary download links.
 
 The backend endpoint is mounted at `/mcp`. The optional Sites adapter in
@@ -72,25 +71,29 @@ proof of identity.
 #### Local MCP setup
 
 1. Configure the backend MongoDB connection and application settings in
-   `apps/backend/.env`, including `FRONTEND_BASE_URL` for the frontend used during
-   local PDF rendering.
-2. Add a dedicated `MCP_BRIDGE_SECRET` to the backend environment if testing the Sites
-   adapter. Set the same secret in the adapter's hosting environment; keep it separate
-   from the application session secret. The standard local MCP test-drive script uses
-   a short-lived application session and does not require this bridge secret.
-3. Start the frontend and backend using the development commands above. The backend
-   serves MCP at `/mcp` alongside the existing API.
+   `apps/backend/.env`, including `PORT=1110` and `FRONTEND_BASE_URL` for the frontend
+   used during local PDF rendering.
+2. Configure `MCP_PUBLIC_BASE_URL` with the backend's canonical public origin in
+   production. Add that origin's `/mcp/oauth/google/callback` path as an additional
+   authorized redirect URI on the existing Google OAuth client. The website's existing
+   callback and login routes retain their behavior. MCP reuses its Google credentials.
+3. Start the frontend and backend using the development commands above. Forward the
+   OAuth discovery, consent, authorization and token routes to the backend alongside
+   `/mcp`. The feature guide below includes the Nginx configuration.
 4. In `apps/backend`, call the local tools with the developer-only script:
 
    ```powershell
-   '{"email":"your-account@example.com","tool":"list_resumes_by_email","arguments":{"email":"your-account@example.com"}}' | uv run python scripts/mcp_test_drive.py
+   '{"email":"your-account@example.com","tool":"list_my_resumes","arguments":{}}' | uv run python scripts/mcp_test_drive.py
    ```
 
    The script reads one tool request from standard input and connects to the running
-   local MCP server. Use the account email for an account you are authorized to test.
+   local MCP server using a temporary MCP credential. Its email lookup is a developer
+   utility backed by database credentials, not a public authentication endpoint. Use
+   it only for an account you are authorized to test.
 5. To build the optional Sites adapter, run `npm install` and `npm run build` in
    `apps/mcp-sites`. Configure the adapter as a private MCP Site and supply its bridge
-   secret through the hosting environment before enabling it.
+   secret through the hosting environment before enabling it. Configure the same
+   dedicated `MCP_BRIDGE_SECRET` on the backend for this optional Sites connection.
 
 See [the MCP feature guide](docs/agent/features/mcp.md) for tool details, identity
 handling, configuration, and local protocol checks.

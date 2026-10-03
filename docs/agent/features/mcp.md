@@ -6,13 +6,14 @@ input schemas, and tool calls. Existing REST routes retain precedence.
 
 ## Conversation flow
 
-1. The first question asks for the user's account email (unless already provided).
-   Call `list_resumes_by_email(email)` before asking for a resume or JD. It returns
-   `status`, `website_url`, `message` and `resumes`. For `account_required`, direct
-   the user to create an account and upload a resume on `website_url`, then stop.
-   For `upload_required`, ask them to upload first. For `resume_not_ready`, wait for
-   processing or upload a new resume. Only `ready` proceeds to resume selection.
-   `website_url` uses `FRONTEND_BASE_URL`, including the local app during testing.
+1. The MCP client prompts the user to connect through browser OAuth. The user
+   approves client-specific permissions and signs in with Google using the app's
+   credentials and an MCP-only callback. Call `list_my_resumes()` with no arguments.
+   It returns `status`, `website_url`, `message` and `resumes`. For `upload_required`,
+   ask them to upload first. For `resume_not_ready`, wait for processing or upload a
+   new resume. Only `ready` proceeds to resume selection. Users without an app account
+   receive website signup/upload guidance during connection. No tool accepts an email
+   as an account selector. `website_url` uses `FRONTEND_BASE_URL`.
 2. Ask for a JD. `get_tailoring_context(resume_id, job_description)` returns the
    full source resume, JD, preview ID and revision. The calling assistant **is the
    tailoring LLM**: it decides what to rewrite, add or remove from verified facts.
@@ -47,12 +48,65 @@ or start a new preview; automatically retrying an uncertain save risks duplicate
 
 ## Authentication
 
-Local/backend calls accept the existing session cookie or `Authorization: Bearer`
-session JWT. Email must match that session; email alone grants no access. Database
-operations use the session's user ID. Sessions are checked against existing accounts;
-a removed account receives the same onboarding response. Raw Sites identity headers are never trusted
-by the backend. MCP Host and Origin checks use `MCP_ALLOWED_HOSTS` and `CORS_ORIGINS`.
-Only explicitly configured hosts/origins are accepted.
+Direct MCP connections use OAuth authorization-code flow with PKCE S256. An
+unauthenticated request receives HTTP 401 with a Bearer `WWW-Authenticate` challenge.
+Public discovery metadata describes the issuer, resource and supported clients.
+The installed MCP SDK handles OAuth validation, exact registered callback matching
+and PKCE verification. Google proves identity; JD2Resume issues its own opaque MCP
+credentials. Website session cookies/tokens and Google tokens are not accepted as
+MCP bearer credentials. A valid website session may be reused in the browser consent
+page, with explicit permission for the requesting client.
+
+MCP sign-in looks up existing Google accounts by subject (`google_sub`/`user_id`),
+never by the email returned by Google. It does not modify the website's user-upsert,
+login, callback or session behavior. The MCP-only Google callback is
+`/mcp/oauth/google/callback`. An unknown Google account must sign in and upload on the
+website first; MCP does not create users.
+
+Permissions are `resumes:read` for listing/source context and `resumes:write` for
+drafts, saving and PDF exports. Tools advertise OAuth scopes and return native
+reauthorization metadata if an additional permission is needed. Tokens and one-use
+codes are hashed in the `mcp_oauth` Mongo collection; records expire through a TTL
+index. Access lasts 10 minutes; grants/rotating refresh tokens last up to 30 days.
+Refresh replay revokes the grant. Revocation and account removal stop access.
+Google state is one-use and browser-bound; consent is protected against CSRF and
+clickjacking. A separate five-minute internal print credential supports existing PDF
+pages without exposing an MCP credential in a print URL.
+
+Raw Sites identity headers are never trusted by the backend. MCP Host and Origin
+checks use `MCP_ALLOWED_HOSTS` and `CORS_ORIGINS`.
+
+### Production configuration
+
+Set `MCP_PUBLIC_BASE_URL` to the canonical externally reachable backend origin,
+including the HTTPS scheme and hostname, with no `/api/v1` suffix. Its local default
+is the loopback backend origin on port 1110. Set `PORT=1110` for the backend. Add
+the resulting `/mcp/oauth/google/callback` redirect URI to the existing Google OAuth client's
+allowed redirects. The configured `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`
+are reused. Keep the website's existing redirect URI registered too.
+
+Clients can use CIMD metadata hosted on an explicitly trusted public host
+(`MCP_OAUTH_METADATA_HOSTS`, default `chatgpt.com`) or pre-registered public clients
+configured through `MCP_OAUTH_CLIENTS` (JSON mapping client IDs to `client_name` and
+`redirect_uris`). Use the exact callback/metadata identity supplied by the client's
+configuration screen. Remote metadata fetches are size-limited, HTTPS-only and do
+not follow redirects. Public client token exchange uses authentication method `none`
+with PKCE. Dynamic registration and private-key client assertions are not implemented.
+
+Forward these routes through Nginx in addition to the existing `/mcp` proxy:
+
+```nginx
+location ~ ^/(\.well-known/oauth-|authorize$|token$|revoke$|mcp/oauth/) {
+    proxy_pass http://127.0.0.1:1110;
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+}
+```
+
+Discovery is `GET /.well-known/oauth-protected-resource/mcp` and
+`GET /.well-known/oauth-authorization-server`; authorization is `GET /authorize`,
+code/refresh exchange is `POST /token`, and disconnect is `POST /revoke`.
 
 The optional `apps/mcp-sites/worker.mjs` adapter is a Cloudflare-compatible ESM
 Worker. Sites owns OAuth and supplies verified user identity at its hosting boundary.
@@ -77,18 +131,18 @@ Run in `apps/backend`:
 
 ```powershell
 uv sync
-uv run uvicorn app.main:app --host 127.0.0.1 --port 8000
+uv run uvicorn app.main:app --host 127.0.0.1 --port 1110
 ```
 
 For real PDFs, also run `npm run dev` in `apps/frontend`, set the backend's
 `FRONTEND_BASE_URL=http://127.0.0.1:3333`, and ensure the frontend's
 `NEXT_PUBLIC_API_URL` reaches this local backend. Google login must have a registered
-local redirect URI. Use an existing authenticated session for data-bearing calls.
+local redirect URI. Connect through OAuth for data-bearing calls.
 MongoDB, S3 and Chromium must be configured for a real full-flow test.
 
 ```powershell
 # In apps/backend; protocol/workflow checks mock external side effects.
-uv run --with pytest python -m pytest tests/test_mcp_workflow.py -q
+uv run --with pytest python -m pytest tests/test_mcp_workflow.py tests/test_mcp_oauth.py -q
 
 # In apps/mcp-sites; validates signed identity forwarding without live requests.
 npm test
@@ -103,11 +157,12 @@ For an interactive developer test with a real existing account, run
 `scripts/mcp_test_drive.py` from `apps/backend` and supply a JSON object on stdin
 with `email`, `tool`, and `arguments`. It resolves that account directly using the
 developer's MongoDB credentials, then calls the running localhost MCP endpoint
-with a 15-minute test session held only in memory. This CLI is not an HTTP endpoint
-or a production sign-in path. Use it only for accounts you are authorized to test.
+with a 10-minute opaque test credential backed by the MCP grant collection. This CLI
+is not an HTTP endpoint or a production sign-in path. Use it only for accounts you
+are authorized to test.
 
 ```powershell
-'{"email":"your-account@example.com","tool":"list_resumes_by_email","arguments":{"email":"your-account@example.com"}}' | uv run python scripts/mcp_test_drive.py
+'{"email":"your-account@example.com","tool":"list_my_resumes","arguments":{}}' | uv run python scripts/mcp_test_drive.py
 ```
 
 Relevant implementation: `app/mcp_server.py`, `app/services/mcp_tailoring.py`,

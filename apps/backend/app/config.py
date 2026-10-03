@@ -140,7 +140,7 @@ class Settings(BaseSettings):
 
     # Server Configuration
     host: str = "0.0.0.0"
-    port: int = 8000
+    port: int = 1110
     frontend_base_url: str = "http://localhost:3000"
 
     # Job Description Configuration
@@ -184,7 +184,7 @@ class Settings(BaseSettings):
     google_client_id: str = ""
     google_client_secret: str = ""
     # Must be an absolute URL that Google can redirect back to.
-    # Example: http://localhost:8000/api/v1/auth/google/callback
+    # Example: http://localhost:1110/api/v1/auth/google/callback
     google_redirect_uri: str = ""
 
     auth_jwt_secret: str = "dev-change-me"  # Use env var in production.
@@ -199,6 +199,9 @@ class Settings(BaseSettings):
 
     # Optional Sites adapter: signed, short-lived identity assertions, never raw email headers.
     mcp_bridge_secret: str = ""
+    mcp_public_base_url: str = "http://127.0.0.1:1110"
+    mcp_oauth_clients: dict[str, dict[str, Any]] = Field(default_factory=dict)
+    mcp_oauth_metadata_hosts: list[str] = Field(default_factory=lambda: ["chatgpt.com"])
     mcp_allowed_hosts: list[str] = Field(default_factory=lambda: [
         "localhost:*", "127.0.0.1:*", "[::1]:*", "api-jd2resume.theprojectphoenix.top",
     ])
