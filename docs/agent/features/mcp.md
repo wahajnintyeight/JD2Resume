@@ -99,6 +99,11 @@ configuration screen. Remote metadata fetches are size-limited, HTTPS-only and d
 not follow redirects. Public client token exchange uses authentication method `none`
 with PKCE. Dynamic registration and private-key client assertions are not implemented.
 
+Phoenix Desktop Agent's published client ID is registered by default with its native
+`http://127.0.0.1/oauth/callback` redirect. This pins the exact client identity and does
+not add `raw.githubusercontent.com` to the trusted metadata hosts. An entry for the
+same client ID in `MCP_OAUTH_CLIENTS` overrides the built-in registration.
+
 Native clients such as Codex may select a listener port for a registered HTTP
 IP-loopback callback. The server allows a variable port only when the verified
 client metadata declares `application_type: native` and registers a loopback URL

@@ -26,6 +26,20 @@ from app.config import settings
 
 SCOPES = ["resumes:read", "resumes:write"]
 
+# Pin Phoenix's public client identity and callback without trusting every document
+# hosted on GitHub. Operators can override this entry through MCP_OAUTH_CLIENTS.
+PHOENIX_CLIENT_ID = (
+    "https://raw.githubusercontent.com/wahajnintyeight/"
+    "project-phoenix-desktop-agent/main/oauth/phoenix-client.json"
+)
+BUILTIN_OAUTH_CLIENTS: dict[str, dict[str, Any]] = {
+    PHOENIX_CLIENT_ID: {
+        "client_name": "Phoenix Desktop Agent",
+        "application_type": "native",
+        "redirect_uris": ["http://127.0.0.1/oauth/callback"],
+    },
+}
+
 
 def issuer() -> str:
     value = settings.mcp_public_base_url.rstrip("/")
@@ -121,6 +135,8 @@ class MCPOAuthProvider:
 
     async def get_client(self, client_id: str) -> OAuthClientInformationFull | None:
         metadata = settings.mcp_oauth_clients.get(client_id)
+        if metadata is None:
+            metadata = BUILTIN_OAUTH_CLIENTS.get(client_id)
         if metadata is None:
             # Only explicitly trusted public metadata hosts; never follow redirects.
             try:

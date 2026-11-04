@@ -139,7 +139,7 @@ codex mcp add jd2resume --url "https://<backend-host>/mcp"
 codex mcp login jd2resume
 ```
 
-Some Codex versions need an explicit OAuth client metadata URL instead of automatic registration. See the [Codex connection instructions](docs/agent/features/mcp.md#codex-url-connection) for the callback-specific setup. The server supports trusted client metadata and pre-registered public clients; dynamic client registration is not implemented.
+Some Codex versions need an explicit OAuth client metadata URL instead of automatic registration. See the [Codex connection instructions](docs/agent/features/mcp.md#codex-url-connection) for the callback-specific setup. The server supports trusted client metadata and pre-registered public clients, including Phoenix Desktop Agent's pinned client ID; dynamic client registration is not implemented.
 
 ### Tailor through your assistant
 

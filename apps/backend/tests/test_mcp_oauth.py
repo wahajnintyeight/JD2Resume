@@ -282,6 +282,87 @@ class MCPOAuthTests(unittest.TestCase):
             with self.subTest(client_id=client_id):
                 self.assertIsNone(asyncio.run(mcp_oauth.provider.get_client(client_id)))
 
+    def test_phoenix_desktop_client_uses_pinned_loopback_registration(self) -> None:
+        client_id = (
+            "https://raw.githubusercontent.com/wahajnintyeight/"
+            "project-phoenix-desktop-agent/main/oauth/phoenix-client.json"
+        )
+        params = {
+            **self.params,
+            "client_id": client_id,
+            "redirect_uri": "http://127.0.0.1:62835/oauth/callback",
+        }
+        session = create_session_token(
+            subject=ACCOUNT["user_id"],
+            provider="google",
+            email=ACCOUNT["email"],
+            name=None,
+            picture=None,
+        )
+        self.client.cookies.set(mcp_auth.settings.auth_cookie_name, session)
+        with (
+            patch.object(mcp_oauth.settings, "mcp_oauth_metadata_hosts", []),
+            patch("app.auth.mcp_oauth.httpx.AsyncClient") as fetch,
+        ):
+            response = self.client.get(
+                "/authorize", params=params, follow_redirects=False
+            )
+            self.assertEqual(response.status_code, 302, response.text)
+            request_id = parse_qs(urlsplit(response.headers["location"]).query)[
+                "request_id"
+            ][0]
+            self.assertEqual(
+                self.client.get(response.headers["location"]).status_code, 200
+            )
+            pending = self.store.docs[mcp_oauth.digest(request_id)]
+            consent = self.client.post(
+                "/mcp/oauth/consent",
+                data={
+                    "request_id": request_id,
+                    "csrf": pending["csrf"],
+                    "decision": "allow",
+                },
+                follow_redirects=False,
+            )
+            self.assertEqual(consent.status_code, 302, consent.text)
+            callback = urlsplit(consent.headers["location"])
+            self.assertEqual(
+                f"{callback.scheme}://{callback.netloc}{callback.path}",
+                params["redirect_uri"],
+            )
+            query = parse_qs(callback.query)
+            self.assertEqual(query["iss"], [mcp_oauth.issuer()])
+            token = self.client.post(
+                "/token",
+                data={
+                    "client_id": client_id,
+                    "grant_type": "authorization_code",
+                    "code": query["code"][0],
+                    "redirect_uri": params["redirect_uri"],
+                    "code_verifier": self.verifier,
+                    "resource": mcp_oauth.resource(),
+                },
+            )
+            self.assertEqual(token.status_code, 200, token.text)
+            self.assertEqual(
+                asyncio.run(
+                    mcp_oauth.provider.load_access_token(token.json()["access_token"])
+                ).subject,
+                ACCOUNT["user_id"],
+            )
+            self.assertEqual(
+                self.client.get(
+                    "/authorize",
+                    params={**params, "redirect_uri": "http://127.0.0.1:62835/other"},
+                    follow_redirects=False,
+                ).status_code,
+                400,
+            )
+            self.assertIsNone(
+                asyncio.run(mcp_oauth.provider.get_client(client_id + "-other"))
+            )
+            fetch.assert_not_called()
+
     def test_native_loopback_port_keeps_host_path_and_query_exact(self) -> None:
         metadata = {
             "application_type": "native",
