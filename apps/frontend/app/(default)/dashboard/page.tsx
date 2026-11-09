@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
-import { useTranslations } from '@/lib/i18n';
 import { fetchAuthMe, type AuthUser } from '@/lib/api/auth';
 import { API_BASE } from '@/lib/api/client';
 import { LoadingAnimation } from '@/components/ui/loading-animation';
@@ -19,9 +18,7 @@ import {
   Plus,
   Settings,
   Search,
-  FileText,
   Sparkles,
-  ChevronRight,
   Fingerprint,
   Layers,
   ArrowUpRight,
@@ -69,12 +66,16 @@ type ProcessingStatus = 'pending' | 'processing' | 'ready' | 'failed' | 'loading
 type ResumeFilter = 'all' | 'ready' | 'processing' | 'failed';
 
 export default function DashboardPage() {
-  const { t, locale } = useTranslations();
   const [authUser, setAuthUser] = useState<AuthUser | null | 'loading'>('loading');
   const [masterResumeId, setMasterResumeId] = useState<string | null>(null);
   const [processingStatus, setProcessingStatus] = useState<ProcessingStatus>('loading');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [resumePendingDelete, setResumePendingDelete] = useState<ResumeListItem | null>(null);
+  const [masterResume, setMasterResume] = useState<ResumeListItem | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [pendingDeleteIds, setPendingDeleteIds] = useState<string[]>([]);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
+  const selectAllRef = useRef<HTMLInputElement>(null);
   const [tailoredResumes, setTailoredResumes] = useState<ResumeListItem[]>([]);
   const [isRetrying, setIsRetrying] = useState(false);
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
@@ -160,8 +161,13 @@ export default function DashboardPage() {
         }
       }
 
+      setMasterResume(data.find((r) => r.resume_id === resolvedId) || null);
       const filtered = data.filter((r) => r.resume_id !== resolvedId);
       setTailoredResumes(filtered);
+      setSelectedIds(
+        (previous) =>
+          new Set([...previous].filter((id) => data.some((resume) => resume.resume_id === id)))
+      );
     } catch (err) {
       console.error(err);
     }
@@ -218,13 +224,13 @@ export default function DashboardPage() {
   };
 
   const filteredResumes = useMemo(() => {
-    return tailoredResumes.filter((r) => {
+    return [...(masterResume ? [masterResume] : []), ...tailoredResumes].filter((r) => {
       const target = `${r.title || ''} ${(r as any).jobSnippet || ''}`.toLowerCase();
       const matchesSearch = target.includes(searchQuery.toLowerCase());
       const matchesFilter = activeFilter === 'all' || r.processing_status === activeFilter;
       return matchesSearch && matchesFilter;
     });
-  }, [tailoredResumes, searchQuery, activeFilter]);
+  }, [masterResume, tailoredResumes, searchQuery, activeFilter]);
 
   const counts = useMemo(() => {
     return tailoredResumes.reduce(
@@ -243,6 +249,7 @@ export default function DashboardPage() {
     checkResumeStatus(resumeId);
     incrementResumes();
     setHasMasterResume(true);
+    void loadTailoredResumes();
   };
 
   const handleRetryProcessing = async (e: React.MouseEvent) => {
@@ -277,6 +284,7 @@ export default function DashboardPage() {
       setHasMasterResume(false);
       localStorage.removeItem('master_resume_id');
       setMasterResumeId(null);
+      setMasterResume(null);
       setProcessingStatus('loading');
       setIsUploadDialogOpen(true);
       await loadTailoredResumes();
@@ -285,16 +293,48 @@ export default function DashboardPage() {
     }
   };
 
-  const confirmDeleteTailoredResume = async () => {
-    if (!resumePendingDelete) return;
-    try {
-      await deleteResume(resumePendingDelete.resume_id);
-      decrementResumes();
-      setResumePendingDelete(null);
-      await loadTailoredResumes();
-    } catch (err) {
-      console.error('Failed to delete tailored resume:', err);
+  const allVisibleSelected =
+    filteredResumes.length > 0 && filteredResumes.every((r) => selectedIds.has(r.resume_id));
+  const visibleSelectedCount = filteredResumes.filter((r) => selectedIds.has(r.resume_id)).length;
+  useEffect(() => {
+    if (selectAllRef.current)
+      selectAllRef.current.indeterminate = visibleSelectedCount > 0 && !allVisibleSelected;
+  }, [visibleSelectedCount, allVisibleSelected]);
+
+  const toggleVisible = () =>
+    setSelectedIds((previous) => {
+      const next = new Set(previous);
+      filteredResumes.forEach((resume) => {
+        if (allVisibleSelected) next.delete(resume.resume_id);
+        else next.add(resume.resume_id);
+      });
+      return next;
+    });
+
+  const confirmDeleteSelected = async () => {
+    setIsDeleting(true);
+    setDeleteError('');
+    const results = await Promise.allSettled(pendingDeleteIds.map((id) => deleteResume(id)));
+    const deleted = pendingDeleteIds.filter((_, index) => results[index].status === 'fulfilled');
+    const failed = pendingDeleteIds.length - deleted.length;
+    deleted.forEach(() => decrementResumes());
+    setTailoredResumes((previous) =>
+      previous.filter((resume) => !deleted.includes(resume.resume_id))
+    );
+    setSelectedIds((previous) => new Set([...previous].filter((id) => !deleted.includes(id))));
+    if (masterResumeId && deleted.includes(masterResumeId)) {
+      localStorage.removeItem('master_resume_id');
+      setMasterResumeId(null);
+      setMasterResume(null);
+      setHasMasterResume(false);
+      setProcessingStatus('loading');
     }
+    setPendingDeleteIds([]);
+    setIsDeleting(false);
+    if (failed)
+      setDeleteError(
+        `${failed} ${failed === 1 ? 'resume could' : 'resumes could'} not be deleted. Please try again.`
+      );
   };
 
   const filterOptions: ResumeFilter[] = ['all', 'ready', 'processing', 'failed'];
@@ -390,20 +430,18 @@ export default function DashboardPage() {
               <div className="max-w-4xl">
                 <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/15 bg-cyan-300/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.28em] text-cyan-100">
                   <Orbit className="h-3.5 w-3.5" />
-                  career command
+                  your workspace
                 </div>
 
                 <h1 className="mt-4 text-left text-4xl font-black uppercase tracking-[-0.07em] text-[#ecfeff] sm:text-6xl sm:leading-[0.92]">
                   Dashboard
                   <span className="block bg-gradient-to-r from-cyan-100 via-white to-violet-200 bg-clip-text text-transparent">
-                    Resume Operations
+                    Your resume library
                   </span>
                 </h1>
 
                 <p className="mt-4 max-w-3xl text-left text-sm leading-6 text-slate-300 sm:text-base sm:leading-7">
-                  A focused control room for your master resume, tailored outputs, and processing
-                  flow. The tone stays professional while the interface carries enough atmosphere to
-                  feel authored rather than assembled.
+                  Manage your master resume and tailored versions in one place.
                 </p>
               </div>
 
@@ -522,7 +560,7 @@ export default function DashboardPage() {
                         </div>
 
                         <h2 className="mt-4 text-3xl font-black uppercase tracking-[-0.05em] text-white sm:text-4xl">
-                          Primary intelligence matrix
+                          Your master resume
                         </h2>
                         <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">
                           This resume powers tailoring workflows, content generation, and your
@@ -623,129 +661,145 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-3">
                     <FolderKanban className="h-4 w-4 text-slate-300" />
                     <p className="text-[11px] uppercase tracking-[0.24em] text-slate-400">
-                      workspace note
+                      getting started
                     </p>
                   </div>
                   <p className="mt-4 text-sm leading-6 text-slate-300">
-                    The layout is intentionally restrained: strong hierarchy, editorial alignment,
-                    and atmospheric depth without leaning into over-styled “AI dashboard” clichés.
+                    Keep your master resume current, then create a tailored version for each
+                    opportunity.
                   </p>
                 </div>
               </aside>
             </div>
 
-            <section className="mt-6 overflow-hidden rounded-[1.9rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.012))]">
-              <div className="flex flex-col gap-4 border-b border-white/10 px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+            <section
+              className="mt-8 border-2 border-black bg-white text-black"
+              aria-labelledby="library-heading"
+            >
+              <div className="flex flex-wrap items-end justify-between gap-4 border-b border-black p-5 sm:p-6">
                 <div>
-                  <p className="text-[11px] uppercase tracking-[0.24em] text-slate-400">
-                    tailored resumes
+                  <p className="font-mono text-xs uppercase tracking-wider text-gray-600">
+                    Resume library
                   </p>
-                  <h3 className="mt-2 text-2xl font-black uppercase tracking-[-0.04em] text-white">
-                    Generated iterations
-                  </h3>
+                  <h2 id="library-heading" className="mt-2 font-serif text-3xl">
+                    Your resumes
+                  </h2>
+                  <p className="mt-2 text-sm text-gray-600">
+                    Select resumes to remove them from your library.
+                  </p>
                 </div>
-
                 {isTailorEnabled && (
-                  <Button
+                  <button
+                    type="button"
                     onClick={handleNewTailoringRequest}
                     disabled={isTailorNavigating}
-                    className="h-11 rounded-2xl border border-cyan-300/15 bg-white/[0.04] px-5 text-cyan-100 hover:border-cyan-300/30 hover:bg-cyan-300/10 hover:text-white"
+                    className="inline-flex min-h-11 items-center gap-2 border border-black bg-blue-700 px-4 text-sm font-semibold text-white hover:bg-black disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700"
                   >
-                    {isTailorNavigating ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    ) : (
-                      <Sparkles className="mr-2 h-4 w-4" />
-                    )}
-                    {isTailorNavigating ? 'Opening...' : 'New Tailoring Request'}
-                  </Button>
+                    <Plus className="h-4 w-4" />
+                    {isTailorNavigating ? 'Opening...' : 'New tailoring request'}
+                  </button>
                 )}
               </div>
-
-              <div className="px-5 py-5 sm:px-6 sm:py-6">
-                {filteredResumes.length === 0 ? (
-                  <div className="flex min-h-[260px] flex-col items-center justify-center rounded-[1.5rem] border border-dashed border-white/10 bg-black/10 px-6 text-center">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/5">
-                      <FileText className="h-7 w-7 text-slate-500" />
-                    </div>
-                    <p className="mt-5 text-lg font-semibold text-slate-100">
-                      No resumes found in this view
-                    </p>
-                    <p className="mt-2 max-w-md text-sm leading-6 text-slate-400">
-                      Adjust the search or filter, or generate a new tailored resume when the master
-                      source is ready.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
-                    {filteredResumes.map((resume, index) => (
-                      <article
-                        key={resume.resume_id}
-                        onClick={() => router.push(`/resumes/${resume.resume_id}`)}
-                        className="group cursor-pointer overflow-hidden rounded-[1.7rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.035),rgba(255,255,255,0.015))] p-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] transition-all duration-300 hover:-translate-y-1 hover:border-cyan-300/20 hover:shadow-[0_22px_50px_rgba(0,0,0,0.24)] sm:p-6"
-                        style={{ animationDelay: `${index * 40}ms` }}
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-black/20">
-                            <FileText className="h-5 w-5 text-cyan-200" />
-                          </div>
-                          <StatusBadge status={resume.processing_status || 'pending'} />
+              <div className="flex flex-wrap items-center justify-between gap-3 bg-black px-5 py-3 text-white">
+                <label className="flex min-h-9 cursor-pointer items-center gap-3 text-sm">
+                  <input
+                    ref={selectAllRef}
+                    type="checkbox"
+                    checked={allVisibleSelected}
+                    onChange={toggleVisible}
+                    disabled={!filteredResumes.length || isDeleting}
+                    className="h-4 w-4 accent-blue-700"
+                  />
+                  Select all {searchQuery || activeFilter !== 'all' ? 'shown' : 'resumes'}
+                </label>
+                <div className="flex flex-wrap items-center gap-3">
+                  <span aria-live="polite" className="font-mono text-xs">
+                    {selectedIds.size} selected
+                  </span>
+                  <button
+                    type="button"
+                    disabled={!selectedIds.size || isDeleting}
+                    onClick={() => setPendingDeleteIds([...selectedIds])}
+                    className="inline-flex min-h-9 items-center gap-2 border border-white bg-white px-3 text-sm font-semibold text-black hover:bg-[#F0F0E8] disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete selected
+                  </button>
+                </div>
+              </div>
+              {deleteError && (
+                <p role="alert" className="border-b border-black p-4 text-sm text-red-600">
+                  {deleteError}
+                </p>
+              )}
+              {filteredResumes.length === 0 ? (
+                <div className="p-8">
+                  <h3 className="font-serif text-xl">No resumes in this view</h3>
+                  <p className="mt-2 text-sm text-gray-600">
+                    Adjust the search or filter, or upload a resume to get started.
+                  </p>
+                </div>
+              ) : (
+                <ul>
+                  {filteredResumes.map((resume) => (
+                    <li
+                      key={resume.resume_id}
+                      className={cn(
+                        'flex items-start gap-3 border-b border-black p-4 last:border-b-0 sm:items-center sm:gap-5 sm:px-6',
+                        selectedIds.has(resume.resume_id) && 'bg-[#F0F0E8]'
+                      )}
+                    >
+                      <label className="pt-1 sm:pt-0">
+                        <span className="sr-only">
+                          Select {resume.title || resume.filename || 'untitled resume'}
+                        </span>
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(resume.resume_id)}
+                          disabled={isDeleting}
+                          onChange={() =>
+                            setSelectedIds((previous) => {
+                              const next = new Set(previous);
+                              if (next.has(resume.resume_id)) next.delete(resume.resume_id);
+                              else next.add(resume.resume_id);
+                              return next;
+                            })
+                          }
+                          className="h-4 w-4 accent-blue-700"
+                        />
+                      </label>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => router.push(`/resumes/${resume.resume_id}`)}
+                            className="break-words text-left font-serif text-lg underline-offset-4 hover:text-blue-700 hover:underline focus-visible:outline-2 focus-visible:outline-blue-700"
+                          >
+                            {resume.title || resume.filename || 'Untitled resume'}
+                          </button>
+                          {resume.resume_id === masterResumeId && (
+                            <span className="border border-black px-2 py-0.5 font-mono text-[10px] uppercase">
+                              Master
+                            </span>
+                          )}
                         </div>
-
-                        <h4 className="mt-5 line-clamp-2 text-xl font-black uppercase tracking-[-0.04em] text-white transition-colors group-hover:text-cyan-100">
-                          {resume.title || 'Untitled Variation'}
-                        </h4>
-
-                        <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-400">
-                          {(resume as any).jobSnippet ||
-                            'Tailored output prepared for review and export.'}
+                        <p className="mt-1 font-mono text-xs text-gray-600">
+                          {resume.processing_status || 'pending'} · Updated{' '}
+                          {formatDate(resume.updated_at || resume.created_at)}
                         </p>
-
-                        <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                          <div className="rounded-2xl border border-white/10 bg-black/20 p-3.5">
-                            <p className="text-[10px] uppercase tracking-[0.22em] text-slate-500">
-                              updated
-                            </p>
-                            <p className="mt-2 text-sm font-semibold text-slate-100">
-                              {formatDate(resume.updated_at || resume.created_at)}
-                            </p>
-                          </div>
-
-                          <div className="rounded-2xl border border-white/10 bg-black/20 p-3.5">
-                            <p className="text-[10px] uppercase tracking-[0.22em] text-slate-500">
-                              locale
-                            </p>
-                            <p className="mt-2 text-sm font-semibold uppercase text-slate-100">
-                              {locale}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="mt-5 flex items-center justify-between gap-3 border-t border-white/10 pt-4">
-                          <span className="text-[10px] uppercase tracking-[0.22em] text-slate-500">
-                            Open detail view
-                          </span>
-                          <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setResumePendingDelete(resume);
-                              }}
-                              className="h-9 w-9 rounded-full border border-rose-300/15 bg-rose-400/8 text-rose-100 hover:border-rose-300/25 hover:bg-rose-400/18"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                            <div className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 transition-all group-hover:border-cyan-300/20 group-hover:bg-cyan-300/10">
-                              <ChevronRight className="h-4 w-4 text-slate-200" />
-                            </div>
-                          </div>
-                        </div>
-                      </article>
-                    ))}
-                  </div>
-                )}
-              </div>
+                      </div>
+                      <button
+                        type="button"
+                        aria-label={`Delete ${resume.title || resume.filename || 'untitled resume'}`}
+                        onClick={() => setPendingDeleteIds([resume.resume_id])}
+                        className="p-2 text-red-600 hover:bg-[#F0F0E8] focus-visible:outline-2 focus-visible:outline-blue-700"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </section>
           </div>
         </section>
@@ -762,18 +816,16 @@ export default function DashboardPage() {
       />
 
       <ConfirmDialog
-        open={Boolean(resumePendingDelete)}
+        open={pendingDeleteIds.length > 0}
         onOpenChange={(open) => {
-          if (!open) setResumePendingDelete(null);
+          if (!open && !isDeleting) setPendingDeleteIds([]);
         }}
-        title="Delete tailored resume?"
-        description={
-          resumePendingDelete
-            ? `Delete "${resumePendingDelete.title || 'Untitled Variation'}" from the dashboard library? This action cannot be undone.`
-            : 'Delete this tailored resume from the dashboard library?'
-        }
-        confirmLabel="Delete Resume"
-        onConfirm={confirmDeleteTailoredResume}
+        title={`Delete ${pendingDeleteIds.length === 1 ? 'this resume' : `${pendingDeleteIds.length} resumes`}?`}
+        description={`This action cannot be undone.${masterResumeId && pendingDeleteIds.includes(masterResumeId) ? ' Your master resume is included. You will need another master resume to tailor new versions.' : ''}`}
+        confirmLabel={isDeleting ? 'Deleting...' : 'Delete permanently'}
+        confirmDisabled={isDeleting}
+        closeOnConfirm={false}
+        onConfirm={confirmDeleteSelected}
         variant="danger"
       />
 
