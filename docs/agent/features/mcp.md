@@ -46,6 +46,18 @@ fails after claiming a draft, the draft stays busy because the database operatio
 have already written data. Inspect the job/resume records before clearing `mcp_busy`
 or start a new preview; automatically retrying an uncertain save risks duplicates.
 
+## Deleting resumes
+
+Call `list_my_resumes` to identify the exact resumes requested, including any master
+resumes, and explain that deletion is permanent and removes associated job descriptions,
+improvement records, and ATS scans. After the user explicitly authorizes deletion, call
+`delete_my_resumes(resume_ids=[...])` with 1–500 unique IDs. Larger selections can be
+split into batches. The tool requires `resumes:write` and only accesses the authenticated
+account. Each result is `deleted`, `not_found` (including IDs belonging to another
+account), or `unknown` if an error occurred. For `unknown`, inspect the library before
+retrying: the resume or some associated records may already have been deleted. Like the
+existing delete endpoint, this does not delete original files or exported PDFs from S3.
+
 ## Authentication
 
 Direct MCP connections use OAuth authorization-code flow with PKCE S256. An

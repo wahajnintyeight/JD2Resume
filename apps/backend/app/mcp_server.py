@@ -21,7 +21,7 @@ from app.auth.jwt import create_session_token
 from app.auth.mcp_oauth import SCOPES, issuer, provider
 from app.auth.mongo import get_users_collection
 from app.config import settings
-from app.routers.resumes import list_resumes
+from app.routers.resumes import delete_resume, list_resumes
 from app.schemas import ResumeData
 from app.services import mcp_tailoring
 
@@ -44,6 +44,10 @@ mcp = FastMCP(
         "yourself and submit a new draft with revise_tailor_preview. Tools never call an LLM. "
         "Never confirm until the user approves the latest preview. After confirmation, "
         "call export_resume_pdfs and return the expiring download links. "
+        "To delete resumes, list them first, identify the exact IDs the user requested, "
+        "and call delete_my_resumes only with their explicit authorization. "
+        "Deletion is permanent and may remove associated records; mention this and "
+        "identify any master resumes before proceeding. "
         "Tools only access the authenticated account."
     ),
     stateless_http=True,
@@ -132,6 +136,45 @@ async def list_my_resumes() -> dict[str, Any]:
         "resumes": resumes,
         "website_url": website_url,
         "message": messages[status],
+    }
+
+
+@mcp.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, idempotentHint=False))
+@tool_errors
+async def delete_my_resumes(resume_ids: list[str]) -> dict[str, Any]:
+    """Permanently delete the specified resumes belonging to the signed-in account.
+
+    First list resumes and identify the exact IDs requested by the user. Only call
+    after explicit authorization to delete those resumes. Mention master resumes and
+    associated job descriptions, improvement records and ATS scans that are removed.
+    Submit 1 to 500 unique IDs. A failed result may require checking the library
+    before retrying, because deletion can partially complete.
+    """
+    if not 1 <= len(resume_ids) <= 500:
+        raise ValueError("Provide between 1 and 500 resume IDs.")
+    if any(not resume_id.strip() or resume_id != resume_id.strip() for resume_id in resume_ids):
+        raise ValueError("Resume IDs must be non-empty and contain no surrounding whitespace.")
+    if len(set(resume_ids)) != len(resume_ids):
+        raise ValueError("Resume IDs must be unique.")
+
+    user = current_mcp_user.get()
+    results: list[dict[str, str]] = []
+    for resume_id in resume_ids:
+        try:
+            await delete_resume(resume_id=resume_id, user=user)
+            results.append({"resume_id": resume_id, "status": "deleted"})
+        except HTTPException as error:
+            if error.status_code == 404:
+                results.append({"resume_id": resume_id, "status": "not_found"})
+            else:
+                logger.exception("MCP resume deletion failed for %s", resume_id)
+                results.append({"resume_id": resume_id, "status": "unknown"})
+        except Exception:
+            logger.exception("MCP resume deletion failed for %s", resume_id)
+            results.append({"resume_id": resume_id, "status": "unknown"})
+    return {
+        "results": results,
+        "message": "Deletion is permanent. For unknown results, check the library before retrying.",
     }
 
 

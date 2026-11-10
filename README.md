@@ -147,7 +147,8 @@ Try: “List my resumes, let me choose one, then help me tailor it to this job d
 
 | Tool                    | Purpose                                                   |
 | ----------------------- | --------------------------------------------------------- |
-| `list_my_resumes`       | List the authenticated account's ready resumes            |
+| `list_my_resumes`       | List the authenticated account's resumes                  |
+| `delete_my_resumes`     | Permanently delete specified resumes from the account     |
 | `get_tailoring_context` | Read the selected resume and job description              |
 | `preview_tailor_resume` | Preview a complete draft written by the assistant         |
 | `revise_tailor_preview` | Incorporate your suggestions into the draft               |

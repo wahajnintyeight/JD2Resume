@@ -108,6 +108,7 @@ class MCPWorkflowTests(unittest.TestCase):
             {tool["name"] for tool in tools},
             {
                 "list_my_resumes",
+                "delete_my_resumes",
                 "get_tailoring_context",
                 "preview_tailor_resume",
                 "revise_tailor_preview",
@@ -127,6 +128,48 @@ class MCPWorkflowTests(unittest.TestCase):
             json={"jsonrpc": "2.0", "id": 2, "method": "tools/list"},
         )
         self.assertEqual(response.status_code, 421)
+
+    def test_bulk_delete_scopes_results_and_errors(self) -> None:
+        from fastapi import HTTPException
+
+        async def delete(resume_id: str, user: dict) -> dict:
+            self.assertEqual(user["user_id"], USER["user_id"])
+            if resume_id == "missing":
+                raise HTTPException(status_code=404, detail="not found")
+            if resume_id == "uncertain":
+                raise RuntimeError("secret database detail")
+            return {"message": "deleted"}
+
+        tools = self.rpc("tools/list")["result"]["tools"]
+        tool = next(tool for tool in tools if tool["name"] == "delete_my_resumes")
+        self.assertTrue(tool["annotations"]["destructiveHint"])
+        self.assertEqual(tool["_meta"]["securitySchemes"][0]["scopes"], ["resumes:write"])
+        with patch.object(mcp_server, "delete_resume", side_effect=delete) as deletion:
+            result = self.rpc("tools/call", {"name": "delete_my_resumes", "arguments": {
+                "resume_ids": ["source", "missing", "uncertain", "other"]
+            }})["result"]
+        self.assertFalse(result.get("isError", False), result)
+        self.assertEqual([item["status"] for item in result["structuredContent"]["results"]],
+                         ["deleted", "not_found", "unknown", "deleted"])
+        self.assertNotIn("secret database detail", str(result))
+        self.assertEqual(deletion.await_count, 4)
+
+    def test_bulk_delete_rejects_invalid_input_and_read_only_scope(self) -> None:
+        with patch.object(mcp_server, "delete_resume", new_callable=AsyncMock) as deletion:
+            for ids in ([], ["same", "same"], [" "], ["id"] * 501):
+                result = self.rpc("tools/call", {"name": "delete_my_resumes", "arguments": {
+                    "resume_ids": ids
+                }})["result"]
+                self.assertTrue(result.get("isError"), result)
+            access = AccessToken(token=self.token, client_id="local-test",
+                                 subject=USER["user_id"], scopes=["resumes:read"])
+            with patch.object(mcp_server.provider, "load_access_token", AsyncMock(return_value=access)):
+                result = self.rpc("tools/call", {"name": "delete_my_resumes", "arguments": {
+                    "resume_ids": ["source"]
+                }})["result"]
+            self.assertTrue(result["isError"])
+            self.assertIn("resumes:write", result["_meta"]["mcp/www_authenticate"][0])
+            deletion.assert_not_awaited()
 
     def test_listing_uses_authenticated_account_without_email_input(self) -> None:
         with patch.object(
